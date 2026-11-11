@@ -19,12 +19,12 @@
 :root{
   --bg:#f4f5f7;--card:#ffffff;--card2:#f0f1f4;--line:#e4e6ea;
   --text:#1b1d21;--text2:#5d626b;--text3:#9399a3;
-  --pri:#1c2c4f;--pri-soft:#e8ecf3;--pri-ink:#ffffff;
+  --pri:#2a78d6;--pri-soft:#e8f1fc;--pri-ink:#ffffff;
   --good:#1f9d63;--good-soft:#e5f5ec;
   --warn:#c77700;--warn-soft:#fdf2e0;
   --bad:#d64545;--bad-soft:#fbeaea;
-  --s1:#1c2c4f;--s2:#eb6834;
-  --pri-mid:#a3b1ca;--mus:#d9dce2;--mus-base:#eef0f3;
+  --s1:#2a78d6;--s2:#eb6834;
+  --pri-mid:#9cc3ee;--mus:#d9dce2;--mus-base:#eef0f3;
   --r:16px;--r-sm:11px;
   --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
   --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Segoe UI",sans-serif;
@@ -33,12 +33,12 @@
 :root[data-theme="dark"]{
   --bg:#16171a;--card:#212327;--card2:#2a2d32;--line:#33363c;
   --text:#eef0f3;--text2:#a9aeb7;--text3:#727883;
-  --pri:#5b78b3;--pri-soft:#1e2638;--pri-ink:#ffffff;
+  --pri:#3987e5;--pri-soft:#1f2f45;--pri-ink:#ffffff;
   --good:#3cb77c;--good-soft:#1c3328;
   --warn:#e09a2c;--warn-soft:#3a2f1c;
   --bad:#e66767;--bad-soft:#3d2224;
-  --s1:#6f8cc4;--s2:#d95926;
-  --pri-mid:#3d5280;--mus:#454a52;--mus-base:#30333a;
+  --s1:#3987e5;--s2:#d95926;
+  --pri-mid:#3f6ea6;--mus:#454a52;--mus-base:#30333a;
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -235,11 +235,11 @@ body.wmode .rest,body.wmode .tabbar{display:none!important;}
 .ib-v b{font-size:15px;color:var(--text);margin-right:1px;}
 .ib-v span{display:block;font-size:10.5px;font-weight:700;}
 
-.splash{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#22345c,#0f1a33);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .4s;}
+.splash{position:fixed;inset:0;z-index:100;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .4s;}
 .splash b{display:block;font-size:44px;font-weight:900;letter-spacing:-1px;}
 .splash-logo{width:96px;height:96px;display:block;margin:0 auto 14px;}
 .brand{display:inline-flex;align-items:center;gap:9px;}
-.brand i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#22345c,#0f1a33);display:inline-flex;flex:none;}
+.brand i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3b8cec,#1d5fc0);display:inline-flex;flex:none;}
 .brand i svg{width:100%;height:100%;}
 .splash span{font-size:15px;opacity:.85;}
 .splash.off{opacity:0;pointer-events:none;}
@@ -357,7 +357,7 @@ table.t tr:last-child td{border-bottom:none;}
 <nav class="tabbar" id="tabbar"></nav>
 <div class="dim" id="dim" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet"></div>
-<div class="splash" id="splash"><div><svg class="splash-logo" viewBox="70 70 372 372" aria-hidden="true"><circle cx="256" cy="256" r="160" fill="none" stroke="#fff" stroke-width="30"/><circle cx="256" cy="256" r="114" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><text x="256" y="162" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="40" fill="#fff" fill-opacity=".9" letter-spacing="2">20</text><text x="256" y="376" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="28" fill="#fff" fill-opacity=".6" letter-spacing="6">KG</text><path d="M178,260 L234,314 L352,186" fill="none" stroke="#ffd34d" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/></svg><b>OH_UN!</b><span>오늘 운동, 완료!</span></div></div>
+<div class="splash" id="splash"><div><svg class="splash-logo" viewBox="88 88 336 336" aria-hidden="true"><path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/></svg><b>OH_UN!</b><span>오늘 운동, 완료!</span></div></div>
 <div class="toast" id="toast"></div>
 <div class="rest" id="rest"></div>
 <div class="wm" id="wm"></div>
@@ -812,8 +812,7 @@ const EK_CREDIT='그림 © Everkinetic · CC BY-SA 4.0';
 let ekP=null;const ekURL={};
 function loadEk(){
   if(ekP)return ekP;
-  ekP=(async()=>{const r=await fetch('ek.pack.gz');if(!r.ok)throw new Error('ek '+r.status);
-    const buf=await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+  ekP=(async()=>{const buf=(await gzFetch(['ek.pack.gz','ohun/ek.pack.gz'])).buffer;
     const dv=new DataView(buf);if(String.fromCharCode(...new Uint8Array(buf,0,4))!=='OHEK')throw new Error('bad pack');
     const hl=dv.getUint32(4,true),idx=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,8,hl))),base=8+hl;
     for(const[k,[o,l]]of Object.entries(idx))ekURL[k]=URL.createObjectURL(new Blob([new Uint8Array(buf,base+o,l)],{type:'image/svg+xml'}));return true;})().catch(e=>{ekP=null;return false;});
@@ -2165,10 +2164,10 @@ async function makeShareCard(log){
   const FF='-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
   const ph=window._cardPhotoFor===log.id?window._cardPhoto:null;
   if(ph){const sc=Math.max(W/ph.width,H/ph.height),dw=ph.width*sc,dh=ph.height*sc;g.drawImage(ph,(W-dw)/2,(H-dh)/2,dw,dh);
-    let gt=g.createLinearGradient(0,0,0,760);gt.addColorStop(0,'rgba(8,14,30,.72)');gt.addColorStop(1,'rgba(8,14,30,0)');g.fillStyle=gt;g.fillRect(0,0,W,760);
-    let gb=g.createLinearGradient(0,880,0,H);gb.addColorStop(0,'rgba(8,14,30,0)');gb.addColorStop(.35,'rgba(8,14,30,.72)');gb.addColorStop(1,'rgba(8,14,30,.9)');g.fillStyle=gb;g.fillRect(0,880,W,H-880);}
-  else{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#22345c');gr.addColorStop(1,'#0b1429');g.fillStyle=gr;g.fillRect(0,0,W,H);drawBarbell(g,W/2,500,1180,.13);}
-  try{const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="70 70 372 372">${LOGO_MARK}</svg>`));g.drawImage(im,90,150,120,120);}catch(e){}
+    let gt=g.createLinearGradient(0,0,0,760);gt.addColorStop(0,'rgba(10,30,70,.72)');gt.addColorStop(1,'rgba(10,30,70,0)');g.fillStyle=gt;g.fillRect(0,0,W,760);
+    let gb=g.createLinearGradient(0,880,0,H);gb.addColorStop(0,'rgba(10,30,70,0)');gb.addColorStop(.35,'rgba(10,30,70,.72)');gb.addColorStop(1,'rgba(10,30,70,.9)');g.fillStyle=gb;g.fillRect(0,880,W,H-880);}
+  else{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#3b8cec');gr.addColorStop(1,'#1d5fc0');g.fillStyle=gr;g.fillRect(0,0,W,H);drawBarbell(g,W/2,500,1180,.13);}
+  try{const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 88 336 336">${LOGO_MARK}</svg>`));g.drawImage(im,90,150,120,120);}catch(e){}
   g.fillStyle='#fff';g.textBaseline='alphabetic';g.font=`800 56px ${FF}`;g.fillText('OH_UN!',230,232);
   const dt=new Date(log.date+'T00:00');g.font=`500 38px ${FF}`;g.globalAlpha=.85;g.fillText(`${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()} ${DAYS[dt.getDay()]}요일`,90,360);g.globalAlpha=1;
   g.font=`900 190px ${FF}`;g.fillText('오운완',80,560);
@@ -2274,12 +2273,23 @@ async function lookupBarcode(code){
 // data/food-kr-1.tsv.gz: 음식(외식·프랜차이즈 포함) + 원재료  ·  data/food-kr-2.tsv.gz: 가공식품
 // 줄 형식: 이름 \t kcal \t 단백질 \t 탄수 \t 지방 \t (1=100ml 기준) \t 1회 제공량 \t 업체/브랜드 \t 분류 \t 구분(D 음식, R 원재료, P 가공)
 const KDB={rows:[],keys:[],st:{1:0,2:0},err:''};   // st: 0 없음, 1 불러오는 중, 2 완료
+// gzip 파일을 받아 풀기. 서버가 이미 풀어서 보내 준 경우(gzip 표시가 없으면)도 그대로 처리
+async function gzFetch(paths){
+  let last='';
+  for(const u of paths){
+    try{const r=await fetch(u,{cache:'no-cache'});if(!r.ok){last=`${u} (${r.status})`;continue;}
+      const buf=new Uint8Array(await r.arrayBuffer());
+      if(buf[0]===0x1f&&buf[1]===0x8b){
+        if(!('DecompressionStream' in window))throw new Error('이 브라우저는 압축 해제를 지원하지 않습니다 (iOS 16.4 이상 필요)');
+        return new Uint8Array(await new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());}
+      return buf;
+    }catch(e){last=e.message||String(e);}
+  }
+  throw new Error('파일을 찾지 못함: '+last);
+}
 async function kdbFetch(n){
-  const r=await fetch(`data/food-kr-${n}.tsv.gz`);if(!r.ok)throw new Error('파일 없음 ('+r.status+')');
-  let txt;
-  if('DecompressionStream' in window){txt=await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text();}
-  else throw new Error('이 브라우저는 압축 해제를 지원하지 않습니다');
-  return txt;
+  const f=`food-kr-${n}.tsv.gz`;
+  return new TextDecoder().decode(await gzFetch([`data/${f}`,f,`ohun/data/${f}`]));
 }
 async function kdbLoad(n){
   if(KDB.st[n])return;KDB.st[n]=1;kdbStatus();
@@ -2452,7 +2462,7 @@ function cardFilePicked(ev,id){const f=ev.target.files&&ev.target.files[0];ev.ta
 
 /* ══════════════════════ 설치 · 오프라인 ══════════════════════ */
 let installEvt=null;
-const LOGO_MARK='<circle cx="256" cy="256" r="160" fill="none" stroke="#fff" stroke-width="30"/><circle cx="256" cy="256" r="114" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><text x="256" y="162" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="40" fill="#fff" fill-opacity=".9" letter-spacing="2">20</text><text x="256" y="376" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="28" fill="#fff" fill-opacity=".6" letter-spacing="6">KG</text><path d="M178,260 L234,314 L352,186" fill="none" stroke="#ffd34d" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>';
+const LOGO_MARK='<path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>';
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(curTab==='home')renderHome();if(curTab==='more')renderMore();});
@@ -2478,13 +2488,14 @@ async function runInstallCheck(){
   let man=null;try{const r=await fetch('manifest.json',{cache:'no-store'});ok('manifest.json',r.ok,'GitHub 저장소 맨 위에 manifest.json을 올리세요.');if(r.ok)man=await r.json();}catch(e){ok('manifest.json',false,'파일을 읽지 못했습니다.');}
   const icons=(man&&man.icons)||[{src:'icons/icon-192.png'},{src:'icons/icon-512.png'}];
   for(const ic of icons){try{const r=await fetch(ic.src,{cache:'no-store'});ok('아이콘 '+ic.src,r.ok&&/image/.test(r.headers.get('content-type')||''),'icons 폴더째로 저장소에 올리세요.');}catch(e){ok('아이콘 '+ic.src,false,'icons 폴더째로 저장소에 올리세요.');}}
+  for(const f of['data/food-kr-1.tsv.gz','data/food-kr-2.tsv.gz']){try{const r=await fetch(f,{method:'HEAD',cache:'no-store'});ok('식약처 음식 DB '+f,r.ok,'data 폴더째로 저장소 맨 위에 올리세요. (폴더 없이 파일만 올렸어도 앱은 찾아 씁니다)');}catch(e){ok(f,false);}}
   try{const r=await fetch('ek.pack.gz',{method:'HEAD',cache:'no-store'});ok('운동 그림(ek.pack.gz)',r.ok,'ek.pack.gz 파일을 저장소 맨 위에 올리세요.');}catch(e){ok('ek.pack.gz',false);}
   try{const r=await fetch('sw.js',{cache:'no-store'});ok('sw.js',r.ok,'sw.js를 저장소 맨 위에 올리세요.');}catch(e){ok('sw.js',false);}
   try{const reg=await navigator.serviceWorker?.getRegistration();ok('오프라인 작동(서비스 워커)',!!(reg&&reg.active),'새로고침 후 다시 검사하세요.');}catch(e){ok('서비스 워커',false);}
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='6.3';
+const APP_VER='6.3.1';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
