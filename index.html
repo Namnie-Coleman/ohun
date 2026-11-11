@@ -499,7 +499,7 @@ function bindSeg(id,fn){$(id).querySelectorAll('button').forEach(b=>b.onclick=()
 
 /* ══════════════════════ 시트 ══════════════════════ */
 function openSheet(html){clearTimeout(closeSheet._t);navPush();$('sheet').innerHTML='<div class="grab"></div>'+html;$('dim').classList.add('on');$('sheet').classList.add('on');$('sheet').scrollTop=0;}
-function closeSheet(){$('dim').classList.remove('on');$('sheet').classList.remove('on');navPop();clearTimeout(closeSheet._t);closeSheet._t=setTimeout(()=>{if(!$('sheet').classList.contains('on'))$('sheet').innerHTML='';},300);}
+function closeSheet(){if(typeof stopScan==='function')stopScan();$('dim').classList.remove('on');$('sheet').classList.remove('on');navPop();clearTimeout(closeSheet._t);closeSheet._t=setTimeout(()=>{if(!$('sheet').classList.contains('on'))$('sheet').innerHTML='';},300);}
 function confirmSheet(msg,ok,okLabel='확인',danger=true){
   openSheet(`<div style="font-size:17px;font-weight:700;margin:6px 0 18px;text-align:center">${esc(msg)}</div><div class="row-btns"><button class="btn ghost" onclick="closeSheet()">취소</button><button class="btn ${danger?'danger':''}" id="cfOk">${okLabel}</button></div>`);
   $('cfOk').onclick=()=>{closeSheet();ok();};
@@ -543,6 +543,7 @@ function renderHome(){
   const ft=foodTotals(today()),tg=dietTarget();
   let h='';
   if(!p.weight)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>시작하기</b>운동 목적과 인바디를 알려주시면 식단 목표와 추천 루틴을 맞춰 드려요.<div style="margin-top:10px"><button class="btn sm" onclick="openOnboarding()">1분 설정</button></div></div>`;
+  {const dw=new Date().getDay(),lw=weekStats(-1);if([0,1,2].includes(dw)&&lw.n&&S.repSeen!==lw.a)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>지난 주 리포트</b>${lw.days}일 운동 · 볼륨 ${fmt(lw.vol)}kg${lw.km?` · 러닝 ${lw.km}km`:''}<div style="margin-top:10px;display:flex;gap:8px"><button class="btn sm" onclick="S.repSeen='${lw.a}';save();openWeekReport(-1);renderHome()">리포트 보기</button><button class="btn ghost sm" onclick="S.repSeen='${lw.a}';save();renderHome()">닫기</button></div></div>`;}
   if(S.prog)h+=progHomeHTML();
   // 컨디션
   if(c){
@@ -899,7 +900,7 @@ function openWM(){navPush();
 function closeWM(){navPop();wm.open=false;$('wm').classList.remove('on');document.body.classList.remove('wmode');clearInterval(wm.tick);cancelAnimationFrame(animRaf);keepAwake(false);renderExList();if(restEnd>Date.now())startRest((restEnd-Date.now())/1000);}
 const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
 function wmTick(){
-  if(!wm.open)return;const el=$('wmClock');if(el)el.textContent=mmss((Date.now()-(draft.startedAt||Date.now()))/1000);
+  if(!wm.open)return;scheduleRestNoti();const el=$('wmClock');if(el)el.textContent=mmss((Date.now()-(draft.startedAt||Date.now()))/1000);
   if(wm.phase==='rest'){const left=(restEnd-Date.now())/1000;if(left<=0){wm.phase='set';beep(3);wmRender();return;}
     $('wmRestT').textContent=mmss(left);const tot=wm.restTot||S.rest||90,c=2*Math.PI*88;$('wmRing').setAttribute('stroke-dashoffset',c*(1-left/tot));}
   if(wm.phase==='work'){const left=(wm.workEnd-Date.now())/1000;if(left<=0){beep(3);wm.phase='set';wmComplete();return;}$('wmWorkT').textContent=mmss(left);}
@@ -910,12 +911,13 @@ function wmRender(){
   const si=curSet(),info=exInfo(e.name),unit=unitOf(e.name),allDone=!nextPtr(0);
   let body='';
   if(allDone){
-    body=`<div class="card" style="text-align:center;padding:28px 16px"><div style="font-size:22px;font-weight:800;margin-bottom:6px">모든 세트 완료</div><div class="muted">${done}세트 · ${mmss((Date.now()-draft.startedAt)/1000)}</div></div><button class="btn" onclick="closeWM();saveWorkout()">운동 저장</button>`;
+    body=`<div class="card" style="text-align:center;padding:28px 16px"><div style="font-size:22px;font-weight:800;margin-bottom:6px">모든 세트 완료</div><div class="muted">${done}세트 · ${mmss((Date.now()-draft.startedAt)/1000)}</div></div>${wm.last?rirHTML(wm.last.ei,wm.last.si):''}<button class="btn" onclick="closeWM();saveWorkout()">운동 저장</button>`;
   }else if(wm.phase==='rest'){
     const np=nextPtr(wm.ei),ne=np&&E[np.ei],ns=np&&ne.sets[np.si];const c=2*Math.PI*88;
     body=`<div class="rest-ring"><svg viewBox="0 0 200 200" width="210" height="210"><circle cx="100" cy="100" r="88" fill="none" stroke="var(--card2)" stroke-width="12"/><circle id="wmRing" cx="100" cy="100" r="88" fill="none" stroke="var(--pri)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="0" transform="rotate(-90 100 100)"/></svg><div class="rest-v"><span>휴식</span><b id="wmRestT">-</b></div></div>
     <div class="row-btns" style="margin-bottom:12px"><button class="btn ghost" onclick="restEnd-=15000;wm.restTot=Math.max(1,(wm.restTot||S.rest)-15);wmTick()">−15초</button><button class="btn ghost" onclick="restEnd+=15000;wm.restTot=(wm.restTot||S.rest)+15;wmTick()">+15초</button></div>
     ${ne?`<div class="card" style="padding:12px 14px"><div class="tiny">다음</div><div class="li-t">${esc(ne.name)} · ${np.si+1}세트</div><div class="muted">${ns.w?ns.w+'kg × ':''}${ns.r||'-'}${isTimed(ne.name)?'초':'회'}</div></div>`:''}
+    ${wm.last?rirHTML(wm.last.ei,wm.last.si):''}
     <button class="btn" onclick="restEnd=0;wm.phase='set';wmRender()">휴식 건너뛰기</button>`;
   }else{
     const s=e.sets[si>=0?si:e.sets.length-1];
@@ -931,7 +933,7 @@ function wmRender(){
   }
   $('wm').innerHTML=`<div class="wm-top"><button class="link" onclick="confirmSheet('운동 모드를 닫을까요? 입력은 유지됩니다.',closeWM,'닫기',false)">닫기</button><div style="text-align:center"><b id="wmClock">0:00</b><div class="tiny">${done}/${total} 세트</div></div><button class="link" onclick="closeWM()">목록</button></div>
   <div class="pb-bar" style="margin:6px 0 12px"><div class="pb-fill" style="width:${total?done/total*100:0}%"></div></div>
-  <div class="wm-name"><button class="x" ${wm.ei>0?'':'style="visibility:hidden"'} onclick="wmJump(-1)">‹</button><div style="flex:1;min-width:0;text-align:center"><div class="ex-name" style="font-size:19px">${esc(e.name)}</div><div class="tiny">${wm.ei+1} / ${E.length} 종목 · ${PART_L[info.part]||''}</div></div><button class="x" ${wm.ei<E.length-1?'':'style="visibility:hidden"'} onclick="wmJump(1)">›</button></div>
+  <div class="wm-name"><button class="x" ${wm.ei>0?'':'style="visibility:hidden"'} onclick="wmJump(-1)">‹</button><div style="flex:1;min-width:0;text-align:center"><div class="ex-name" style="font-size:19px">${esc(e.name)}</div><div class="tiny">${wm.ei+1} / ${E.length} 종목 · ${PART_L[info.part]||''}${e.ss?` · <b style="color:var(--pri)">슈퍼세트 ${e.ss}</b>`:''}</div></div><button class="x" ${wm.ei<E.length-1?'':'style="visibility:hidden"'} onclick="wmJump(1)">›</button></div>
   ${body}`;
   if(!allDone&&wm.phase!=='rest')bindGuide('wg',e.name);else cancelAnimationFrame(animRaf);
   wmTick();
@@ -946,9 +948,11 @@ function wmComplete(){
   const w=$('wmW'),r=$('wmR');if(w)s.w=w.value;if(r)s.r=r.value;
   if(!num(s.r)){toast(isTimed(e.name)?'시간을 입력하세요':'횟수를 입력하세요');return;}
   s.done=true;const nx=e.sets[si+1];if(nx&&!nx.done&&!num(nx.w)&&num(s.w))nx.w=s.w;saveDraft();
+  wm.last={ei:wm.ei,si};
+  if(ssAdvance()){beep(1);wmRender();return;}
   const np=nextPtr(wm.ei);
   if(!np){wm.phase='set';beep(2);wmRender();return;}
-  wm.ei=np.ei;
+  if(wm.ssRest)wm.ssRest=false;else wm.ei=np.ei;
   if(S.rest){wm.restTot=S.rest;restEnd=Date.now()+S.rest*1000;wm.phase='rest';}else wm.phase='set';
   wmRender();
 }
@@ -988,7 +992,7 @@ function renderExList(){
   $('exList').innerHTML=draft.exs.map((e,ei)=>{
     const last=lastOf(e.name),p=partOf(e.name);
     return`<div class="ex"><div class="ex-h"><div style="flex:1;min-width:0"><div class="ex-name tap" onclick="openGuide(draft.exs[${ei}].name)">${esc(e.name)} <span class="link" style="font-size:12px">동작</span></div>
-      <div class="tiny" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.up?`<span class="badge b-good" style="padding:0 6px;font-size:10px">+${e.up}kg 증량</span> `:''}${p?PART_L[p]:'부위 미지정'}${last?' · 지난 '+md(last.date)+' '+setsTxt(last.sets):''}</div></div>
+      <div class="tiny" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.ss?`<span class="badge b-pri" style="padding:0 6px;font-size:10px">슈퍼세트 ${e.ss}</span> `:''}${e.up?`<span class="badge b-good" style="padding:0 6px;font-size:10px">+${e.up}kg 증량</span> `:''}${p?PART_L[p]:'부위 미지정'}${last?' · 지난 '+md(last.date)+' '+setsTxt(last.sets):''}</div></div>
       <button class="x" onclick="exMenu(${ei})" aria-label="메뉴">⋯</button></div>
     <div class="set-head"><span>세트</span><span>kg</span><span>${unitOf(e.name)}</span><span>완료</span></div>
     ${e.sets.map((s,si)=>`<div class="set ${s.done?'done':''}"><span class="set-n">${si+1}</span><input class="inp" inputmode="decimal" placeholder="0" value="${s.w}" oninput="setVal(${ei},${si},'w',this.value)"><input class="inp" inputmode="numeric" placeholder="0" value="${s.r}" oninput="setVal(${ei},${si},'r',this.value)"><button class="chk" onclick="toggleDone(${ei},${si})" aria-label="완료"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button></div>`).join('')}
@@ -1006,7 +1010,8 @@ function exMenu(ei){
   <div class="list">${ei>0?`<button class="li" onclick="moveEx(${ei},-1)"><div class="li-main li-t">위로 이동</div></button>`:''}${ei<n-1?`<button class="li" onclick="moveEx(${ei},1)"><div class="li-main li-t">아래로 이동</div></button>`:''}
   ${lastOf(e.name)?`<button class="li" onclick="fillLast(${ei})"><div class="li-main"><div class="li-t">지난 기록으로 채우기</div><div class="li-s">${setsTxt(lastOf(e.name).sets)}</div></div></button>`:''}
   <button class="li" onclick="openGuide(draft.exs[${ei}].name)"><div class="li-main li-t">동작 · 근육 보기</div></button>
-  <button class="li" onclick="replaceEx(${ei})"><div class="li-main li-t">다른 종목으로 바꾸기</div></button></div>
+  <button class="li" onclick="replaceEx(${ei})"><div class="li-main li-t">다른 종목으로 바꾸기</div></button>
+  ${e.ss?`<button class="li" onclick="unlinkSS(${ei})"><div class="li-main"><div class="li-t">슈퍼세트 ${e.ss} 해제</div></div></button>`:ei<n-1?`<button class="li" onclick="linkSS(${ei})"><div class="li-main"><div class="li-t">다음 종목과 슈퍼세트로 묶기</div><div class="li-s">${esc(draft.exs[ei+1].name)}와 번갈아 하고, 한 바퀴 끝나면 휴식</div></div></button>`:''}</div>
   <button class="btn danger" onclick="draft.exs.splice(${ei},1);saveDraft();renderExList();closeSheet()">종목 삭제</button>`);
 }
 function moveEx(ei,d){const a=draft.exs,[x]=a.splice(ei,1);a.splice(ei+d,0,x);saveDraft();renderExList();closeSheet();}
@@ -1020,7 +1025,7 @@ function startRest(sec){
   const el=$('rest');el.innerHTML=`<span class="rest-l">휴식</span><b id="restT"></b><button onclick="restEnd-=15000;tickRest()">−15초</button><button onclick="restEnd+=15000;tickRest()">+15초</button><button onclick="restEnd=0;tickRest()">건너뛰기</button>`;
   el.classList.add('on');document.body.classList.add('resting');clearInterval(restInt);restInt=setInterval(tickRest,250);tickRest();
 }
-function tickRest(){
+function tickRest(){scheduleRestNoti();
   const left=Math.ceil((restEnd-Date.now())/1000);
   if(left<=0){clearInterval(restInt);$('rest').classList.remove('on');document.body.classList.remove('resting');if(restEnd&&left>-2){try{navigator.vibrate&&navigator.vibrate([200,100,200]);}catch(e){}toast('휴식 끝 · 다음 세트');}return;}
   $('restT').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
@@ -1028,7 +1033,8 @@ function tickRest(){
 
 function saveWorkout(){
   const log=finalizeLog({id:uid('l'),date:$('logDate').value||today(),memo:$('logMemo').value.trim(),
-    exs:draft.exs.map(e=>({name:e.name,sets:e.sets.map(s=>({w:num(s.w),r:Math.round(num(s.r))}))})),ts:Date.now()});
+    exs:draft.exs.map(e=>({name:e.name,...(e.ss?{ss:e.ss}:{}),sets:e.sets.map(s=>({w:num(s.w),r:Math.round(num(s.r)),...(s.rir!=null?{rir:s.rir}:{})}))})),ts:Date.now()});
+  if(draft.routine)log.title=draft.routine;
   if(draft.prog)log.prog=draft.prog;
   if(draft.startedAt)log.dur=Math.max(1,Math.round((Date.now()-draft.startedAt)/60000));
   if(!log.sets){toast('세트를 1개 이상 입력하세요');return;}
@@ -1036,10 +1042,11 @@ function saveWorkout(){
   const pc={};log.exs.forEach(e=>{const p=partOf(e.name);if(p)pc[p]=(pc[p]||0)+e.sets.length;});
   log.part=Object.keys(pc).sort((a,b)=>pc[b]-pc[a])[0]||'fullbody';log.parts=Object.keys(pc);
   if(S.check&&S.check.date===log.date){log.sleep=S.check.sleep;log.cond=S.check.cond;log.score=S.check.score;}
-  const exist=S.logs.find(l=>l.date===log.date);
-  const doSave=()=>{restEnd=0;tickRest();S.logs=S.logs.filter(l=>l.date!==log.date);S.logs.push(log);S.logs.sort((a,b)=>a.date.localeCompare(b.date));save();
-    window._lastDraft=structuredClone(draft);showResult(log);resetLogForm();};
-  const go2=()=>exist?confirmSheet(`${md(log.date)} 기록이 이미 있어요. 덮어쓸까요?`,doSave,'덮어쓰기'):doSave();
+  const exist=S.logs.filter(l=>l.date===log.date).length;
+  const doSave=()=>{restEnd=0;tickRest();S.logs.push(log);S.logs.sort((a,b)=>a.date.localeCompare(b.date)||(a.ts||0)-(b.ts||0));
+    window._adj=log.prog?evalProgLog(log):[];save();
+    window._lastDraft=structuredClone(draft);showResult(log);resetLogForm();if(exist)toast(`오늘 ${exist+1}번째 세션으로 저장했어요`);};
+  const go2=doSave;
   if(undone)confirmSheet(`완료 체크 안 한 세트 ${undone}개도 기록에 포함됩니다. 저장할까요?`,go2,'저장',false);else go2();
 }
 function prList(log){
@@ -1048,7 +1055,10 @@ function prList(log){
 function showResult(log){
   const prs=prList(log),max=Math.max(1,...log.exs.map(e=>e.sets.reduce((s,x)=>s+x.w*x.r,0)));
   window._prs=prs;
+  const adj=window._adj||[];window._adj=[];
   openSheet(`<div class="sheet-h"><h2>운동 완료</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <button class="btn" style="margin-bottom:12px" onclick="openShareCard('${log.id}')">오운완 공유 카드 만들기</button>
+  ${adj.length?`<div class="card"><div class="card-t" style="margin-bottom:6px">다음 주 자동 조정</div>${adj.map(([n,t,c])=>`<div style="padding:5px 0;display:flex;gap:8px;align-items:flex-start"><span class="badge b-${c}" style="flex:none">${esc(n)}</span><span class="tiny" style="color:var(--text)">${esc(t)}</span></div>`).join('')}</div>`:''}
   <div class="card"><div class="stats"><div class="stat"><b>${fmt(log.vol)}</b><span>총 볼륨 kg</span></div><div class="stat"><b>${log.sets}</b><span>세트</span></div><div class="stat"><b>${log.dur||log.exs.length}</b><span>${log.dur?'운동 시간(분)':'종목'}</span></div></div></div>
   ${log.parts.length?`<div class="card"><div class="card-h"><div class="card-t">이번 주 누적 세트</div><span class="card-s">최근 7일 · 오늘 포함</span></div>${weekVolHTML(log.parts)}<div class="tiny">세로선: 최소 유효(MEV) · 최적 상한(MAV) / 막대 끝: 회복 한계(MRV)</div></div>`:''}
   <div class="card"><div class="card-t" style="margin-bottom:10px">종목별 볼륨</div>${log.exs.map(e=>{const v=e.sets.reduce((s,x)=>s+x.w*x.r,0);return`<div class="pb"><div class="pb-l"><span>${esc(e.name)} <span class="tiny">${e.sets.length}세트</span></span><span>${fmt(v)} kg</span></div><div class="pb-bar"><div class="pb-fill" style="width:${v/max*100}%"></div></div></div>`;}).join('')}</div>
@@ -1185,11 +1195,13 @@ function openRoutineSheet(view){
 }
 function startRoutine(src,i){
   const r=(src==='mine'?S.routines:PRESETS)[i];if(!r)return;
-  const doIt=()=>{draft.exs=r.items.map(it=>{const ov=overload(it.name,it.reps);return{id:uid('e'),name:it.name,up:ov.up||0,sets:suggestSets(it.name,it.sets,it.reps,num(it.w)||ov.w||0)};});draft.routine=r.name;draft.prog=null;draft.startedAt=0;saveDraft();if(curTab!=='log')go('log');renderExList();openWM();};
+  const doIt=()=>{draft.exs=r.items.map(it=>{const ov=overload(it.name,it.reps);return{id:uid('e'),name:it.name,ss:it.ss||null,up:ov.up||0,sets:suggestSets(it.name,it.sets,it.reps,num(it.w)||ov.w||0)};});draft.routine=r.name;draft.prog=null;draft.startedAt=0;saveDraft();if(curTab!=='log')go('log');renderExList();openWM();};
   if(draft.exs.length)confirmSheet('입력 중인 운동을 이 루틴으로 바꿀까요?',doIt,'바꾸기');else doIt();
 }
 function overload(name,reps){
   const last=lastOf(name);if(!last||!reps||isTimed(name))return{};const w=last.sets[0].w;
+  const rr=last.sets.map(s=>s.rir).filter(v=>v!=null),ar=rr.length?rr.reduce((a,b)=>a+b,0)/rr.length:null;
+  if(ar!=null&&ar<1)return{};
   if(w>0&&last.sets.every(s=>s.r>=reps)){const inc=['legs','back'].includes(partOf(name))?5:2.5;return{w:round25(w+inc),up:inc};}return{};
 }
 const DAYS=['일','월','화','수','목','금','토'];
@@ -1242,6 +1254,7 @@ function histWorkout(){
   const best={};L.forEach(l=>l.exs.forEach(e=>e.sets.forEach(s=>{if(s.w&&s.r&&s.r<=12){const v=r1(est1RM(s.w,s.r));if(!best[e.name]||v>best[e.name])best[e.name]=v;}})));
   const bestArr=Object.entries(best).sort((a,b)=>b[1]-a[1]).slice(0,6);
   $('histBody').innerHTML=`
+  <button class="btn sub" style="margin-bottom:12px" onclick="openWeekReport(-1)">주간 리포트 보기</button>
   <div class="card"><div class="card-h"><div class="card-t">이번 주 부위별 세트</div><span class="card-s">최근 7일</span></div>${weekVolHTML()}<div class="tiny">경력(${EXP_L[S.profile.exp]}) 기준 주간 권장 범위 · Israetel 2019</div></div>
   <div class="card"><div class="card-h"><div class="card-t">세션별 볼륨</div><span class="card-s">최근 ${rec.length}회 · kg</span></div><div id="chVol"></div></div>
   ${dl?`<div class="card"><div class="card-h"><div class="card-t">디로드 체크</div><span class="badge b-${dl.cls}">${dl.l}</span></div>
@@ -1257,7 +1270,7 @@ function openLog(id){
   <div class="card"><div class="stats"><div class="stat"><b>${fmt(l.vol)}</b><span>볼륨 kg</span></div><div class="stat"><b>${l.sets}</b><span>세트</span></div><div class="stat"><b>${l.cond||'-'}</b><span>컨디션</span></div></div></div>
   <div class="list">${l.exs.map(e=>`<div class="li"><div class="li-main"><div class="li-t">${esc(e.name)}</div><div class="li-s" style="white-space:normal">${e.sets.map(s=>s.w+'kg × '+s.r).join('  ·  ')}</div></div></div>`).join('')}</div>
   ${l.memo?`<div class="card muted">${esc(l.memo)}</div>`:''}
-  <div class="row-btns"><button class="btn ghost" onclick="copyLog('${l.id}')">오늘로 복사</button><button class="btn danger" onclick="delLog('${l.id}')">삭제</button></div>`);
+  <button class="btn sub" style="margin-bottom:8px" onclick="openShareCard('${l.id}')">공유 카드 만들기</button><div class="row-btns"><button class="btn ghost" onclick="copyLog('${l.id}')">오늘로 복사</button><button class="btn danger" onclick="delLog('${l.id}')">삭제</button></div>`);
 }
 function copyLog(id){const l=S.logs.find(x=>x.id===id);if(!l)return;const doIt=()=>{draft={date:today(),memo:'',exs:l.exs.map(e=>({id:uid('e'),name:e.name,sets:e.sets.map(s=>({w:s.w,r:s.r,done:false}))}))};saveDraft();closeSheet();go('log');syncLogForm();};if(draft.exs.length)confirmSheet('입력 중인 운동을 이 기록으로 바꿀까요?',doIt,'바꾸기');else doIt();}
 function delLog(id){confirmSheet('이 기록을 삭제할까요?',()=>{S.logs=S.logs.filter(l=>l.id!==id);save();renderHist();toast('삭제됨');},'삭제');}
@@ -1478,7 +1491,7 @@ function renderDiet(){
     <input class="inp" id="foodQ" placeholder="검색: 빅맥, 닭가슴살, 김치찌개..." oninput="foodSearch()" autocomplete="off">
     <div class="chips scroll" style="margin:10px 0 0">${FOOD_CAT.map(c=>`<button class="chip ${foodCat===c?'on':''}" onclick="foodCat='${c}';renderDiet();foodSearch()">${c}</button>`).join('')}</div>
     <div id="foodRes" style="margin-top:8px"></div>
-    <div style="display:flex;gap:16px;margin-top:6px"><button class="link" onclick="openManualFood()">직접 입력</button><button class="link" onclick="offSearch()">온라인 검색 (Open Food Facts)</button></div></div>
+    <div style="display:flex;gap:16px;margin-top:6px"><button class="link" onclick="openBarcode()">바코드 스캔</button><button class="link" onclick="openManualFood()">직접 입력</button><button class="link" onclick="offSearch()">온라인 검색</button></div></div>
   <div class="sec">오늘 먹은 것 · ${fmt(t.kcal)} kcal</div>
   <div class="list">${list.length?list.map(f=>`<div class="li"><div class="li-main"><div class="li-t">${esc(f.name)}</div><div class="li-s">단 ${r1(f.p)}g · 탄 ${r1(f.c)}g · 지 ${r1(f.f)}g</div></div><div class="li-v">${fmt(f.kcal)}<span class="tiny"> kcal</span></div><button class="x" onclick="delFood('${f.id}')">×</button></div>`).join(''):'<div class="empty">아직 기록이 없어요</div>'}</div>
   <div class="tiny" style="text-align:center">음식 수치는 대략값입니다. 제품 포장의 영양정보가 있으면 직접 입력이 가장 정확합니다.</div>`;
@@ -1634,6 +1647,7 @@ function saveCalcRM(){const k=$('cEx').value;if(!k)return;S.profile.rm[k]=window
 function openRestSet(){
   openSheet(`<div class="sheet-h"><h2>휴식 타이머</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <div class="muted" style="margin:0 4px 10px">세트 완료 체크 시 자동으로 시작됩니다.</div>
+  <div class="list" style="margin-bottom:12px"><button class="li" onclick="toggleRestNoti()"><div class="li-main"><div class="li-t">휴식 끝 알림</div><div class="li-s">다른 앱을 보거나 화면이 꺼져 있을 때 알림과 진동${isIOS()?' · 아이폰은 홈 화면에 설치한 앱에서만':''}</div></div><span class="badge ${S.restNoti?'b-good':''}">${S.restNoti?'켜짐':'꺼짐'}</span></button></div>
   <div class="list">${[[0,'끔'],[60,'60초'],[90,'90초'],[120,'2분'],[180,'3분'],[240,'4분']].map(([v,l])=>`<button class="li" onclick="S.rest=${v};save();openRestSet();renderMore()"><div class="li-main li-t">${l}</div>${S.rest===v?'<span style="color:var(--pri);font-weight:800">✓</span>':''}</button>`).join('')}</div>`);
 }
 
@@ -1673,7 +1687,7 @@ function importData(ev){
 function mergeIn(d){
   if(d.profile&&(d.profile.weight||d.profile.name))S.profile={...S.profile,...d.profile,rm:{...S.profile.rm,...(d.profile.rm||{})}};
   const by=(arr,inc,key)=>{const m=new Map(arr.map(x=>[key(x),x]));(inc||[]).forEach(x=>m.set(key(x),x));return[...m.values()].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));};
-  S.logs=by(S.logs,d.logs,x=>x.date);S.bw=by(S.bw,d.bw,x=>x.date);S.runs=by(S.runs,d.runs,x=>x.id);S.food=by(S.food,d.food,x=>x.id);
+  S.logs=by(S.logs,d.logs,x=>x.id||x.date);S.bw=by(S.bw,d.bw,x=>x.date);S.runs=by(S.runs,d.runs,x=>x.id);S.food=by(S.food,d.food,x=>x.id);
   S.routines=by(S.routines,(d.routines||[]).map(normRoutine),x=>x.id||x.name);
   (d.customEx||[]).forEach(x=>{if(!S.customEx.some(y=>y.name===x.name))S.customEx.push(x);});
   if(d.prog&&!S.prog)S.prog=d.prog;
@@ -1824,9 +1838,9 @@ const NNM_DAYS=[
    {n:'템포런',km:NNM_RUN[w-1][1],note:'5:20~5:40/km'}]},
  {t:'금 · 어깨 3D & 팔',items:w=>[
    {n:'덤벨 숄더프레스',f:nS(5,11,28),note:'한손 26~30kg'},{n:'사이드 레터럴 레이즈',f:nS(6,17,12),note:'한손 10~14kg · 마지막 드롭'},
-   {n:'리어 델트 플라이',f:nS(5,20,10),note:'한손 8~12kg'},{n:'라잉 트라이셉스 익스텐션',f:nS(4,11,32.5),note:'슈퍼세트 A1 · 인클라인 덤벨 컬과 교대'},
-   {n:'인클라인 덤벨 컬',f:nS(4,11,13),note:'슈퍼세트 A2'},{n:'덤벨 킥백',f:nS(4,15,9),note:'슈퍼세트 B1'},{n:'케이블 해머컬',f:nS(4,15,30),note:'슈퍼세트 B2'},
-   {n:'리버스 그립 푸시다운',f:nS(4,15,''),note:'케이블컬과 교대 · 펌핑 마무리'},{n:'케이블컬',f:nS(4,15,'')}]},
+   {n:'리어 델트 플라이',f:nS(5,20,10),note:'한손 8~12kg'},{n:'라잉 트라이셉스 익스텐션',f:nS(4,11,32.5),ss:'A',note:'슈퍼세트 A1 · 인클라인 덤벨 컬과 교대'},
+   {n:'인클라인 덤벨 컬',f:nS(4,11,13),ss:'A',note:'슈퍼세트 A2'},{n:'덤벨 킥백',f:nS(4,15,9),ss:'B',note:'슈퍼세트 B1'},{n:'케이블 해머컬',f:nS(4,15,30),ss:'B',note:'슈퍼세트 B2'},
+   {n:'리버스 그립 푸시다운',f:nS(4,15,''),ss:'C',note:'슈퍼세트 C1 · 펌핑 마무리'},{n:'케이블컬',f:nS(4,15,''),ss:'C',note:'슈퍼세트 C2'}]},
  {t:'토 · LSD 장거리',items:w=>[{n:'롱런',km:NNM_RUN[w-1][2],note:nnmAdj(w).race?'풀마라톤 레이스':'6:00~6:30/km · 15km 이상은 출발 전 가벼운 탄수화물 권장'}]},
 ];
 
@@ -1914,7 +1928,7 @@ const PROGRAMS=[
   src:[['Lift Vault · Smolov Jr','https://liftvault.com/programs/lift-specific/smolov/'],['Liftosaur · Smolov Jr','https://www.liftosaur.com/programs/smolov-jr']]},
 ];
 // 남니콜먼 근비대 요일 루틴을 추천 루틴 목록에도 추가 (1주차 기준)
-NNM_DAYS.forEach((d,i)=>PRESETS.push({id:'nnm'+i,cat:'nnm',name:'남니콜먼 근비대 · '+d.t,days:[[1,2,3,4,5,6][i]],items:d.items(1).map(it=>{const ss=itemSets(it,1);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||''};})}));
+NNM_DAYS.forEach((d,i)=>PRESETS.push({id:'nnm'+i,cat:'nnm',name:'남니콜먼 근비대 · '+d.t,days:[[1,2,3,4,5,6][i]],items:d.items(1).map(it=>{const ss=itemSets(it,1);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||'',...(it.ss?{ss:it.ss}:{})};})}));
 /* ── 하이록스 (HYROX) ── */
 // 공식 무게 (썰매 무게 포함): [남, 여]. 여자 Pro = 남자 Open
 const HXW={push:{o:[152,102],p:[202,152]},pull:{o:[103,78],p:[153,103]},farm:{o:[24,16],p:[32,24]},bag:{o:[20,10],p:[30,20]},wb:{o:[6,4],p:[9,6]}};
@@ -1969,7 +1983,7 @@ PROGRAMS.push(
 
 function buildHxPresets(){for(let i=PRESETS.length-1;i>=0;i--)if(PRESETS[i].cat==='hyrox')PRESETS.splice(i,1);
 [['hxo','하이록스 Open'],['hxp','하이록스 Pro']].forEach(([id,lab])=>{const p=PROGRAMS.find(x=>x.id===id);p.days.forEach((d,i)=>{if(id==='hxp'&&p.sched[i]!==5)return;
-  PRESETS.push({id:id+i,cat:'hyrox',name:(id==='hxp'?lab:'하이록스')+' · '+dayT(d,6),days:[p.sched[i]],items:dayItems(d,6).map(it=>{const ss=itemSets(it,6);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||''};})});});});}
+  PRESETS.push({id:id+i,cat:'hyrox',name:(id==='hxp'?lab:'하이록스')+' · '+dayT(d,6),days:[p.sched[i]],items:dayItems(d,6).map(it=>{const ss=itemSets(it,6);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||'',...(it.ss?{ss:it.ss}:{})};})});});});}
 const PROG_LV={all:'전체',beg:'초급',mid:'중급',adv:'상급'};let progLv='all';
 const lvKey=p=>p.lvl.startsWith('초')?'beg':p.lvl==='중급'?'mid':'adv';
 const progById=id=>PROGRAMS.find(p=>p.id===id);
@@ -1999,15 +2013,15 @@ function openProgram(id,tab,w){
     h+=`<div class="chips scroll" style="flex-wrap:nowrap;overflow-x:auto;margin:0 0 8px;padding-bottom:4px">${Array.from({length:p.weeks},(_,i)=>`<button class="chip ${pv.w===i+1?'on':''}" onclick="openProgram('${id}','day',${i+1})">${i+1}주${act&&progWeek()===i+1?' ·지금':''}</button>`).join('')}</div>
     <div class="tiny" style="margin:0 4px 6px">${esc(p.weekNote?p.weekNote(pv.w):'')}</div><div class="tiny" style="margin:0 4px 10px">오늘 요일부터 순서대로 표시합니다.</div>`;
     const td=new Date().getDay(),isNow=!act||progWeek()===pv.w;
-    p.days.map((d,di)=>di).sort((a,b)=>(p.sched[a]-td+7)%7-(p.sched[b]-td+7)%7).forEach(di=>{const d=p.days[di],its=dayItems(d,pv.w),done=progDone(id,pv.w,di),tod=isNow&&p.sched[di]===td;
+    p.days.map((d,di)=>di).sort((a,b)=>(p.sched[a]-td+7)%7-(p.sched[b]-td+7)%7).forEach(di=>{const d=p.days[di],its=progItems(p,d,pv.w),done=progDone(id,pv.w,di),tod=isNow&&p.sched[di]===td;
       h+=`<div class="card" style="margin-bottom:8px;${tod?'box-shadow:0 0 0 2px var(--pri) inset':''}"><div class="card-h"><div class="card-t">${esc(dayT(d,pv.w))} ${tod?'<span class="badge b-pri">오늘</span>':''}${done?' <span class="badge b-good">완료</span>':''}</div>${its.length?`<button class="btn sm ${tod?'':'ghost'}" onclick="startProgDay('${id}',${di},${pv.w})">시작</button>`:''}</div>
-      ${its.length?its.map(it=>`<div style="padding:6px 0;border-top:1px solid var(--line)"><b style="font-weight:600">${esc(it.n)}</b><div style="font-size:13px;color:var(--text);margin-top:2px">${setsLabel(it,pv.w)}</div>${it.note?`<div class="tiny">${esc(it.note)}</div>`:''}</div>`).join(''):'<div class="muted">휴식</div>'}</div>`;});
+      ${its.length?its.map(it=>`<div style="padding:6px 0;border-top:1px solid var(--line)"><b style="font-weight:600">${esc(it.n)}</b>${it.ss?` <span class="badge b-pri" style="padding:0 6px;font-size:10px">슈퍼세트 ${it.ss}</span>`:''}${it.adj?` <span class="badge ${it.adj>0?'b-good':'b-warn'}" style="padding:0 6px;font-size:10px">자동 조정 ${it.adj>0?'+':''}${it.adj}kg</span>`:''}<div style="font-size:13px;color:var(--text);margin-top:2px">${setsLabel(it,pv.w)}</div>${it.note?`<div class="tiny">${esc(it.note)}</div>`:''}</div>`).join(''):'<div class="muted">휴식</div>'}</div>`;});
   }else if(pv.tab==='week'){
     const lifts=p.keys.length?p.keys:null;
     h+=`<div class="card" style="padding:6px 10px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="color:var(--text2)"><th style="text-align:left;padding:6px 4px">주</th>${lifts?lifts.map(k=>`<th style="text-align:right;padding:6px 4px">${PK_NAME[k].replace('오버헤드프레스','OHP').replace('벤치프레스','벤치').replace('데드리프트','데드').replace('바벨로우','로우')}</th>`).join(''):'<th style="text-align:right;padding:6px 4px">화</th><th style="text-align:right;padding:6px 4px">목</th><th style="text-align:right;padding:6px 4px">토 LSD</th>'}<th style="text-align:left;padding:6px 4px">제언</th></tr>`;
     for(let w=1;w<=p.weeks;w++){
       let cells='';
-      if(lifts)cells=lifts.map(k=>{let best=null;p.days.forEach(d=>dayItems(d,w).forEach(it=>{if(it.n===PK_NAME[k]&&it.f)it.f(w).forEach(([kg,r])=>{if(kg&&(!best||kg>best[0]))best=[kg,r];});}));return`<td style="text-align:right;padding:6px 4px;white-space:nowrap">${best?best[0]+'×'+best[1]:'-'}</td>`;}).join('');
+      if(lifts)cells=lifts.map(k=>{let best=null;p.days.forEach(d=>progItems(p,d,w).forEach(it=>{if(it.n===PK_NAME[k]&&it.f)it.f(w).forEach(([kg,r])=>{if(kg&&(!best||kg>best[0]))best=[kg,r];});}));return`<td style="text-align:right;padding:6px 4px;white-space:nowrap">${best?best[0]+'×'+best[1]:'-'}</td>`;}).join('');
       else cells=NNM_RUN[w-1].map(x=>`<td style="text-align:right;padding:6px 4px">${x}km</td>`).join('');
       h+=`<tr style="border-top:1px solid var(--line);${act&&progWeek()===w?'background:var(--pri-soft)':''}" onclick="openProgram('${id}','day',${w})"><td style="padding:6px 4px;font-weight:700">${w}</td>${cells}<td style="padding:6px 4px;color:var(--text2);min-width:120px">${esc(p.weekNote?p.weekNote(w):'')}</td></tr>`;
     }
@@ -2018,6 +2032,7 @@ function openProgram(id,tab,w){
     <div class="card"><div class="card-t" style="margin-bottom:6px">주간 일정</div><div class="muted">${p.sched.map((d,i)=>`${WD[d]} ${esc(dayT(p.days[i],1).replace(/^.\s·\s/,''))}`).join('<br>')}</div></div>
     <div class="card"><div class="card-t" style="margin-bottom:6px">출처</div>${p.src.map(([t,u])=>u?`<a class="link" style="display:block;padding:3px 0" href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`:`<div class="tiny">${esc(t)}</div>`).join('')}</div>`;
   }
+  if(S.progAdj&&S.progAdj[id]&&Object.values(S.progAdj[id]).some(v=>v))h+=`<div class="note n-pri" style="margin:10px 0 0"><b>실제 수행에 맞춰 무게를 조정했습니다</b>${Object.entries(S.progAdj[id]).filter(([,v])=>v).map(([n,v])=>`${esc(n)} ${v>0?'+':''}${v}kg`).join(' · ')}<div style="margin-top:8px"><button class="btn ghost sm" onclick="resetProgAdj('${id}')">원래 계획으로</button></div></div>`;
   h+=`<button class="btn sub" style="margin-top:10px" onclick="progToRoutines('${id}',${pv.w})">${pv.w}주차를 요일별 내 루틴으로 추가</button>`;
   h+=act?`<div class="row-btns" style="margin-top:10px"><button class="btn ghost" onclick="shiftProg(-1)">주차 -1</button><button class="btn ghost" onclick="shiftProg(1)">주차 +1</button></div><button class="btn danger" style="margin-top:8px" onclick="stopProg()">프로그램 그만하기</button>`
     :`<button class="btn" style="margin-top:10px" onclick="beginProg('${id}')">이번 주부터 시작</button><div class="tiny" style="margin:6px 4px">시작하면 오늘 화면에 그날 운동이 무게와 함께 표시됩니다.</div>`;
@@ -2026,8 +2041,8 @@ function openProgram(id,tab,w){
 function progDone(id,w,di){return S.logs.some(l=>l.prog&&l.prog.id===id&&l.prog.w===w&&l.prog.di===di);}
 function progToRoutines(id,w){
   const p=progById(id);let n=0;
-  p.days.forEach((d,di)=>{const its=dayItems(d,w);if(!its.length)return;const name=`${p.name} · ${dayT(d,w)}`;
-    const r={id:uid('rt'),name,days:[p.sched[di]],items:its.map(it=>{const ss=itemSets(it,w);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||''};})};
+  p.days.forEach((d,di)=>{const its=progItems(p,d,w);if(!its.length)return;const name=`${p.name} · ${dayT(d,w)}`;
+    const r={id:uid('rt'),name,days:[p.sched[di]],items:its.map(it=>{const ss=itemSets(it,w);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||'',...(it.ss?{ss:it.ss}:{})};})};
     const ex=S.routines.findIndex(x=>x.name===name);if(ex>=0){r.id=S.routines[ex].id;S.routines[ex]=r;}else S.routines.push(r);n++;
     S.routines.forEach(x=>{if(x!==r&&x.name!==name&&(x.days||[]).includes(p.sched[di])&&x.name.startsWith(p.name+' · '))x.days=x.days.filter(v=>v!==p.sched[di]);});});
   save();toast(`${n}개 루틴을 요일에 맞춰 추가했습니다`);closeSheet();go('home');
@@ -2038,20 +2053,197 @@ function beginProg(id){const go2=()=>{S.prog={id,start:mondayOf(new Date()).toIS
 function shiftProg(d){const p=progById(S.prog.id);const w=progWeek()+d;if(w<1||w>p.weeks)return;S.prog.off=(S.prog.off||0)+d;save();openProgram(p.id,pv.tab,progWeek());}
 function stopProg(){confirmSheet('프로그램을 그만둘까요? 기록은 그대로 남습니다.',()=>{S.prog=null;save();closeSheet();go('home');},'그만하기');}
 function startProgDay(id,di,w){
-  const p=progById(id),d=p.days[di],its=dayItems(d,w);
-  const doIt=()=>{draft.exs=its.map(it=>({id:uid('e'),name:it.n,up:0,sets:itemSets(it,w).map(s=>({w:s.w===''?'':s.w,r:s.r,done:false}))}));
+  const p=progById(id),d=p.days[di],its=progItems(p,d,w);
+  const doIt=()=>{draft.exs=its.map(it=>({id:uid('e'),name:it.n,ss:it.ss||null,up:0,sets:itemSets(it,w).map(s=>({w:s.w===''?'':s.w,r:s.r,done:false}))}));
     draft.routine=`${p.name} ${w}주 · ${dayT(d,w)}`;draft.prog={id,w,di};draft.startedAt=0;saveDraft();closeSheet();if(curTab!=='log')go('log');renderExList();openWM();};
   if(draft.exs.length)confirmSheet('입력 중인 운동을 이 계획으로 바꿀까요?',doIt,'바꾸기');else doIt();
 }
 function progHomeHTML(){
   const t=progToday();if(!t)return'';const{p,w,di,day}=t;
   let nx='';if(!day){for(let k=1;k<=7;k++){const wd=(new Date().getDay()+k)%7,i=p.sched.indexOf(wd);if(i>=0){nx=`다음: ${WD[wd]}요일 · ${dayT(p.days[i],w)}`;break;}}}
-  const its=day?dayItems(day,w):[];
+  const its=day?progItems(p,day,w):[];
   const nd=p.days.filter((d,i)=>dayItems(d,w).length).length,dn=p.days.filter((d,i)=>progDone(p.id,w,i)).length,todayDone=day&&progDone(p.id,w,di);
   return`<div class="card"><div class="card-h"><div class="card-t">${esc(p.name)} · ${w}/${p.weeks}주 <span class="tiny">이번 주 ${dn}/${nd}</span></div><button class="link" onclick="openProgram('${p.id}','day',${w})">전체 보기</button></div>
   <div class="tiny" style="margin-bottom:10px">${esc(p.weekNote?p.weekNote(w):'')}</div>
   ${day&&its.length?`<div class="muted" style="margin-bottom:8px">${esc(dayT(day,w))}</div><div style="margin-bottom:10px">${its.slice(0,6).map(it=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0"><span>${esc(it.n)}</span><span class="tiny">${setsLabel(it,w)}</span></div>`).join('')}${its.length>6?`<div class="tiny">외 ${its.length-6}종목</div>`:''}</div>
    ${todayDone?'<div class="note n-good" style="margin:0"><b>오늘 운동 완료</b>수고했어요. 다시 하려면 전체 보기에서 시작하세요.</div>':`<button class="btn" onclick="startProgDay('${p.id}',${di},${w})">오늘 운동 시작</button>`}`:`<div class="muted">오늘은 휴식입니다. ${nx}</div>`}</div>`;
+}
+
+/* ══════════════════════ v6: 자동 조정 · RIR · 공유 카드 · 주간 리포트 · 슈퍼세트 · 바코드 · 휴식 알림 ══════════════════════ */
+/* ── 프로그램 자동 조정 (실제 수행 기반) ── */
+function progAdjOf(pid,name){return((S.progAdj||{})[pid]||{})[name]||0;}
+function progItems(p,d,w){
+  return dayItems(d,w).map(it=>{const off=progAdjOf(p.id,it.n);if(!off||!it.f)return it;const f0=it.f;
+    return{...it,adj:off,f:w2=>f0(w2).map(([kg,r,a])=>[kg?RD(Math.max(0,kg+off)):kg,r,a])};});
+}
+function topKg(it,w){let m=0;if(it.f)it.f(w).forEach(([kg])=>{if(kg>m)m=kg;});return m;}
+function evalProgLog(log){
+  const pr=log.prog,p=pr&&progById(pr.id);if(!p)return[];
+  S.progAdj=S.progAdj||{};S.progStat=S.progStat||{};
+  const A=S.progAdj[p.id]=S.progAdj[p.id]||{},ST=S.progStat[p.id]=S.progStat[p.id]||{},out=[],seen={};
+  dayItems(p.days[pr.di],pr.w).forEach(it=>{
+    if(!it.f||seen[it.n])return;const tgt=it.f(pr.w);if(!tgt.some(t=>t[0]>0))return;seen[it.n]=1;
+    const le=log.exs.find(e=>e.name===it.n);if(!le)return;
+    const fail=tgt.some((t,i)=>{const s=le.sets[i];return!s||s.r<t[1];});
+    const rirs=le.sets.map(s=>s.rir).filter(v=>v!=null),avg=rirs.length?rirs.reduce((a,b)=>a+b,0)/rirs.length:null;
+    const old=A[it.n]||0,now=topKg(it,pr.w),nx=pr.w<p.weeks?topKg(it,pr.w+1):now,inc=nx-now,did=RD(now+old),low=isLow(Object.keys(PK_NAME).find(k=>PK_NAME[k]===it.n)||'')||partOf(it.n)==='legs';
+    if(fail){
+      ST[it.n]=(ST[it.n]||0)+1;
+      if(ST[it.n]>=2){A[it.n]=old-Math.max(inc,0)-RD(did*0.1);ST[it.n]=0;out.push([it.n,`2회 연속 목표 미달 · 다음 주 약 10% 디로드 (${RD(did*0.9)}kg 전후)`,'bad']);}
+      else if(inc>0){A[it.n]=old-inc;out.push([it.n,`목표 미달 · 다음 주에도 ${did}kg 유지`,'warn']);}
+      else out.push([it.n,'목표 미달 · 다음 주 컨디션을 보고 진행','warn']);
+    }else{
+      ST[it.n]=0;
+      if(avg!=null&&avg>=4){const b=low?5:2.5;A[it.n]=old+b;out.push([it.n,`여유 충분 (평균 ${r1(avg)}개 더 가능) · 다음 주 +${b}kg`,'good']);}
+      else out.push([it.n,`목표 달성 · 계획대로 진행${avg!=null?` (평균 ${r1(avg)}개 여유)`:''}`,'good']);
+    }
+  });
+  return out;
+}
+function resetProgAdj(id){confirmSheet('자동 조정 기록을 지우고 원래 계획 무게로 되돌릴까요?',()=>{if(S.progAdj)delete S.progAdj[id];if(S.progStat)delete S.progStat[id];save();openProgram(id);toast('원래 계획으로 되돌렸습니다');},'되돌리기',false);}
+
+/* ── RIR (몇 개 더 할 수 있었나) ── */
+const RIR_OPTS=[[0,'0 · 한계'],[1,'1개'],[2,'2개'],[3,'3개'],[4,'4개+']];
+function rirHTML(ei,si){
+  const e=draft.exs[ei],s=e&&e.sets[si];if(!s||isTimed(e.name)||exInfo(e.name).eq==='run'||isDist(e.name))return'';
+  return`<div class="card" style="padding:12px 14px"><div class="tiny" style="margin-bottom:8px">${esc(e.name)} ${si+1}세트 · 몇 개 더 할 수 있었나요?</div>
+  <div class="chips" style="flex-wrap:nowrap">${RIR_OPTS.map(([v,l])=>`<button class="chip ${s.rir===v?'on':''}" style="flex:1;padding:8px 2px" onclick="setRIR(${ei},${si},${v})">${l}</button>`).join('')}</div></div>`;
+}
+function setRIR(ei,si,v){const s=draft.exs[ei].sets[si];s.rir=s.rir===v?null:v;saveDraft();wmRender();}
+
+/* ── 슈퍼세트 ── */
+function ssNext(){const used=new Set(draft.exs.map(x=>x.ss).filter(Boolean));for(const c of'ABCDEFGH')if(!used.has(c))return c;return'Z';}
+function linkSS(ei){const a=draft.exs[ei],b=draft.exs[ei+1];if(!b)return;const g=a.ss||b.ss||ssNext();a.ss=g;b.ss=g;saveDraft();closeSheet();renderExList();toast(`슈퍼세트 ${g}로 묶었습니다`);}
+function unlinkSS(ei){const g=draft.exs[ei].ss;draft.exs[ei].ss=null;const rest=draft.exs.filter(x=>x.ss===g);if(rest.length<2)rest.forEach(x=>x.ss=null);saveDraft();closeSheet();renderExList();}
+function ssAdvance(){  // 슈퍼세트면 같은 라운드의 다음 종목으로 휴식 없이 이동. 이동했으면 true
+  const e=draft.exs[wm.ei];if(!e||!e.ss)return false;
+  const G=draft.exs.map((x,i)=>x.ss===e.ss?i:-1).filter(i=>i>=0),pos=G.indexOf(wm.ei);
+  for(let k=pos+1;k<G.length;k++){const gi=G[k];if(draft.exs[gi].sets.some(s=>!s.done)){wm.ei=gi;wm.phase='set';return true;}}
+  const f=G.find(gi=>draft.exs[gi].sets.some(s=>!s.done));if(f!=null){wm.ei=f;wm.ssRest=true;}
+  return false;
+}
+
+/* ── 휴식 끝 알림 ── */
+let _rnT=null,_rnEnd=0;
+function scheduleRestNoti(){
+  if(restEnd===_rnEnd)return;_rnEnd=restEnd;clearTimeout(_rnT);
+  if(!S.restNoti||!('Notification' in window)||Notification.permission!=='granted'||!(restEnd>Date.now()))return;
+  _rnT=setTimeout(async()=>{if(document.visibilityState==='visible')return;
+    const opt={body:'다음 세트를 시작하세요',tag:'ohun-rest',renotify:true,vibrate:[200,100,200,100,200],icon:'icons/icon-192.png',badge:'icons/icon-96.png'};
+    try{const reg=await navigator.serviceWorker?.getRegistration();if(reg)reg.showNotification('휴식 끝',opt);else new Notification('휴식 끝',opt);}catch(e){}},restEnd-Date.now());
+}
+async function toggleRestNoti(){
+  if(S.restNoti){S.restNoti=0;save();openRestSet();return;}
+  if(!('Notification' in window)){toast(isIOS()?'아이폰은 홈 화면에 설치한 앱에서만 알림이 됩니다':'이 브라우저는 알림을 지원하지 않습니다');return;}
+  const p=await Notification.requestPermission();if(p!=='granted'){toast('알림이 차단되어 있습니다. 브라우저 설정에서 허용하세요');return;}
+  S.restNoti=1;save();openRestSet();toast('휴식이 끝나면 알림을 보냅니다');
+}
+
+/* ── 공유 카드 (스토리 1080×1920) ── */
+function loadImg(src){return new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src;});}
+async function makeShareCard(log){
+  const W=1080,H=1920,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const FF='-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
+  const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#3b8cec');gr.addColorStop(1,'#1d5fc0');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  g.fillStyle='rgba(255,255,255,.06)';g.beginPath();g.arc(W-60,260,420,0,7);g.fill();g.beginPath();g.arc(80,H-200,360,0,7);g.fill();
+  try{const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 88 336 336">${LOGO_MARK}</svg>`));g.drawImage(im,90,150,120,120);}catch(e){}
+  g.fillStyle='#fff';g.textBaseline='alphabetic';g.font=`800 56px ${FF}`;g.fillText('OH_UN!',230,232);
+  const dt=new Date(log.date+'T00:00');g.font=`500 38px ${FF}`;g.globalAlpha=.85;g.fillText(`${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()} ${DAYS[dt.getDay()]}요일`,90,360);g.globalAlpha=1;
+  g.font=`900 190px ${FF}`;g.fillText('오운완',80,560);
+  if(log.title){g.font=`700 44px ${FF}`;let t=log.title;while(g.measureText(t).width>900&&t.length>4)t=t.slice(0,-2);if(t!==log.title)t+='…';g.fillText(t,90,650);}
+  const box=(x,y,w,h)=>{g.fillStyle='rgba(255,255,255,.14)';g.beginPath();g.roundRect(x,y,w,h,36);g.fill();};
+  const st=[[fmt(log.vol)+'kg','총 볼륨'],[log.sets+'세트','세트'],[(log.dur?log.dur+'분':log.exs.length+'종목'),log.dur?'운동 시간':'종목']];
+  st.forEach(([v,l],i)=>{const x=90+i*306;box(x,720,282,190);g.fillStyle='#fff';g.font=`800 54px ${FF}`;g.fillText(v,x+30,812);g.font=`500 32px ${FF}`;g.globalAlpha=.8;g.fillText(l,x+30,866);g.globalAlpha=1;});
+  box(90,950,900,560);g.fillStyle='#fff';g.font=`700 38px ${FF}`;g.fillText('오늘 한 운동',130,1020);
+  log.exs.slice(0,6).forEach((e,i)=>{const y=1100+i*68;let b=e.sets.reduce((m,s)=>(s.w*s.r>m.w*m.r?s:m),e.sets[0]||{w:0,r:0});
+    g.font=`600 40px ${FF}`;let n=e.name;while(g.measureText(n).width>520&&n.length>3)n=n.slice(0,-1);g.fillText(n,130,y);
+    g.font=`500 36px ${FF}`;g.globalAlpha=.85;const v=b.w?`${b.w}kg × ${b.r}`:`${b.r}${unitOf(e.name)==='회'?'회':unitOf(e.name)}`;g.textAlign='right';g.fillText(`${v} · ${e.sets.length}세트`,950,y);g.textAlign='left';g.globalAlpha=1;});
+  if(log.exs.length>6){g.font=`500 32px ${FF}`;g.globalAlpha=.7;g.fillText(`외 ${log.exs.length-6}종목`,130,1100+6*68);g.globalAlpha=1;}
+  const prs=prList(log).filter(r=>r.cur&&r.est>r.cur);
+  let y=1590;if(prs.length){g.fillStyle='#ffd34d';g.font=`800 44px ${FF}`;g.fillText('신기록  '+prs.slice(0,2).map(r=>`${r.n} ${r.est}kg`).join(' · '),90,y);y+=80;}
+  const mon=log.date.slice(0,7),days=new Set(S.logs.filter(l=>l.date.startsWith(mon)).map(l=>l.date)).size;
+  g.fillStyle='#fff';g.font=`600 40px ${FF}`;g.fillText(`이번 달 ${days}일째 오운완`,90,y);
+  g.font=`500 30px ${FF}`;g.globalAlpha=.7;g.fillText('OH_UN! 오운! · 오늘 운동, 완료!',90,H-90);g.globalAlpha=1;
+  return new Promise(ok=>cv.toBlob(b=>ok(b),'image/png'));
+}
+async function openShareCard(id){
+  const log=S.logs.find(l=>l.id===id);if(!log)return;toast('카드 만드는 중...');
+  const blob=await makeShareCard(log),url=URL.createObjectURL(blob);window._card={blob,url,name:`ohun_${log.date}.png`};
+  openSheet(`<div class="sheet-h"><h2>공유 카드</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <img src="${url}" style="width:100%;max-width:360px;display:block;margin:0 auto 12px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.15)" alt="공유 카드">
+  <div class="row-btns"><button class="btn" onclick="shareCardNow()">공유하기</button><button class="btn ghost" onclick="saveCardNow()">이미지 저장</button></div>
+  <div class="tiny" style="margin:8px 4px">인스타 스토리에 바로 올릴 수 있는 1080×1920 크기입니다.</div>`);
+}
+async function shareCardNow(){const c=window._card;if(!c)return;const f=new File([c.blob],c.name,{type:'image/png'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'오운완'});}catch(e){}}else saveCardNow();}
+function saveCardNow(){const c=window._card;if(!c)return;const a=document.createElement('a');a.href=c.url;a.download=c.name;document.body.appendChild(a);a.click();a.remove();toast('이미지를 저장했습니다');}
+
+/* ── 주간 리포트 ── */
+function weekBounds(off){const m=mondayOf(new Date());m.setDate(m.getDate()+off*7);const e=new Date(m);e.setDate(e.getDate()+6);const f=d=>d.toISOString().slice(0,10);return[f(new Date(m.getTime()-m.getTimezoneOffset()*6e4)),f(new Date(e.getTime()-e.getTimezoneOffset()*6e4))];}
+function weekStats(off){
+  const[a,b]=weekBounds(off),L=S.logs.filter(l=>l.date>=a&&l.date<=b),R=S.runs.filter(r=>r.date>=a&&r.date<=b);
+  const parts={};L.forEach(l=>l.exs.forEach(e=>{const p=partOf(e.name)||BPMAP[l.part];if(p&&VOL.intermediate[p])parts[p]=(parts[p]||0)+e.sets.length;}));
+  return{a,b,L,R,n:L.length,days:new Set(L.map(l=>l.date)).size,vol:L.reduce((s,l)=>s+(l.vol||0),0),sets:L.reduce((s,l)=>s+(l.sets||0),0),km:r1(R.reduce((s,r)=>s+(r.km||0),0)),parts};
+}
+function weekPRs(a,b){
+  const best={},out=[];S.logs.forEach(l=>l.exs.forEach(e=>e.sets.forEach(s=>{if(!(s.w>0&&s.r>0&&s.r<=12))return;const v=est1RM(s.w,s.r);
+    if(l.date<a){best[e.name]=Math.max(best[e.name]||0,v);}else if(l.date<=b&&best[e.name]&&v>best[e.name]*1.005){const o=out.find(x=>x.n===e.name);if(!o||v>o.v)(o?Object.assign(o,{v,s}):out.push({n:e.name,v,s,prev:best[e.name]}));}})));
+  return out.sort((x,y)=>y.v/y.prev-x.v/x.prev).slice(0,5);
+}
+function openWeekReport(off=-1){
+  const c=weekStats(off),p=weekStats(off-1),pct=(x,y)=>y?Math.round((x-y)/y*100):null,pv=pct(c.vol,p.vol),pk=pct(c.km,p.km);
+  const bw=S.bw.filter(x=>x.date>=c.a&&x.date<=c.b),bwd=bw.length>1?r1(bw.at(-1).weight-bw[0].weight):null,prs=weekPRs(c.a,c.b);
+  const tips=[];
+  PART6.forEach(([k,l])=>{if(!VOL.intermediate[k])return;const n=c.parts[k]||0,z=zone(k,n);if(n&&z.l==='부족')tips.push(`${l} 세트가 적었어요 (${n}세트). 다음 주 ${z.t[0]-n}세트 이상 추가해 보세요.`);if(z.l==='과다')tips.push(`${l} 세트가 많았어요 (${n}세트). 회복을 위해 조금 줄이세요.`);});
+  if(p.km>0&&c.km>p.km*1.3)tips.push(`러닝 거리가 지난주보다 ${pk}% 늘었어요. 다음 주는 비슷하게 유지하세요.`);
+  if(c.n<2)tips.push('운동 횟수가 적었어요. 다음 주는 요일을 정해 2~3회부터 지켜 보세요.');
+  if(S.prog){const pg=progById(S.prog.id);if(pg){const nw=Math.min(pg.weeks,progWeek()+(off<0?0:1));tips.unshift(`${pg.name} ${nw}주차: ${pg.weekNote?pg.weekNote(nw):''}`);}}
+  if(!tips.length)tips.push('균형 잡힌 한 주였어요. 지금 흐름을 유지하세요.');
+  const md2=s=>s.slice(5).replace('-','.');
+  const chg=v=>v==null?'':`<span class="tiny" style="color:var(--${v>=0?'good':'bad'})">${v>=0?'+':''}${v}%</span>`;
+  openSheet(`<div class="sheet-h"><h2>주간 리포트</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="seg"><button class="${off===-1?'on':''}" onclick="openWeekReport(-1)">지난 주</button><button class="${off===0?'on':''}" onclick="openWeekReport(0)">이번 주</button></div>
+  <div class="muted" style="margin:-4px 4px 10px">${md2(c.a)} ~ ${md2(c.b)}</div>
+  <div class="card"><div class="stats"><div class="stat"><b>${c.days}</b><span>운동한 날</span></div><div class="stat"><b>${fmt(c.vol)}</b><span>볼륨 kg ${chg(pv)}</span></div><div class="stat"><b>${c.km}</b><span>러닝 km ${chg(pk)}</span></div></div>
+  ${bwd!=null?`<div class="tiny" style="margin-top:10px;text-align:center">체중 ${bwd>0?'+':''}${bwd}kg (${bw[0].weight} → ${bw.at(-1).weight})</div>`:''}</div>
+  ${prs.length?`<div class="card"><div class="card-t" style="margin-bottom:6px">이번 주 신기록 (추정 1RM)</div>${prs.map(r=>`<div style="display:flex;justify-content:space-between;padding:5px 0"><span>${esc(r.n)} <span class="tiny">${r.s.w}kg×${r.s.r}</span></span><b>${Math.round(r.v)}kg <span class="tiny" style="color:var(--good)">+${Math.round(r.v-r.prev)}</span></b></div>`).join('')}</div>`:''}
+  <div class="card"><div class="card-t" style="margin-bottom:8px">부위별 세트</div>${PART6.filter(([k])=>VOL.intermediate[k]).map(([k,l])=>{const n=c.parts[k]||0,z=zone(k,n);return`<div style="display:flex;justify-content:space-between;padding:4px 0"><span>${l}</span><span>${n}세트 <span class="badge b-${z.cls}" style="padding:1px 7px;font-size:11px">${z.l}</span></span></div>`;}).join('')}</div>
+  <div class="card"><div class="card-t" style="margin-bottom:6px">다음 주 제언</div><ol class="cues">${tips.slice(0,5).map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>`);
+}
+
+/* ── 바코드 스캔 (Open Food Facts) ── */
+let _scan={stream:null,raf:0,reader:null};
+function stopScan(){try{cancelAnimationFrame(_scan.raf);}catch(e){}try{_scan.reader&&_scan.reader.reset();}catch(e){}if(_scan.stream)_scan.stream.getTracks().forEach(t=>t.stop());_scan={stream:null,raf:0,reader:null};}
+function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
+async function openBarcode(){
+  openSheet(`<div class="sheet-h"><h2>바코드 스캔</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:3/4"><video id="bcV" playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+  <div style="position:absolute;left:10%;right:10%;top:42%;height:16%;border:3px solid rgba(255,255,255,.85);border-radius:12px"></div></div>
+  <div class="tiny" id="bcMsg" style="margin:10px 4px">제품 뒷면 바코드를 네모 안에 맞추세요.</div>
+  <div class="row-btns"><input class="inp" id="bcIn" inputmode="numeric" placeholder="또는 바코드 숫자 입력"><button class="btn sm" style="flex:0 0 auto" onclick="lookupBarcode($('bcIn').value.trim())">조회</button></div>`);
+  const v=$('bcV'),msg=t=>{const m=$('bcMsg');if(m)m.textContent=t;};
+  try{
+    if('BarcodeDetector' in window){
+      const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
+      _scan.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});v.srcObject=_scan.stream;await v.play();
+      const loop=async()=>{if(!_scan.stream)return;try{const r=await det.detect(v);if(r.length){const c=r[0].rawValue;stopScan();lookupBarcode(c);return;}}catch(e){}_scan.raf=requestAnimationFrame(loop);};loop();
+    }else{
+      msg('스캐너 불러오는 중...');if(!window.ZXing)await loadScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js');
+      const rd=new ZXing.BrowserMultiFormatReader();_scan.reader=rd;msg('제품 뒷면 바코드를 네모 안에 맞추세요.');
+      rd.decodeFromConstraints({video:{facingMode:'environment'}},v,(res)=>{if(res&&_scan.reader){const c=res.getText();stopScan();lookupBarcode(c);}});
+      _scan.stream=null;
+    }
+  }catch(e){msg('카메라를 쓸 수 없습니다. 카메라 권한을 허용하거나 바코드 숫자를 직접 입력하세요.');}
+}
+async function lookupBarcode(code){
+  if(!/^\d{8,14}$/.test(code||'')){toast('바코드 숫자 8~14자리를 입력하세요');return;}
+  stopScan();const m=$('bcMsg');if(m)m.textContent=`${code} 조회 중...`;
+  try{const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_ko,brands,nutriments,serving_quantity`);const d=await r.json();
+    const p=d.product,n=p&&p.nutriments||{};
+    if(!p||!n['energy-kcal_100g']){closeSheet();toast('제품 정보를 찾지 못했어요. 포장의 영양정보로 직접 입력하세요');setTimeout(openManualFood,300);return;}
+    window._off=[{name:(p.product_name_ko||p.product_name||code).trim(),brand:(p.brands||'').split(',')[0],k:n['energy-kcal_100g'],p:n.proteins_100g||0,c:n.carbohydrates_100g||0,f:n.fat_100g||0}];
+    pickOff(0);if(p.serving_quantity&&$('offG'))$('offG').value=Math.round(p.serving_quantity);
+  }catch(e){toast('인터넷 연결을 확인하세요');}
 }
 
 /* ══════════════════════ 설치 · 오프라인 ══════════════════════ */
@@ -2088,7 +2280,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='5.5';
+const APP_VER='6.0';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}

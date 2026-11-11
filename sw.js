@@ -17,3 +17,5 @@ self.addEventListener('fetch',e=>{
   e.respondWith(fetch(r).then(res=>{if(res.ok){const c=res.clone();caches.open(SHELL).then(x=>x.put(r.mode==='navigate'?'./index.html':r,c));}return res;})
     .catch(()=>caches.match(r.mode==='navigate'?'./index.html':r).then(m=>m||caches.match('./index.html'))));
 });
+// 휴식 끝 알림을 누르면 앱으로 돌아가기
+self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{for(const c of cs){if('focus' in c)return c.focus();}return clients.openWindow('./');}));});
