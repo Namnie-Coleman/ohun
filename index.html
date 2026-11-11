@@ -19,12 +19,12 @@
 :root{
   --bg:#f4f5f7;--card:#ffffff;--card2:#f0f1f4;--line:#e4e6ea;
   --text:#1b1d21;--text2:#5d626b;--text3:#9399a3;
-  --pri:#2a78d6;--pri-soft:#e8f1fc;--pri-ink:#ffffff;
+  --pri:#1c2c4f;--pri-soft:#e8ecf3;--pri-ink:#ffffff;
   --good:#1f9d63;--good-soft:#e5f5ec;
   --warn:#c77700;--warn-soft:#fdf2e0;
   --bad:#d64545;--bad-soft:#fbeaea;
-  --s1:#2a78d6;--s2:#eb6834;
-  --pri-mid:#9cc3ee;--mus:#d9dce2;--mus-base:#eef0f3;
+  --s1:#1c2c4f;--s2:#eb6834;
+  --pri-mid:#a3b1ca;--mus:#d9dce2;--mus-base:#eef0f3;
   --r:16px;--r-sm:11px;
   --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
   --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Segoe UI",sans-serif;
@@ -33,12 +33,12 @@
 :root[data-theme="dark"]{
   --bg:#16171a;--card:#212327;--card2:#2a2d32;--line:#33363c;
   --text:#eef0f3;--text2:#a9aeb7;--text3:#727883;
-  --pri:#3987e5;--pri-soft:#1f2f45;--pri-ink:#ffffff;
+  --pri:#5b78b3;--pri-soft:#1e2638;--pri-ink:#ffffff;
   --good:#3cb77c;--good-soft:#1c3328;
   --warn:#e09a2c;--warn-soft:#3a2f1c;
   --bad:#e66767;--bad-soft:#3d2224;
-  --s1:#3987e5;--s2:#d95926;
-  --pri-mid:#3f6ea6;--mus:#454a52;--mus-base:#30333a;
+  --s1:#6f8cc4;--s2:#d95926;
+  --pri-mid:#3d5280;--mus:#454a52;--mus-base:#30333a;
   color-scheme:dark;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -195,6 +195,14 @@ body.resting .view{padding-bottom:calc(160px + var(--safe-b));}
 .cues li{margin-bottom:8px;}
 .ph{width:100%;max-width:260px;aspect-ratio:1/1;margin:0 auto;}
 .ph img{width:100%;height:100%;object-fit:contain;display:block;}
+.ph.ek{position:relative;background:#fff;border-radius:14px;}
+.ph.ek img{position:absolute;inset:6%;width:88%;height:88%;}
+.ph.ek img.t{animation:ekSwap 2.6s ease-in-out infinite;}
+@keyframes ekSwap{0%,35%{opacity:0}50%,85%{opacity:1}100%{opacity:0}}
+.ph.ek img.r{animation:ekSwapR 2.6s ease-in-out infinite;}
+@keyframes ekSwapR{0%,35%{opacity:1}50%,85%{opacity:0}100%{opacity:1}}
+:root[data-theme="dark"] .ph.ek{background:transparent;}
+:root[data-theme="dark"] .ph.ek img{filter:invert(1);mix-blend-mode:screen;opacity:.92;}
 .bm-wrap{display:flex;justify-content:center;gap:4px;}
 .bm{flex:1;max-width:170px;text-align:center;}
 .bm svg{display:block;width:100%;max-height:300px;}
@@ -227,11 +235,11 @@ body.wmode .rest,body.wmode .tabbar{display:none!important;}
 .ib-v b{font-size:15px;color:var(--text);margin-right:1px;}
 .ib-v span{display:block;font-size:10.5px;font-weight:700;}
 
-.splash{position:fixed;inset:0;z-index:100;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .4s;}
+.splash{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#22345c,#0f1a33);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .4s;}
 .splash b{display:block;font-size:44px;font-weight:900;letter-spacing:-1px;}
 .splash-logo{width:96px;height:96px;display:block;margin:0 auto 14px;}
 .brand{display:inline-flex;align-items:center;gap:9px;}
-.brand i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3b8cec,#1d5fc0);display:inline-flex;flex:none;}
+.brand i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#22345c,#0f1a33);display:inline-flex;flex:none;}
 .brand i svg{width:100%;height:100%;}
 .splash span{font-size:15px;opacity:.85;}
 .splash.off{opacity:0;pointer-events:none;}
@@ -349,7 +357,7 @@ table.t tr:last-child td{border-bottom:none;}
 <nav class="tabbar" id="tabbar"></nav>
 <div class="dim" id="dim" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet"></div>
-<div class="splash" id="splash"><div><svg class="splash-logo" viewBox="88 88 336 336" aria-hidden="true"><path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/></svg><b>OH_UN!</b><span>오늘 운동, 완료!</span></div></div>
+<div class="splash" id="splash"><div><svg class="splash-logo" viewBox="70 70 372 372" aria-hidden="true"><circle cx="256" cy="256" r="160" fill="none" stroke="#fff" stroke-width="30"/><circle cx="256" cy="256" r="114" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><text x="256" y="162" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="40" fill="#fff" fill-opacity=".9" letter-spacing="2">20</text><text x="256" y="376" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="28" fill="#fff" fill-opacity=".6" letter-spacing="6">KG</text><path d="M178,260 L234,314 L352,186" fill="none" stroke="#ffd34d" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/></svg><b>OH_UN!</b><span>오늘 운동, 완료!</span></div></div>
 <div class="toast" id="toast"></div>
 <div class="rest" id="rest"></div>
 <div class="wm" id="wm"></div>
@@ -499,7 +507,7 @@ function bindSeg(id,fn){$(id).querySelectorAll('button').forEach(b=>b.onclick=()
 
 /* ══════════════════════ 시트 ══════════════════════ */
 function openSheet(html){clearTimeout(closeSheet._t);navPush();$('sheet').innerHTML='<div class="grab"></div>'+html;$('dim').classList.add('on');$('sheet').classList.add('on');$('sheet').scrollTop=0;}
-function closeSheet(){if(typeof stopScan==='function')stopScan();$('dim').classList.remove('on');$('sheet').classList.remove('on');navPop();clearTimeout(closeSheet._t);closeSheet._t=setTimeout(()=>{if(!$('sheet').classList.contains('on'))$('sheet').innerHTML='';},300);}
+function closeSheet(){if(typeof stopScan==='function')stopScan();if(typeof stopCam==='function')stopCam();$('dim').classList.remove('on');$('sheet').classList.remove('on');navPop();clearTimeout(closeSheet._t);closeSheet._t=setTimeout(()=>{if(!$('sheet').classList.contains('on'))$('sheet').innerHTML='';},300);}
 function confirmSheet(msg,ok,okLabel='확인',danger=true){
   openSheet(`<div style="font-size:17px;font-weight:700;margin:6px 0 18px;text-align:center">${esc(msg)}</div><div class="row-btns"><button class="btn ghost" onclick="closeSheet()">취소</button><button class="btn ${danger?'danger':''}" id="cfOk">${okLabel}</button></div>`);
   $('cfOk').onclick=()=>{closeSheet();ok();};
@@ -797,31 +805,29 @@ function runAnim(svgId,name){
   animRaf=requestAnimationFrame(fr);
 }
 
-/* 동작 애니메이션: Gym visual (© Gym visual — https://gymvisual.com/)
-   hasaneyldrm/exercises-dataset 경유, 180×180 · 개인/비상업 용도. 배경 투명 처리 WebP (anim/ 폴더, 오프라인 캐시) */
-const GV={"벤치프레스":"0025","인클라인 벤치프레스":"0047","디클라인 벤치프레스":"0033","스미스 벤치프레스":"0748","덤벨 벤치프레스":"0289","인클라인 덤벨프레스":"0314","덤벨 플라이":"0308","케이블 플라이":"0188","케이블 크로스오버":"0155","체스트 프레스 머신":"0577","인클라인 체스트 프레스 머신":"1299","펙덱 플라이":"0596","딥스":"0251","푸시업":"0662","디클라인 푸시업":"0279","데드리프트":"0032","스모 데드리프트":"0117","트랩바 데드리프트":"0811","랙풀":"0074","바벨로우":"0027","펜들레이 로우":"3017","T바 로우":"0606","덤벨 로우":"0292","체스트 서포티드 로우":"0327","인버티드 로우":"0499","풀업":"0652","친업":"1326","랫풀다운":"2330","클로즈그립 랫풀다운":"0818","시티드 로우":"0861","원암 케이블 로우":"0214","머신 로우":"1350","스트레이트암 풀다운":"0238","케이블 풀오버":"0237","백 익스텐션":"0489","바벨 슈러그":"0095","덤벨 슈러그":"0406","스쿼트":"0043","프론트 스쿼트":"0042","박스 스쿼트":"0026","스미스 스쿼트":"0770","고블릿 스쿼트":"1760","핵 스쿼트":"0743","레그프레스":"0739","RDL":"0085","덤벨 RDL":"1459","굿모닝":"0044","힙 쓰러스트":"3562","글루트 브릿지":"3013","불가리안 스플릿 스쿼트":"0410","런지":"0336","워킹 런지":"1460","스텝업":"0431","레그컬":"0586","노르딕 컬":"0696","레그 익스텐션":"0585","힙 어브덕션":"0597","힙 어덕션":"0598","카프레이즈":"0605","시티드 카프레이즈":"0594","케틀벨 스윙":"0549","오버헤드프레스":"1456","푸시프레스":"1700","덤벨 숄더프레스":"0405","머신 숄더프레스":"0603","아놀드 프레스":"2137","사이드 레터럴 레이즈":"0334","케이블 레터럴 레이즈":"0178","머신 레터럴 레이즈":"0584","프론트 레이즈":"0310","리어 델트 플라이":"0383","리버스 펙덱":"0602","페이스풀":"0203","업라이트 로우":"0120","바벨컬":"0031","EZ바 컬":"0447","덤벨 컬":"0294","해머컬":"0313","인클라인 덤벨 컬":"0318","컨센트레이션 컬":"0297","프리처 컬":"0592","케이블컬":"0868","리버스 컬":"0080","리스트 컬":"0369","트라이셉스 푸시다운":"0201","로프 푸시다운":"0200","오버헤드 트라이셉스 익스텐션":"0430","케이블 오버헤드 익스텐션":"0194","라잉 트라이셉스 익스텐션":"0060","덤벨 킥백":"0333","클로즈그립 벤치프레스":"0030","트라이셉스 딥스":"0814","벤치 딥스":"0129","플랭크":"2135","사이드 플랭크":"0705","크런치":"0274","바이시클 크런치":"0003","케이블 크런치":"0175","행잉 레그레이즈":"0472","행잉 니레이즈":"1764","라잉 레그레이즈":"0620","앱 롤아웃":"0857","데드버그":"0276","러시안 트위스트":"0687","팔로프 프레스":"0979","파머스 워크":"2133","타이어 플립":"2459","버피":"1160","배틀 로프":"0128","어설트 바이크":"2138","줄넘기":"2612","로그 프레스":"1456","액슬 프레스":"1456","액슬 데드리프트":"0032","서커스 덤벨":"0361","이지런":"0685","템포런":"0685","인터벌 런":"0685","롱런":"0685"};
-;[['디클라인 덤벨프레스','덤벨 벤치프레스'],['해머 DY 로우','머신 로우'],['케이블 하이로우','원암 케이블 로우'],['케이블 해머컬','케이블컬'],['리버스 그립 푸시다운','트라이셉스 푸시다운'],['샌드백 런지','워킹 런지'],['버피 브로드 점프','버피'],['월볼','고블릿 스쿼트']].forEach(([a,b])=>{if(GV[b]&&!GV[a])GV[a]=GV[b];});
-function gvSrc(name){return GV[name]||null;}
-// 운동 애니메이션 113개를 anim.pack 한 파일로 묶어 받음 (GitHub 웹 업로드 100개 제한 회피)
-let animP=null;const animURL={};
-function loadAnimPack(){
-  if(animP)return animP;
-  animP=fetch('anim.pack').then(r=>{if(!r.ok)throw new Error('pack '+r.status);return r.arrayBuffer();}).then(buf=>{
-    const dv=new DataView(buf);if(String.fromCharCode(...new Uint8Array(buf,0,4))!=='OHAN')throw new Error('bad pack');
+/* 동작 그림: Everkinetic (https://github.com/everkinetic/data) · CC BY-SA 4.0
+   준비 자세(relaxation)와 수축 자세(tension) 두 장을 번갈아 보여 줌. ek.pack.gz 한 파일(약 1.4MB, 오프라인 캐시) */
+const EKV={"벤치프레스":"0042","인클라인 벤치프레스":"0043","디클라인 벤치프레스":"0051","스미스 벤치프레스":"0078","덤벨 벤치프레스":"0055","인클라인 덤벨프레스":"0061","덤벨 플라이":"0056","케이블 플라이":"0057","케이블 크로스오버":"0048","체스트 프레스 머신":"0066","인클라인 체스트 프레스 머신":"0081","딥스":"0054","푸시업":"0077","디클라인 푸시업":"0075","데드리프트":"0099","랙풀":"0100","바벨로우":"0026","펜들레이 로우":"0026","T바 로우":"0029","덤벨 로우":"0024","인버티드 로우":"0086","풀업":"0087","친업":"0090","랫풀다운":"0093","클로즈그립 랫풀다운":"0096","시티드 로우":"0025","원암 케이블 로우":"0025","머신 로우":"0025","해머 DY 로우":"0025","스트레이트암 풀다운":"0092","케이블 풀오버":"0092","백 익스텐션":"0103","바벨 슈러그":"0030","덤벨 슈러그":"0005","스쿼트":"0122","프론트 스쿼트":"0138","박스 스쿼트":"0133","스미스 스쿼트":"0124","고블릿 스쿼트":"0130","핵 스쿼트":"0123","레그프레스":"0127","RDL":"0118","덤벨 RDL":"0107","굿모닝":"0101","힙 쓰러스트":"0109","글루트 브릿지":"0109","불가리안 스플릿 스쿼트":"0132","런지":"0115","워킹 런지":"0121","샌드백 런지":"0114","스텝업":"0137","레그컬":"0117","레그 익스텐션":"0142","힙 어브덕션":"0156","힙 어덕션":"0157","카프레이즈":"0282","시티드 카프레이즈":"0279","오버헤드프레스":"0004","머신 숄더프레스":"0004","덤벨 숄더프레스":"0038","아놀드 프레스":"0038","사이드 레터럴 레이즈":"0018","프론트 레이즈":"0033","리어 델트 플라이":"0032","업라이트 로우":"0014","바벨컬":"0211","EZ바 컬":"0226","덤벨 컬":"0224","해머컬":"0227","인클라인 덤벨 컬":"0214","컨센트레이션 컬":"0220","프리처 컬":"0239","케이블컬":"0212","케이블 해머컬":"0216","리버스 컬":"0257","트라이셉스 푸시다운":"0205","로프 푸시다운":"0206","리버스 그립 푸시다운":"0189","오버헤드 트라이셉스 익스텐션":"0192","케이블 오버헤드 익스텐션":"0176","라잉 트라이셉스 익스텐션":"0183","덤벨 킥백":"0204","클로즈그립 벤치프레스":"0049","트라이셉스 딥스":"0171","벤치 딥스":"0162","사이드 플랭크":"0113","크런치":"0291","바이시클 크런치":"0284","케이블 크런치":"0288","라잉 레그레이즈":"0021","앱 롤아웃":"0286","디클라인 덤벨프레스":"0052","월볼":"0130","케이블 레터럴 레이즈":"0018","머신 레터럴 레이즈":"0018","리버스 펙덱":"0032","케이블 하이로우":"0025"};
+const EK_CREDIT='그림 © Everkinetic · CC BY-SA 4.0';
+let ekP=null;const ekURL={};
+function loadEk(){
+  if(ekP)return ekP;
+  ekP=(async()=>{const r=await fetch('ek.pack.gz');if(!r.ok)throw new Error('ek '+r.status);
+    const buf=await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+    const dv=new DataView(buf);if(String.fromCharCode(...new Uint8Array(buf,0,4))!=='OHEK')throw new Error('bad pack');
     const hl=dv.getUint32(4,true),idx=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,8,hl))),base=8+hl;
-    for(const[id,[o,l]]of Object.entries(idx))animURL[id]=URL.createObjectURL(new Blob([new Uint8Array(buf,base+o,l)],{type:'image/webp'}));
-    return true;}).catch(e=>{animP=null;return false;});
-  return animP;
+    for(const[k,[o,l]]of Object.entries(idx))ekURL[k]=URL.createObjectURL(new Blob([new Uint8Array(buf,base+o,l)],{type:'image/svg+xml'}));return true;})().catch(e=>{ekP=null;return false;});
+  return ekP;
 }
-async function animSrc(id){if(animURL[id])return animURL[id];const ok=await loadAnimPack();return ok&&animURL[id]?animURL[id]:'anim/'+id+'.webp';}
 function showAnim(idp,name){
   const ph=$(idp+'Ph'),fig=$(idp+'Fig'),tg=$(idp+'Tg'),lab=$(idp+'FigL');if(!ph)return;
-  const id=gvSrc(name);
-  const useSvg=()=>{ph.style.display='none';fig.style.display='';runAnim(idp+'Fig',name);if(tg)tg.textContent=id?'애니메이션으로 보기':'';};
+  const id=EKV[name];
+  const useSvg=()=>{ph.style.display='none';fig.style.display='';runAnim(idp+'Fig',name);if(tg)tg.textContent=id?'그림으로 보기':'';if(lab)lab.textContent='';};
   if(!id||S.view==='svg'){useSvg();return;}
-  cancelAnimationFrame(animRaf);fig.style.display='none';ph.style.display='';if(tg)tg.textContent='도식으로 보기';if(lab)lab.textContent='© Gym visual';
-  const im=ph.querySelector('img');im.onerror=useSvg;im.removeAttribute('src');const tok=im.dataset.tok=Math.random();
-  animSrc(id).then(u=>{if(im.dataset.tok==String(tok))im.src=u;});
+  cancelAnimationFrame(animRaf);fig.style.display='none';ph.style.display='';ph.classList.add('ek');if(tg)tg.textContent='도식으로 보기';if(lab)lab.textContent=EK_CREDIT;
+  const tok=ph.dataset.tok=String(Math.random());ph.innerHTML='';
+  loadEk().then(ok=>{if(ph.dataset.tok!==tok)return;if(!ok||!ekURL[id+'r']){useSvg();return;}
+    ph.innerHTML=`<img class="r" src="${ekURL[id+'r']}" alt="준비 자세"><img class="t" src="${ekURL[id+'t']}" alt="수축 자세">`;});
 }
 
 /* ══════════════════════ 근육 지도 ══════════════════════ */
@@ -861,8 +867,8 @@ function exHistHTML(name){
 }
 function guideHTML(name,idp){
   return`<div class="seg" id="${idp}Seg" style="margin-bottom:10px"><button class="on" data-k="anim">동작</button><button data-k="mus">근육</button><button data-k="his">내 기록</button></div>
-  <div class="gbox"><div id="${idp}Anim"><div class="ph" id="${idp}Ph" style="display:none"><img alt=""></div><svg viewBox="0 0 200 186" id="${idp}Fig"></svg>
-  <div style="display:flex;justify-content:space-between;align-items:center;min-height:22px;padding:0 4px"><span class="tiny" id="${idp}FigL"></span>${GV[name]?`<button class="link" style="font-size:12px" id="${idp}Tg" data-n="${esc(name)}" onclick="S.view=S.view==='svg'?'gif':'svg';save();showAnim('${idp}',this.dataset.n)"></button>`:''}</div></div>
+  <div class="gbox"><div id="${idp}Anim"><div class="ph" id="${idp}Ph" style="display:none"></div><svg viewBox="0 0 200 186" id="${idp}Fig"></svg>
+  <div style="display:flex;justify-content:space-between;align-items:center;min-height:22px;padding:0 4px"><span class="tiny" id="${idp}FigL"></span>${EKV[name]?`<button class="link" style="font-size:12px" id="${idp}Tg" data-n="${esc(name)}" onclick="S.view=S.view==='svg'?'gif':'svg';save();showAnim('${idp}',this.dataset.n)"></button>`:''}</div></div>
   <div id="${idp}Mus" style="display:none">${muscleSVG(name)}${musLegend(name)}</div>
   <div id="${idp}His" style="display:none"></div></div>`;
 }
@@ -902,8 +908,8 @@ const mmss=s=>{s=Math.max(0,Math.round(s));return Math.floor(s/60)+':'+String(s%
 function wmTick(){
   if(!wm.open)return;scheduleRestNoti();const el=$('wmClock');if(el)el.textContent=mmss((Date.now()-(draft.startedAt||Date.now()))/1000);
   if(wm.phase==='rest'){const left=(restEnd-Date.now())/1000;if(left<=0){wm.phase='set';beep(3);wmRender();return;}
-    $('wmRestT').textContent=mmss(left);const tot=wm.restTot||S.rest||90,c=2*Math.PI*88;$('wmRing').setAttribute('stroke-dashoffset',c*(1-left/tot));}
-  if(wm.phase==='work'){const left=(wm.workEnd-Date.now())/1000;if(left<=0){beep(3);wm.phase='set';wmComplete();return;}$('wmWorkT').textContent=mmss(left);}
+    if(!$('wmRestT'))return;$('wmRestT').textContent=mmss(left);const tot=wm.restTot||S.rest||90,c=2*Math.PI*88;$('wmRing').setAttribute('stroke-dashoffset',c*(1-left/tot));}
+  if(wm.phase==='work'){const left=(wm.workEnd-Date.now())/1000;if(left<=0){beep(3);wm.phase='set';wmComplete();return;}if($('wmWorkT'))$('wmWorkT').textContent=mmss(left);}
 }
 function wmRender(){
   const E=draft.exs,e=E[wm.ei];if(!e){closeWM();return;}
@@ -1112,7 +1118,7 @@ function openPicker(mode,arg){
 }
 function renderPickList(){
   const u=usage(),q=pick.q;
-  let L=exLib().filter(x=>pick.part==='all'||(pick.part==='custom'?x.custom:(pick.part==='sm'||pick.part==='run')?x.eq===pick.part:x.part===pick.part)).filter(x=>!q||x.name.toLowerCase().includes(q.toLowerCase()));
+  let L=exLib().filter(x=>pick.part==='all'||(pick.part==='custom'?x.custom:(pick.part==='sm'||pick.part==='run')?x.eq===pick.part:x.part===pick.part)).filter(x=>!q||nameMatch(x.name,q,EX_EN[x.name]));
   L=L.map((x,i)=>({...x,i})).sort((a,b)=>(u[b.name]||0)-(u[a.name]||0)||a.i-b.i);
   const exact=q&&exLib().some(x=>x.name===q);
   $('pkList').innerHTML=`<div class="list">${L.map(x=>{const k=pick.sel.indexOf(x.name);return`<button class="li" data-n="${esc(x.name)}" onclick="togglePick(this.dataset.n)"><div class="li-main"><div class="li-t">${esc(x.name)}</div><div class="li-s">${PART_L[x.part]||''} · ${EQ_L[x.eq]||'기타'}${u[x.name]?` · ${u[x.name]}회 기록`:''}</div></div>
@@ -1488,19 +1494,21 @@ function renderDiet(){
     <button class="link" style="font-size:13px" onclick="openPlan()">왜 이 목표인가요?</button>`
     :`<div class="muted">프로필을 입력하면 운동 목적과 인바디에 맞춘 목표가 계산됩니다.</div><button class="btn sub" style="margin-top:10px" onclick="openOnboarding()">프로필 설정</button>`}</div>
   <div class="card"><div class="card-t" style="margin-bottom:10px">음식 추가</div>
-    <input class="inp" id="foodQ" placeholder="검색: 빅맥, 닭가슴살, 김치찌개..." oninput="foodSearch()" autocomplete="off">
+    <input class="inp" id="foodQ" placeholder="검색: 닭가슴살, 신라면, 김치찌개, 도미노..." oninput="foodSearch()" autocomplete="off">
     <div class="chips scroll" style="margin:10px 0 0">${FOOD_CAT.map(c=>`<button class="chip ${foodCat===c?'on':''}" onclick="foodCat='${c}';renderDiet();foodSearch()">${c}</button>`).join('')}</div>
-    <div id="foodRes" style="margin-top:8px"></div>
+    <div id="foodRes" style="margin-top:8px"></div><div class="tiny" id="kdbSt" style="margin:8px 2px 0"></div><div id="kdbRes"></div>
     <div style="display:flex;gap:16px;margin-top:6px"><button class="link" onclick="openBarcode()">바코드 스캔</button><button class="link" onclick="openManualFood()">직접 입력</button><button class="link" onclick="offSearch()">온라인 검색</button></div></div>
-  <div class="sec">오늘 먹은 것 · ${fmt(t.kcal)} kcal</div>
+  ${quickHTML()}
+  <div class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>오늘 먹은 것 · ${fmt(t.kcal)} kcal</span>${list.length?'<button class="link" style="font-size:13px" onclick="openSaveMeal()">끼니로 저장</button>':''}</div>
   <div class="list">${list.length?list.map(f=>`<div class="li"><div class="li-main"><div class="li-t">${esc(f.name)}</div><div class="li-s">단 ${r1(f.p)}g · 탄 ${r1(f.c)}g · 지 ${r1(f.f)}g</div></div><div class="li-v">${fmt(f.kcal)}<span class="tiny"> kcal</span></div><button class="x" onclick="delFood('${f.id}')">×</button></div>`).join(''):'<div class="empty">아직 기록이 없어요</div>'}</div>
   <div class="tiny" style="text-align:center">음식 수치는 대략값입니다. 제품 포장의 영양정보가 있으면 직접 입력이 가장 정확합니다.</div>`;
 }
 function foodSearch(){
   const q=($('foodQ')?.value||'').trim().toLowerCase().replace(/\s/g,''),el=$('foodRes');if(!el)return;
   if(!q&&foodCat==='전체'){el.innerHTML='';return;}
-  const res=FOOD_DB.filter(f=>(foodCat==='전체'||f[6]===foodCat)&&(!q||f[0].toLowerCase().replace(/\s/g,'').includes(q))).slice(0,q?12:30);
-  el.innerHTML=res.length?`<div class="list" style="background:var(--card2);margin:0;max-height:360px;overflow-y:auto">${res.map(f=>`<button class="li" style="border-color:var(--line)" data-n="${esc(f[0])}" onclick="pickFood(this.dataset.n)"><div class="li-main"><div class="li-t">${esc(f[0])} <span class="tiny">${f[1]}</span></div><div class="li-s">단 ${f[3]} · 탄 ${f[4]} · 지 ${f[5]}</div></div><div class="li-v">${f[2]}<span class="tiny"> kcal</span></div></button>`).join('')}</div>`:'<div class="tiny">결과가 없어요. 온라인 검색이나 직접 입력을 이용하세요.</div>';
+  const res=FOOD_DB.filter(f=>(foodCat==='전체'||f[6]===foodCat)&&(!q||nameMatch(f[0],q))).slice(0,q?6:30);
+  kdbRender();kdbStatus();
+  el.innerHTML=res.length?`<div class="list" style="background:var(--card2);margin:0;max-height:360px;overflow-y:auto">${res.map(f=>`<button class="li" style="border-color:var(--line)" data-n="${esc(f[0])}" onclick="pickFood(this.dataset.n)"><div class="li-main"><div class="li-t">${esc(f[0])} <span class="tiny">${f[1]}</span></div><div class="li-s">단 ${f[3]} · 탄 ${f[4]} · 지 ${f[5]}</div></div><div class="li-v">${f[2]}<span class="tiny"> kcal</span></div></button>`).join('')}</div>`:'';
 }
 async function offSearch(){
   const q=($('foodQ')?.value||'').trim();if(!q){toast('검색어를 먼저 입력하세요');return;}
@@ -1605,8 +1613,8 @@ function renderMore(){
   <div class="list">${row(I.calc,'1RM 계산기','중량과 반복 수로 최대 중량 추정','openCalc()')}${row(I.list,'루틴',`${S.routines.length}개 저장됨 · 직접 만들기`,'openRoutineSheet()')}${row(I.dumb,'휴식 타이머',S.rest?S.rest+'초':'끔','openRestSet()')}</div>
   <div class="list">${row(I.user,'계정 · 클라우드 동기화',fb.user?`${esc(fb.user.email||'로그인됨')} · ${fb.state||'연결됨'}`:'로그인하면 여러 기기에서 같은 기록','openAccount()')}</div>
   ${isStandalone()?'':`<div class="list">${row(I.home,'홈 화면에 설치','앱처럼 전체 화면 · 오프라인 실행','installApp()')}</div>`}
-  <div class="list">${row(I.box,'데이터 백업 · 복원','JSON 파일로 내보내기 / 가져오기','openData()')}${row(I.moon,'화면 테마',{auto:'시스템 설정 따름',light:'라이트',dark:'다크'}[S.theme],'openTheme()')}</div>
-  <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">OH_UN! (오운!) v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>운동 애니메이션: © Gym visual — gymvisual.com<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>`;
+  <div class="list">${row(I.box,'데이터 백업 · 복원','JSON 파일로 내보내기 / 가져오기','openData()')}${row(I.list,'개인정보 · 이용 안내','저장 위치 · 외부 전송 · 삭제 방법','openPrivacy()')}${row(I.moon,'화면 테마',{auto:'시스템 설정 따름',light:'라이트',dark:'다크'}[S.theme],'openTheme()')}</div>
+  <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">OH_UN! (오운!) v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>운동 그림: Everkinetic (CC BY-SA 4.0)<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>`;
 }
 function openProfile(){
   const p=S.profile,o=(m,v)=>Object.entries(m).map(([k,l])=>`<option value="${k}" ${String(v)===k?'selected':''}>${l}</option>`).join('');
@@ -1657,7 +1665,8 @@ function openData(){
   <div class="stats" style="margin-bottom:12px"><div class="stat"><b>${S.logs.length}</b><span>운동</span></div><div class="stat"><b>${S.bw.length}</b><span>인바디·체중</span></div><div class="stat"><b>${S.runs.length}</b><span>러닝</span></div></div>
   <div class="tiny" id="stInfo" style="margin:-4px 2px 12px;line-height:1.6">저장 상태 확인 중...</div>
   <button class="btn" style="margin-bottom:8px" onclick="exportData()">백업 파일 저장</button>
-  <button class="btn ghost" onclick="$('impFile').click()">백업 파일 가져오기</button>
+  <button class="btn ghost" style="margin-bottom:8px" onclick="$('impFile').click()">백업 파일 가져오기</button>
+  <button class="btn ghost" onclick="openCSV()">CSV로 내보내기 (엑셀)</button>
   ${hasOld()?`<button class="btn ghost" style="margin-top:8px" onclick="importOldLocal()">이 기기의 이전 RTS 기록 가져오기</button>`:''}
   <input type="file" id="impFile" accept=".json,application/json" style="display:none" onchange="importData(event)"></div>
   <button class="btn danger" onclick="confirmSheet('모든 데이터를 삭제할까요? 되돌릴 수 없습니다.',()=>{S=structuredClone(DEF);try{localStorage.removeItem(DKEY);}catch(e){}draft=newDraft();save();go('home');toast('초기화됨');setTimeout(openOnboarding,500);},'전체 삭제')">모든 데이터 삭제</button>`);
@@ -1691,6 +1700,7 @@ function mergeIn(d){
   S.routines=by(S.routines,(d.routines||[]).map(normRoutine),x=>x.id||x.name);
   (d.customEx||[]).forEach(x=>{if(!S.customEx.some(y=>y.name===x.name))S.customEx.push(x);});
   if(d.prog&&!S.prog)S.prog=d.prog;
+  (d.meals||[]).forEach(m=>{S.meals=S.meals||[];if(!S.meals.some(x=>x.id===m.id))S.meals.push(m);});
 }
 function openTheme(){
   openSheet(`<div class="sheet-h"><h2>화면 테마</h2><button class="link" onclick="closeSheet()">닫기</button></div>
@@ -1761,7 +1771,8 @@ function acctBody(){
   if(fb.user){const u=fb.user;return`<div class="card"><div class="li-t">${esc(u.email||u.displayName||'사용자')}</div><div class="li-s">${u.providerData[0]?.providerId==='google.com'?'Google 계정':'이메일 계정'} · 동기화 ${esc(fb.state||'-')}</div>
     ${fb.err?`<div class="note n-bad">${esc(fb.err)}</div>`:''}
     <div class="muted" style="margin-top:10px">기록을 저장할 때마다 몇 초 뒤 자동으로 클라우드에 올라갑니다. 다른 기기에서 같은 계정으로 로그인하면 같은 기록이 보입니다.</div></div>
-    <div class="row-btns"><button class="btn sub" onclick="syncNow()">지금 동기화</button><button class="btn ghost" onclick="logout()">로그아웃</button></div>`;}
+    <div class="row-btns"><button class="btn sub" onclick="syncNow()">지금 동기화</button><button class="btn ghost" onclick="logout()">로그아웃</button></div>
+    <button class="btn danger" style="margin-top:10px" onclick="deleteCloud()">클라우드 데이터와 계정 삭제</button>`;}
   return`<div class="card"><div class="muted" style="margin-bottom:12px">로그인하면 기록이 클라우드에 자동 저장되어, 폰을 바꾸거나 여러 기기에서 써도 그대로 이어집니다. 로그인하지 않아도 앱은 그대로 쓸 수 있습니다.</div>
     ${fb.err?`<div class="note n-bad" style="margin:0 0 10px">${esc(fb.err)}</div>`:''}
     <button class="btn" onclick="loginGoogle()">Google로 로그인</button></div>
@@ -2018,12 +2029,12 @@ function openProgram(id,tab,w){
       ${its.length?its.map(it=>`<div style="padding:6px 0;border-top:1px solid var(--line)"><b style="font-weight:600">${esc(it.n)}</b>${it.ss?` <span class="badge b-pri" style="padding:0 6px;font-size:10px">슈퍼세트 ${it.ss}</span>`:''}${it.adj?` <span class="badge ${it.adj>0?'b-good':'b-warn'}" style="padding:0 6px;font-size:10px">자동 조정 ${it.adj>0?'+':''}${it.adj}kg</span>`:''}<div style="font-size:13px;color:var(--text);margin-top:2px">${setsLabel(it,pv.w)}</div>${it.note?`<div class="tiny">${esc(it.note)}</div>`:''}</div>`).join(''):'<div class="muted">휴식</div>'}</div>`;});
   }else if(pv.tab==='week'){
     const lifts=p.keys.length?p.keys:null;
-    h+=`<div class="card" style="padding:6px 10px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="color:var(--text2)"><th style="text-align:left;padding:6px 4px">주</th>${lifts?lifts.map(k=>`<th style="text-align:right;padding:6px 4px">${PK_NAME[k].replace('오버헤드프레스','OHP').replace('벤치프레스','벤치').replace('데드리프트','데드').replace('바벨로우','로우')}</th>`).join(''):'<th style="text-align:right;padding:6px 4px">화</th><th style="text-align:right;padding:6px 4px">목</th><th style="text-align:right;padding:6px 4px">토 LSD</th>'}<th style="text-align:left;padding:6px 4px">제언</th></tr>`;
+    h+=`<div class="card" style="padding:6px 10px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="color:var(--text2)"><th style="text-align:left;padding:6px 4px">주</th>${lifts?lifts.map(k=>`<th style="text-align:right;padding:6px 4px">${PK_NAME[k].replace('오버헤드프레스','OHP').replace('벤치프레스','벤치').replace('데드리프트','데드').replace('바벨로우','로우')}</th>`).join(''):'<th style="text-align:right;padding:6px 4px">화</th><th style="text-align:right;padding:6px 4px">목</th><th style="text-align:right;padding:6px 4px">토 LSD</th>'}</tr>`;
     for(let w=1;w<=p.weeks;w++){
       let cells='';
       if(lifts)cells=lifts.map(k=>{let best=null;p.days.forEach(d=>progItems(p,d,w).forEach(it=>{if(it.n===PK_NAME[k]&&it.f)it.f(w).forEach(([kg,r])=>{if(kg&&(!best||kg>best[0]))best=[kg,r];});}));return`<td style="text-align:right;padding:6px 4px;white-space:nowrap">${best?best[0]+'×'+best[1]:'-'}</td>`;}).join('');
       else cells=NNM_RUN[w-1].map(x=>`<td style="text-align:right;padding:6px 4px">${x}km</td>`).join('');
-      h+=`<tr style="border-top:1px solid var(--line);${act&&progWeek()===w?'background:var(--pri-soft)':''}" onclick="openProgram('${id}','day',${w})"><td style="padding:6px 4px;font-weight:700">${w}</td>${cells}<td style="padding:6px 4px;color:var(--text2);min-width:120px">${esc(p.weekNote?p.weekNote(w):'')}</td></tr>`;
+      h+=`<tr style="border-top:1px solid var(--line);${act&&progWeek()===w?'background:var(--pri-soft)':''}" onclick="openProgram('${id}','day',${w})"><td style="padding:6px 4px;font-weight:700">${w}</td>${cells}</tr>${p.weekNote&&(w===1||p.weekNote(w)!==p.weekNote(w-1))?`<tr onclick="openProgram('${id}','day',${w})"><td></td><td colspan="${lifts?lifts.length:3}" style="padding:0 4px 8px;color:var(--text2);font-size:11.5px;line-height:1.4">${esc(p.weekNote(w))}</td></tr>`:''}`;
     }
     h+=`</table></div><div class="tiny" style="margin:6px 4px">${lifts?'각 주에서 가장 무거운 세트(kg×회). 행을 누르면 그 주의 요일별 계획이 열립니다.':'러닝 거리 진행표. 행을 누르면 그 주의 요일별 계획이 열립니다.'}</div>`;
   }else{
@@ -2140,18 +2151,29 @@ async function toggleRestNoti(){
 }
 
 /* ── 공유 카드 (스토리 1080×1920) ── */
+function drawBarbell(g,cx,cy,w,a){
+  g.save();g.globalAlpha=a;g.fillStyle='#fff';const rr=(x,y,ww,hh,r)=>{g.beginPath();g.roundRect(x,y,ww,hh,r);g.fill();};
+  rr(cx-w/2,cy-9,w,18,9);                                   // 봉
+  [[-1],[1]].forEach(([d])=>{const s0=cx+d*(w/2-260);
+    [[0,300,46],[56,250,40],[106,190,34],[150,120,26]].forEach(([o,h,t])=>rr(d>0?s0+o:s0-o-t,cy-h/2,t,h,8));   // 20kg·15·10·5 원판
+    rr(d>0?s0-30:s0+6,cy-30,24,60,6);});                     // 칼라
+  g.restore();
+}
 function loadImg(src){return new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src;});}
 async function makeShareCard(log){
   const W=1080,H=1920,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
   const FF='-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
-  const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#3b8cec');gr.addColorStop(1,'#1d5fc0');g.fillStyle=gr;g.fillRect(0,0,W,H);
-  g.fillStyle='rgba(255,255,255,.06)';g.beginPath();g.arc(W-60,260,420,0,7);g.fill();g.beginPath();g.arc(80,H-200,360,0,7);g.fill();
-  try{const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 88 336 336">${LOGO_MARK}</svg>`));g.drawImage(im,90,150,120,120);}catch(e){}
+  const ph=window._cardPhotoFor===log.id?window._cardPhoto:null;
+  if(ph){const sc=Math.max(W/ph.width,H/ph.height),dw=ph.width*sc,dh=ph.height*sc;g.drawImage(ph,(W-dw)/2,(H-dh)/2,dw,dh);
+    let gt=g.createLinearGradient(0,0,0,760);gt.addColorStop(0,'rgba(8,14,30,.72)');gt.addColorStop(1,'rgba(8,14,30,0)');g.fillStyle=gt;g.fillRect(0,0,W,760);
+    let gb=g.createLinearGradient(0,880,0,H);gb.addColorStop(0,'rgba(8,14,30,0)');gb.addColorStop(.35,'rgba(8,14,30,.72)');gb.addColorStop(1,'rgba(8,14,30,.9)');g.fillStyle=gb;g.fillRect(0,880,W,H-880);}
+  else{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#22345c');gr.addColorStop(1,'#0b1429');g.fillStyle=gr;g.fillRect(0,0,W,H);drawBarbell(g,W/2,500,1180,.13);}
+  try{const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="70 70 372 372">${LOGO_MARK}</svg>`));g.drawImage(im,90,150,120,120);}catch(e){}
   g.fillStyle='#fff';g.textBaseline='alphabetic';g.font=`800 56px ${FF}`;g.fillText('OH_UN!',230,232);
   const dt=new Date(log.date+'T00:00');g.font=`500 38px ${FF}`;g.globalAlpha=.85;g.fillText(`${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()} ${DAYS[dt.getDay()]}요일`,90,360);g.globalAlpha=1;
   g.font=`900 190px ${FF}`;g.fillText('오운완',80,560);
   if(log.title){g.font=`700 44px ${FF}`;let t=log.title;while(g.measureText(t).width>900&&t.length>4)t=t.slice(0,-2);if(t!==log.title)t+='…';g.fillText(t,90,650);}
-  const box=(x,y,w,h)=>{g.fillStyle='rgba(255,255,255,.14)';g.beginPath();g.roundRect(x,y,w,h,36);g.fill();};
+  const box=(x,y,w,h)=>{g.fillStyle=ph?'rgba(0,0,0,.38)':'rgba(255,255,255,.12)';g.beginPath();g.roundRect(x,y,w,h,36);g.fill();};
   const st=[[fmt(log.vol)+'kg','총 볼륨'],[log.sets+'세트','세트'],[(log.dur?log.dur+'분':log.exs.length+'종목'),log.dur?'운동 시간':'종목']];
   st.forEach(([v,l],i)=>{const x=90+i*306;box(x,720,282,190);g.fillStyle='#fff';g.font=`800 54px ${FF}`;g.fillText(v,x+30,812);g.font=`500 32px ${FF}`;g.globalAlpha=.8;g.fillText(l,x+30,866);g.globalAlpha=1;});
   box(90,950,900,560);g.fillStyle='#fff';g.font=`700 38px ${FF}`;g.fillText('오늘 한 운동',130,1020);
@@ -2167,12 +2189,14 @@ async function makeShareCard(log){
   return new Promise(ok=>cv.toBlob(b=>ok(b),'image/png'));
 }
 async function openShareCard(id){
-  const log=S.logs.find(l=>l.id===id);if(!log)return;toast('카드 만드는 중...');
+  const log=S.logs.find(l=>l.id===id);if(!log)return;window._cardId=id;if(window._cardPhotoFor!==id)window._cardPhoto=null;toast('카드 만드는 중...');
   const blob=await makeShareCard(log),url=URL.createObjectURL(blob);window._card={blob,url,name:`ohun_${log.date}.png`};
   openSheet(`<div class="sheet-h"><h2>공유 카드</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <img src="${url}" style="width:100%;max-width:360px;display:block;margin:0 auto 12px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.15)" alt="공유 카드">
+  <div class="row-btns" style="margin-bottom:8px"><button class="btn sub" onclick="openCardCam('${id}')">사진 찍기</button><button class="btn sub" onclick="$('cardFile').removeAttribute('capture');$('cardFile').click()">앨범에서</button>${window._cardPhotoFor===id&&window._cardPhoto?`<button class="btn ghost" onclick="window._cardPhoto=null;window._cardPhotoFor=null;openShareCard('${id}')">기본 이미지</button>`:''}</div>
+  <input type="file" id="cardFile" accept="image/*" style="display:none" onchange="window._cardPhotoFor='${id}';cardFilePicked(event,'${id}')">
   <div class="row-btns"><button class="btn" onclick="shareCardNow()">공유하기</button><button class="btn ghost" onclick="saveCardNow()">이미지 저장</button></div>
-  <div class="tiny" style="margin:8px 4px">인스타 스토리에 바로 올릴 수 있는 1080×1920 크기입니다.</div>`);
+  <div class="tiny" style="margin:8px 4px">인스타 스토리에 바로 올릴 수 있는 1080×1920 크기입니다. 사진은 기기 안에서만 합성되고 어디에도 올라가지 않습니다.</div>`);
 }
 async function shareCardNow(){const c=window._card;if(!c)return;const f=new File([c.blob],c.name,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'오운완'});}catch(e){}}else saveCardNow();}
@@ -2246,9 +2270,189 @@ async function lookupBarcode(code){
   }catch(e){toast('인터넷 연결을 확인하세요');}
 }
 
+/* ══════════════════════ 식약처 식품영양성분 DB (공공데이터포털 · 정적 파일) ══════════════════════ */
+// data/food-kr-1.tsv.gz: 음식(외식·프랜차이즈 포함) + 원재료  ·  data/food-kr-2.tsv.gz: 가공식품
+// 줄 형식: 이름 \t kcal \t 단백질 \t 탄수 \t 지방 \t (1=100ml 기준) \t 1회 제공량 \t 업체/브랜드 \t 분류 \t 구분(D 음식, R 원재료, P 가공)
+const KDB={rows:[],keys:[],st:{1:0,2:0},err:''};   // st: 0 없음, 1 불러오는 중, 2 완료
+async function kdbFetch(n){
+  const r=await fetch(`data/food-kr-${n}.tsv.gz`);if(!r.ok)throw new Error('파일 없음 ('+r.status+')');
+  let txt;
+  if('DecompressionStream' in window){txt=await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).text();}
+  else throw new Error('이 브라우저는 압축 해제를 지원하지 않습니다');
+  return txt;
+}
+async function kdbLoad(n){
+  if(KDB.st[n])return;KDB.st[n]=1;kdbStatus();
+  try{const t=await kdbFetch(n);const L=t.split('\n');for(const l of L){if(!l)continue;KDB.rows.push(l);const a=nthTab(l,7);KDB.keys.push((l.slice(0,l.indexOf('\t'))+l.slice(a+1,nthTab(l,8))).toLowerCase().replace(/[\s_·]/g,''));}
+    KDB.st[n]=2;}catch(e){KDB.st[n]=0;KDB.err=e.message;}
+  kdbStatus();if($('foodQ')&&$('foodQ').value.trim())kdbRender();
+}
+function nthTab(s,n){let p=-1;for(let k=0;k<n;k++){p=s.indexOf('\t',p+1);if(p<0)return s.length;}return p;}
+function kdbParse(l){const a=l.split('\t');return{name:a[0].replace(/_/g,' · '),k:+a[1],p:+a[2],c:+a[3],f:+a[4],ml:a[5]==='1',size:a[6]||'',src:a[7]||'',cat:a[8]||'',t:a[9]||''};}
+function kdbStatus(){const el=$('kdbSt');if(!el)return;
+  const n=fmt(KDB.rows.length);
+  el.textContent=KDB.st[1]===1?'식약처 DB 불러오는 중...':KDB.st[2]===1?`음식·원재료 ${n}개 준비됨 · 가공식품 불러오는 중 (처음 한 번, 약 6MB)`:KDB.st[2]===2?`식약처 DB ${n}개에서 검색`:KDB.err?'식약처 DB를 불러오지 못했어요: '+KDB.err:'';}
+function kdbSearch(q,lim=30){
+  const toks=q.toLowerCase().split(/\s+/).map(t=>t.replace(/[_·]/g,'')).filter(Boolean);if(!toks.length)return[];
+  const qq=toks.join(''),hits=[];
+  for(let i=0;i<KDB.keys.length;i++){const k=KDB.keys[i];if(toks.every(t=>k.includes(t))){hits.push(i);if(hits.length>=1500)break;}}
+  const sc=i=>{const l=KDB.rows[i],nm=l.slice(0,l.indexOf('\t')).toLowerCase().replace(/[\s_·]/g,''),t=l.slice(l.lastIndexOf('\t')+1);
+    return(nm===qq?0:nm.startsWith(qq)?1:nm.includes(qq)?2:3)*10+(t==='P'?8:t==='R'?-5:0)+Math.min(9,nm.length/8);};
+  const seen=new Set(),out=[];for(const[,i]of hits.map(i=>[sc(i),i]).sort((a,b)=>a[0]-b[0])){const l=KDB.rows[i],k=l.split('\t').slice(0,5).join('|');if(seen.has(k))continue;seen.add(k);out.push(i);if(out.length>=lim)break;}return out;
+}
+let _kdbT=null;
+function kdbRender(){
+  const el=$('kdbRes');if(!el)return;const q=($('foodQ')?.value||'').trim();
+  if(!q){el.innerHTML='';return;}
+  if(!KDB.st[1])kdbLoad(1).then(()=>kdbLoad(2));
+  clearTimeout(_kdbT);_kdbT=setTimeout(()=>{
+    const ids=kdbSearch(q);
+    el.innerHTML=ids.length?`<div class="tiny" style="margin:10px 2px 6px">식약처 식품영양성분 DB</div><div class="list" style="background:var(--card2);margin:0;max-height:420px;overflow-y:auto">${ids.map(i=>{const x=kdbParse(KDB.rows[i]);
+      return`<button class="li" style="border-color:var(--line)" onclick="kdbPick(${i})"><div class="li-main"><div class="li-t" style="white-space:normal">${esc(x.name)}</div><div class="li-s">${x.src?esc(x.src)+' · ':''}${x.t==='D'?'음식':x.t==='R'?'원재료':'가공식품'}${x.size?' · '+esc(x.size):''} · 단 ${x.p} · 탄 ${x.c} · 지 ${x.f}</div></div><div class="li-v">${Math.round(x.k)}<span class="tiny"> /100${x.ml?'ml':'g'}</span></div></button>`;}).join('')}</div>`
+      :(KDB.rows.length?'<div class="tiny" style="margin-top:8px">식약처 DB에도 없어요. 다른 이름이나 바코드 스캔, 직접 입력을 이용하세요.</div>':'');
+  },180);
+}
+function kdbPick(i){
+  const x=kdbParse(KDB.rows[i]),m=(x.size.match(/([\d.]+)\s*(g|ml|mL)/)||[])[1],def=m&&+m>0&&+m<3000?Math.round(+m):100,u=x.ml?'ml':'g';
+  window._kdbX=x;
+  openSheet(`<div class="sheet-h"><h2 style="font-size:18px">${esc(x.name)}</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="card"><div class="muted" style="margin-bottom:6px">${x.src?esc(x.src)+' · ':''}${esc(x.cat)}${x.size?' · 1회/총 '+esc(x.size):''}</div>
+  <div class="tiny" style="margin-bottom:10px">100${u}당 ${Math.round(x.k)} kcal · 단 ${x.p} · 탄 ${x.c} · 지 ${x.f}</div>
+  <label class="lbl">먹은 양</label><div class="row-btns" style="margin-bottom:8px">${[[def,x.size?'1회분':'100'+u],[Math.round(def/2),'절반'],[def*2,'2배']].map(([g,l])=>`<button class="btn ghost sm" onclick="$('kdbG').value=${g};kdbCalc()">${l}</button>`).join('')}</div>
+  <div class="unit-wrap"><input class="inp" id="kdbG" inputmode="decimal" value="${def}" oninput="kdbCalc()"><span class="u">${u}</span></div>
+  <div class="tiny" id="kdbCalcT" style="margin-top:8px"></div></div>
+  <button class="btn" onclick="kdbAdd()">추가</button><div class="tiny" style="margin:8px 4px">출처: 식품의약품안전처 식품영양성분 데이터베이스 (공공데이터포털)</div>`);kdbCalc();
+}
+function kdbCalc(){const x=window._kdbX,g=num($('kdbG').value),m=g/100;$('kdbCalcT').textContent=`${Math.round(x.k*m)} kcal · 단 ${r1(x.p*m)}g · 탄 ${r1(x.c*m)}g · 지 ${r1(x.f*m)}g`;}
+function kdbAdd(){const x=window._kdbX,g=num($('kdbG').value)||100,m=g/100;
+  S.food.push({id:uid('f'),date:today(),name:`${x.name} ${g}${x.ml?'ml':'g'}`,kcal:Math.round(x.k*m),p:r1(x.p*m),c:r1(x.c*m),f:r1(x.f*m)});save();closeSheet();renderDiet();toast('추가됨');}
+
+/* ══════════════════════ v6.3: 초성·영어 검색 · 빠른 음식 · 끼니 템플릿 · CSV · 공개판 안내 · 카메라 공유 카드 ══════════════════════ */
+/* ── 초성 · 영어 검색 ── */
+const CHO='ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+function choOf(s){let o='';for(const ch of s){const c=ch.charCodeAt(0)-0xAC00;o+=c>=0&&c<11172?CHO[Math.floor(c/588)]:ch;}return o;}
+const EX_EN={'스키에르그':'skierg ski erg','슬레드 풀':'sled pull','버피 브로드 점프':'burpee broad jump','샌드백 런지':'sandbag lunge','월볼':'wall ball','디클라인 덤벨프레스':'decline dumbbell press','해머 DY 로우':'hammer strength dy row','케이블 하이로우':'cable high row','케이블 해머컬':'cable rope hammer curl','리버스 그립 푸시다운':'reverse grip pushdown','케이블 풀스루':'cable pull through',
+'벤치프레스':'bench press bp','인클라인 벤치프레스':'incline bench press','디클라인 벤치프레스':'decline bench press','스미스 벤치프레스':'smith bench press','덤벨 벤치프레스':'dumbbell bench press db','인클라인 덤벨프레스':'incline dumbbell press db','덤벨 플라이':'dumbbell fly','케이블 플라이':'cable fly','케이블 크로스오버':'cable crossover','체스트 프레스 머신':'chest press machine','인클라인 체스트 프레스 머신':'incline chest press machine','펙덱 플라이':'pec deck fly','딥스':'dips','푸시업':'push up pushup','디클라인 푸시업':'decline push up',
+'데드리프트':'deadlift dl','스모 데드리프트':'sumo deadlift','트랩바 데드리프트':'trap bar hex deadlift','랙풀':'rack pull','바벨로우':'barbell row bent over row','펜들레이 로우':'pendlay row','T바 로우':'t bar row','덤벨 로우':'dumbbell row one arm','체스트 서포티드 로우':'chest supported row','인버티드 로우':'inverted row','풀업':'pull up pullup','친업':'chin up chinup','랫풀다운':'lat pulldown','클로즈그립 랫풀다운':'close grip lat pulldown','시티드 로우':'seated cable row','원암 케이블 로우':'one arm cable row','머신 로우':'machine row','스트레이트암 풀다운':'straight arm pulldown','케이블 풀오버':'cable pullover','백 익스텐션':'back extension hyperextension','바벨 슈러그':'barbell shrug','덤벨 슈러그':'dumbbell shrug',
+'스쿼트':'squat back squat','프론트 스쿼트':'front squat','박스 스쿼트':'box squat','스미스 스쿼트':'smith squat','고블릿 스쿼트':'goblet squat','핵 스쿼트':'hack squat','레그프레스':'leg press','RDL':'romanian deadlift rdl','덤벨 RDL':'dumbbell romanian deadlift','굿모닝':'good morning','힙 쓰러스트':'hip thrust','글루트 브릿지':'glute bridge','불가리안 스플릿 스쿼트':'bulgarian split squat','런지':'lunge','워킹 런지':'walking lunge','스텝업':'step up','레그컬':'leg curl hamstring curl','노르딕 컬':'nordic curl','레그 익스텐션':'leg extension','힙 어브덕션':'hip abduction','힙 어덕션':'hip adduction','카프레이즈':'calf raise','시티드 카프레이즈':'seated calf raise','케틀벨 스윙':'kettlebell swing kb',
+'오버헤드프레스':'overhead press ohp military press','푸시프레스':'push press','덤벨 숄더프레스':'dumbbell shoulder press','머신 숄더프레스':'machine shoulder press','아놀드 프레스':'arnold press','랜드마인 프레스':'landmine press','사이드 레터럴 레이즈':'side lateral raise','케이블 레터럴 레이즈':'cable lateral raise','머신 레터럴 레이즈':'machine lateral raise','프론트 레이즈':'front raise','리어 델트 플라이':'rear delt fly','리버스 펙덱':'reverse pec deck','페이스풀':'face pull','업라이트 로우':'upright row',
+'바벨컬':'barbell curl','EZ바 컬':'ez bar curl','덤벨 컬':'dumbbell curl','해머컬':'hammer curl','인클라인 덤벨 컬':'incline dumbbell curl','컨센트레이션 컬':'concentration curl','프리처 컬':'preacher curl','케이블컬':'cable curl','리버스 컬':'reverse curl','리스트 컬':'wrist curl','트라이셉스 푸시다운':'triceps pushdown','로프 푸시다운':'rope pushdown','오버헤드 트라이셉스 익스텐션':'overhead triceps extension','케이블 오버헤드 익스텐션':'cable overhead extension','라잉 트라이셉스 익스텐션':'lying triceps extension skull crusher','덤벨 킥백':'dumbbell kickback','클로즈그립 벤치프레스':'close grip bench press','트라이셉스 딥스':'triceps dips','벤치 딥스':'bench dips',
+'플랭크':'plank','사이드 플랭크':'side plank','크런치':'crunch','바이시클 크런치':'bicycle crunch','케이블 크런치':'cable crunch','행잉 레그레이즈':'hanging leg raise','행잉 니레이즈':'hanging knee raise','라잉 레그레이즈':'lying leg raise','앱 롤아웃':'ab rollout wheel','데드버그':'dead bug','러시안 트위스트':'russian twist','팔로프 프레스':'pallof press',
+'파머스 워크':'farmers walk carry','요크 워크':'yoke walk','케그 캐리':'keg carry','샌드백 캐리':'sandbag carry','슬레드 푸시':'sled push','로그 프레스':'log press','액슬 프레스':'axle press','서커스 덤벨':'circus dumbbell','액슬 데드리프트':'axle deadlift','아틀라스 스톤':'atlas stone','타이어 플립':'tire flip','버피':'burpee','박스 점프':'box jump','배틀 로프':'battle rope','로잉 머신':'rowing machine erg rower','이지런':'easy run','템포런':'tempo run','인터벌 런':'interval run','롱런':'long run lsd','어설트 바이크':'assault bike air bike','줄넘기':'jump rope'};
+const normQ=s=>(s||'').toLowerCase().replace(/[\s_·\-]/g,'');
+function nameMatch(name,q,en){
+  const qq=normQ(q);if(!qq)return true;const n=normQ(name);if(n.includes(qq))return true;
+  if(/^[ㄱ-ㅎ]+$/.test(qq)&&choOf(n).includes(qq))return true;
+  if(en&&normQ(en).includes(qq))return true;
+  return false;
+}
+
+/* ── 자주 먹는 음식 · 끼니 템플릿 ── */
+function freqFoods(n=10){
+  const m=new Map(),since=daysAgo(60);
+  S.food.filter(f=>f.date>=since).forEach(f=>{const o=m.get(f.name)||{c:0,f:null};o.c++;if(!o.f||f.date>=o.f.date)o.f=f;m.set(f.name,o);});
+  return[...m.values()].sort((a,b)=>b.c-a.c||(b.f.date>a.f.date?1:-1)).slice(0,n).map(o=>({...o.f,cnt:o.c}));
+}
+function quickAddFood(name){const f=freqFoods(50).find(x=>x.name===name);if(!f)return;S.food.push({id:uid('f'),date:today(),name:f.name,kcal:f.kcal,p:f.p,c:f.c,f:f.f});save();renderDiet();toast(`${f.name} 추가됨`);}
+function quickHTML(){
+  const fq=freqFoods(10),ms=S.meals||[];if(!fq.length&&!ms.length)return'';
+  return`<div class="card"><div class="card-h"><div class="card-t">빠른 추가</div>${ms.length?`<button class="link" onclick="openMeals()">끼니 관리</button>`:''}</div>
+  ${ms.length?`<div class="tiny" style="margin-bottom:6px">끼니 · 한 번에 추가</div><div class="chips" style="margin-bottom:10px">${ms.map(m=>`<button class="chip" style="background:var(--pri-soft);color:var(--pri)" onclick="addMeal('${m.id}')">${esc(m.name)} <span style="opacity:.7">${fmt(m.items.reduce((a,x)=>a+x.kcal,0))}</span></button>`).join('')}</div>`:''}
+  ${fq.length?`<div class="tiny" style="margin-bottom:6px">자주 먹은 음식 · 누르면 같은 양으로 추가</div><div class="chips">${fq.map(f=>`<button class="chip" data-n="${esc(f.name)}" onclick="quickAddFood(this.dataset.n)">${esc(f.name.length>16?f.name.slice(0,15)+'…':f.name)}</button>`).join('')}</div>`:''}</div>`;
+}
+function addMeal(id){const m=(S.meals||[]).find(x=>x.id===id);if(!m)return;m.items.forEach(x=>S.food.push({id:uid('f'),date:today(),name:x.name,kcal:x.kcal,p:x.p,c:x.c,f:x.f}));save();renderDiet();toast(`${m.name} ${m.items.length}개 추가됨`);}
+function openSaveMeal(){
+  const list=S.food.filter(f=>f.date===today());if(!list.length){toast('오늘 먹은 음식을 먼저 기록하세요');return;}
+  openSheet(`<div class="sheet-h"><h2>끼니로 저장</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="muted" style="margin:0 4px 10px">자주 먹는 조합을 저장하면 다음부터 버튼 하나로 추가됩니다.</div>
+  <div class="card"><label class="lbl">이름</label><div class="chips" style="margin-bottom:8px">${['아침','점심','저녁','간식','운동 후'].map(n=>`<button class="chip" onclick="$('mlN').value='${n}'">${n}</button>`).join('')}</div>
+  <input class="inp" id="mlN" placeholder="예: 아침, 운동 후 보충"></div>
+  <div class="list">${list.map(f=>`<label class="li" style="cursor:pointer"><input type="checkbox" class="mlC" value="${f.id}" checked style="width:20px;height:20px;margin-right:10px;accent-color:var(--pri)"><div class="li-main"><div class="li-t">${esc(f.name)}</div><div class="li-s">단 ${r1(f.p)}g · 탄 ${r1(f.c)}g · 지 ${r1(f.f)}g</div></div><div class="li-v">${fmt(f.kcal)}</div></label>`).join('')}</div>
+  <button class="btn" onclick="saveMeal()">저장</button>`);
+}
+function saveMeal(){
+  const name=$('mlN').value.trim();if(!name){toast('이름을 입력하세요');return;}
+  const ids=[...document.querySelectorAll('.mlC:checked')].map(x=>x.value);if(!ids.length){toast('음식을 1개 이상 고르세요');return;}
+  const items=S.food.filter(f=>ids.includes(f.id)).map(({name,kcal,p,c,f})=>({name,kcal,p,c,f}));
+  S.meals=S.meals||[];const ex=S.meals.findIndex(m=>m.name===name);const m={id:ex>=0?S.meals[ex].id:uid('m'),name,items};if(ex>=0)S.meals[ex]=m;else S.meals.push(m);
+  save();closeSheet();renderDiet();toast(`"${name}" 끼니를 저장했습니다`);
+}
+function openMeals(){
+  openSheet(`<div class="sheet-h"><h2>끼니 관리</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  ${(S.meals||[]).map(m=>`<div class="card"><div class="card-h"><div class="card-t">${esc(m.name)} <span class="tiny">${fmt(m.items.reduce((a,x)=>a+x.kcal,0))} kcal · 단 ${r1(m.items.reduce((a,x)=>a+x.p,0))}g</span></div><button class="link" style="color:var(--bad)" onclick="delMeal('${m.id}')">삭제</button></div><div class="tiny">${m.items.map(x=>esc(x.name)).join(' · ')}</div></div>`).join('')||'<div class="card empty">저장한 끼니가 없어요</div>'}`);
+}
+function delMeal(id){S.meals=(S.meals||[]).filter(m=>m.id!==id);save();openMeals();renderDiet();}
+
+/* ── CSV 내보내기 (엑셀에서 열림) ── */
+function csvEsc(v){v=v==null?'':String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function dlCSV(name,rows){const s='﻿'+rows.map(r=>r.map(csvEsc).join(',')).join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([s],{type:'text/csv;charset=utf-8'}));a.download=name;document.body.appendChild(a);a.click();a.remove();}
+function exportCSV(k){
+  const d=today();
+  if(k==='logs')dlCSV(`ohun_운동_${d}.csv`,[['날짜','세션','종목','세트','무게(kg)','횟수/초/m','여유(RIR)','슈퍼세트'],...S.logs.flatMap(l=>l.exs.flatMap(e=>e.sets.map((s,i)=>[l.date,l.title||'',e.name,i+1,s.w,s.r,s.rir??'',e.ss||''])))]);
+  if(k==='runs')dlCSV(`ohun_러닝_${d}.csv`,[['날짜','종류','거리(km)','시간(분)','평균 심박','메모'],...S.runs.map(r=>[r.date,RT_L&&RT_L[r.type]||r.type,r.km,r.min,r.hr||'',r.memo||''])]);
+  if(k==='food')dlCSV(`ohun_식단_${d}.csv`,[['날짜','음식','kcal','단백질(g)','탄수화물(g)','지방(g)'],...S.food.map(f=>[f.date,f.name,f.kcal,f.p,f.c,f.f])]);
+  if(k==='bw')dlCSV(`ohun_체중인바디_${d}.csv`,[['날짜','체중(kg)','골격근량(kg)','체지방량(kg)'],...S.bw.map(b=>[b.date,b.weight,b.muscle||'',b.fat||''])]);
+  toast('CSV 파일을 저장했습니다');
+}
+function openCSV(){
+  openSheet(`<div class="sheet-h"><h2>CSV로 내보내기</h2><button class="link" onclick="openData()">뒤로</button></div>
+  <div class="muted" style="margin:0 4px 10px">엑셀·구글 시트에서 바로 열리는 표 파일입니다. 코치와 공유하거나 직접 분석할 때 쓰세요. (복원용 백업은 JSON 백업을 쓰세요)</div>
+  <div class="list">${[['logs','운동 기록',S.logs.reduce((a,l)=>a+l.exs.reduce((b,e)=>b+e.sets.length,0),0)+'세트'],['runs','러닝',S.runs.length+'회'],['food','식단',S.food.length+'개'],['bw','체중 · 인바디',S.bw.length+'회']].map(([k,l,n])=>`<button class="li" onclick="exportCSV('${k}')"><div class="li-main"><div class="li-t">${l}</div><div class="li-s">${n}</div></div><span class="link">저장</span></button>`).join('')}</div>`);
+}
+
+/* ── 공개판: 처음 안내 · 개인정보 안내 · 클라우드 삭제 ── */
+function openWelcome(){
+  openSheet(`<div style="text-align:center;padding:10px 4px 4px"><div class="brand" style="justify-content:center;font-size:26px;font-weight:900"><i style="width:44px;height:44px;border-radius:12px"><svg viewBox="40 40 432 432">${LOGO_MARK}</svg></i>OH_UN!</div><div class="muted" style="margin-top:6px">오늘 운동, 완료!</div></div>
+  <div class="card">${[['프로그램이 오늘 할 운동을 알려 줘요','5×5·5/3/1·하이록스 등 검증된 플랜을 고르면 요일별 운동과 무게가 자동으로 나옵니다.'],['운동 모드로 세트·휴식을 한 화면에서','동작 그림, 휴식 타이머, 원판 계산, 자동 증량 제안까지.'],['러닝·인바디·식단도 함께','식약처 DB 29만 개 음식 검색, 인바디 분석, 러닝 부하 관리.'],['기록은 내 기기에','로그인 없이 바로 쓸 수 있고, 원하면 계정으로 백업·동기화합니다.']].map(([t,d],i)=>`<div style="display:flex;gap:12px;padding:8px 0"><b style="width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px">${i+1}</b><div><div class="li-t">${t}</div><div class="tiny" style="margin-top:2px">${d}</div></div></div>`).join('')}</div>
+  <button class="btn" onclick="S.welcomed=1;saveLocal();closeSheet();setTimeout(openOnboarding,300)">시작하기</button>
+  <div class="tiny" style="text-align:center;margin-top:10px">시작하면 <button class="link" style="font-size:12px" onclick="openPrivacy()">개인정보·이용 안내</button>에 동의한 것으로 봅니다.</div>`);
+}
+function openPrivacy(){
+  const sec=(t,b)=>`<div class="card"><div class="card-t" style="margin-bottom:6px">${t}</div><div class="muted" style="line-height:1.65;font-size:14px">${b}</div></div>`;
+  openSheet(`<div class="sheet-h"><h2>개인정보 · 이용 안내</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  ${sec('어디에 저장되나요','모든 기록은 이 기기의 브라우저 저장소에 저장됩니다. 로그인한 경우에만 Google Firebase 서버(본인 계정만 읽고 쓸 수 있도록 보안 규칙 적용)에 같은 내용이 동기화됩니다.')}
+  ${sec('어떤 정보를 다루나요','프로필(이름, 성별, 나이, 키, 체중, 1RM), 운동·러닝·인바디·식단 기록, 로그인 시 이메일 주소. 광고, 행동 분석 도구, 제3자 제공은 없습니다.')}
+  ${sec('외부로 보내는 것','음식 온라인 검색과 바코드 조회 시 검색어·바코드 번호가 Open Food Facts로 전송됩니다. 아이폰 바코드 스캔 시 스캐너 프로그램을 jsDelivr에서 내려받습니다. 식약처 음식 DB와 운동 그림은 앱 안의 파일이라 검색 내용이 밖으로 나가지 않습니다.')}
+  ${sec('카메라','오운완 공유 카드에 사진을 넣을 때만 사용합니다. 촬영한 사진은 기기 안에서 카드로 합성될 뿐 저장소나 서버에 올라가지 않습니다.')}
+  ${sec('삭제','더보기 › 데이터 백업 · 복원 › 모든 데이터 삭제로 기기 기록을 지웁니다. 클라우드 기록과 계정은 더보기 › 계정 · 클라우드 › 클라우드 데이터와 계정 삭제로 지웁니다.')}
+  ${sec('건강 관련 안내','운동·식단 제안은 일반적인 정보이며 의학적 진단이나 전문 트레이닝을 대신하지 않습니다. 통증이나 지병이 있으면 전문가와 상의하세요.')}
+  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털), Open Food Facts (ODbL)')}`);
+}
+async function deleteCloud(){
+  if(!fb.user)return;
+  confirmSheet('클라우드에 저장된 기록과 계정을 삭제할까요? 이 기기의 기록은 남습니다. 되돌릴 수 없습니다.',async()=>{
+    try{await fb.db.ref(`users/${fb.user.uid}`).remove();await fb.auth.currentUser.delete();S.cloud=0;saveLocal();toast('클라우드 데이터와 계정을 삭제했습니다');}
+    catch(e){toast(/recent/.test(e.code||e.message)?'보안을 위해 다시 로그인한 뒤 삭제해 주세요':'삭제 실패: '+(e.message||e));}
+    acctRefresh&&acctRefresh();},'삭제');
+}
+
+/* ── 공유 카드 사진 (카메라 촬영 · 앨범) ── */
+let _cam={stream:null,facing:'environment'};
+function stopCam(){if(_cam.stream)_cam.stream.getTracks().forEach(t=>t.stop());_cam.stream=null;}
+async function openCardCam(id){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){$('cardFile').setAttribute('capture','environment');$('cardFile').click();return;}
+  openSheet(`<div class="sheet-h"><h2>사진 찍기</h2><button class="link" onclick="stopCam();openShareCard('${id}')">취소</button></div>
+  <div style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:9/16;max-height:62vh;margin:0 auto"><video id="camV" playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
+  <div style="position:absolute;inset:auto 0 12px 0;text-align:center;color:#fff;font-size:12px;opacity:.8">세로 사진이 카드에 꽉 차게 들어갑니다</div></div>
+  <div class="row-btns" style="margin-top:12px"><button class="btn ghost" style="flex:0 0 30%" onclick="flipCam()">전환</button><button class="btn" onclick="snapCam('${id}')">촬영</button></div>`);
+  await startCam();
+}
+async function startCam(){
+  stopCam();const v=$('camV');if(!v)return;
+  try{_cam.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:_cam.facing,width:{ideal:1080},height:{ideal:1920}},audio:false});v.srcObject=_cam.stream;await v.play();}
+  catch(e){toast('카메라를 쓸 수 없어요. 권한을 허용하거나 앨범에서 고르세요');const id=window._cardId;stopCam();openShareCard(id);}
+}
+function flipCam(){_cam.facing=_cam.facing==='environment'?'user':'environment';startCam();}
+function snapCam(id){
+  const v=$('camV');if(!v||!v.videoWidth)return;const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;const g=c.getContext('2d');
+  if(_cam.facing==='user'){g.translate(c.width,0);g.scale(-1,1);}g.drawImage(v,0,0);stopCam();
+  const im=new Image();im.onload=()=>{window._cardPhoto=im;window._cardPhotoFor=id;openShareCard(id);};im.src=c.toDataURL('image/jpeg',.9);
+}
+function cardFilePicked(ev,id){const f=ev.target.files&&ev.target.files[0];ev.target.value='';if(!f)return;const im=new Image();im.onload=()=>{window._cardPhoto=im;window._cardPhotoFor=id;openShareCard(id);};im.src=URL.createObjectURL(f);}
+
 /* ══════════════════════ 설치 · 오프라인 ══════════════════════ */
 let installEvt=null;
-const LOGO_MARK='<path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>';
+const LOGO_MARK='<circle cx="256" cy="256" r="160" fill="none" stroke="#fff" stroke-width="30"/><circle cx="256" cy="256" r="114" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="6"/><text x="256" y="162" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="40" fill="#fff" fill-opacity=".9" letter-spacing="2">20</text><text x="256" y="376" text-anchor="middle" font-family="Poppins" font-weight="700" font-size="28" fill="#fff" fill-opacity=".6" letter-spacing="6">KG</text><path d="M178,260 L234,314 L352,186" fill="none" stroke="#ffd34d" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>';
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(curTab==='home')renderHome();if(curTab==='more')renderMore();});
@@ -2274,13 +2478,13 @@ async function runInstallCheck(){
   let man=null;try{const r=await fetch('manifest.json',{cache:'no-store'});ok('manifest.json',r.ok,'GitHub 저장소 맨 위에 manifest.json을 올리세요.');if(r.ok)man=await r.json();}catch(e){ok('manifest.json',false,'파일을 읽지 못했습니다.');}
   const icons=(man&&man.icons)||[{src:'icons/icon-192.png'},{src:'icons/icon-512.png'}];
   for(const ic of icons){try{const r=await fetch(ic.src,{cache:'no-store'});ok('아이콘 '+ic.src,r.ok&&/image/.test(r.headers.get('content-type')||''),'icons 폴더째로 저장소에 올리세요.');}catch(e){ok('아이콘 '+ic.src,false,'icons 폴더째로 저장소에 올리세요.');}}
-  try{const r=await fetch('anim.pack',{method:'HEAD',cache:'no-store'});ok('운동 애니메이션(anim.pack)',r.ok,'anim.pack 파일을 저장소 맨 위에 올리세요.');}catch(e){ok('anim.pack',false);}
+  try{const r=await fetch('ek.pack.gz',{method:'HEAD',cache:'no-store'});ok('운동 그림(ek.pack.gz)',r.ok,'ek.pack.gz 파일을 저장소 맨 위에 올리세요.');}catch(e){ok('ek.pack.gz',false);}
   try{const r=await fetch('sw.js',{cache:'no-store'});ok('sw.js',r.ok,'sw.js를 저장소 맨 위에 올리세요.');}catch(e){ok('sw.js',false);}
   try{const reg=await navigator.serviceWorker?.getRegistration();ok('오프라인 작동(서비스 워커)',!!(reg&&reg.active),'새로고침 후 다시 검사하세요.');}catch(e){ok('서비스 워커',false);}
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='6.0';
+const APP_VER='6.3';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
@@ -2299,7 +2503,7 @@ setTimeout(()=>{$('splash').classList.add('off');setTimeout(()=>$('splash').remo
 go('home');
 initPWA();
 if(S.cloud)fbInit();
-if(!S.profile.weight&&!S.onb)setTimeout(openOnboarding,400);
+if(!S.profile.weight&&!S.onb)setTimeout(()=>(!S.welcomed&&!S.logs.length)?openWelcome():openOnboarding(),400);
 renderRunType();
 </script>
 
