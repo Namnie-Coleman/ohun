@@ -1692,7 +1692,18 @@ function importData(ev){
   }catch(e){toast('가져오기 실패: '+e.message);}};
   rd.readAsText(f);ev.target.value='';
 }
+// 가져온 백업·동기화 데이터 정리: id는 영문·숫자만, 글자 길이와 개수 제한 (조작된 파일 방어)
+const SAFE_ID=/^[A-Za-z0-9_-]{1,40}$/;
+function sanitizeData(d){
+  if(!d||typeof d!=='object')return d;
+  const fixId=o=>{if(o&&typeof o==='object'&&'id' in o&&!SAFE_ID.test(String(o.id)))o.id=uid('x');};
+  const walk=(v,depth)=>{if(depth>8)return null;if(typeof v==='string')return v.length>500?v.slice(0,500):v;
+    if(Array.isArray(v))return v.slice(0,50000).map(x=>walk(x,depth+1));
+    if(v&&typeof v==='object'){fixId(v);for(const k of Object.keys(v)){if(k==='__proto__'||k==='constructor'||k==='prototype'){delete v[k];continue;}v[k]=walk(v[k],depth+1);}}return v;};
+  walk(d,0);if(d.prog&&!progById(d.prog.id))d.prog=null;return d;
+}
 function mergeIn(d){
+  sanitizeData(d);
   if(d.profile&&(d.profile.weight||d.profile.name))S.profile={...S.profile,...d.profile,rm:{...S.profile.rm,...(d.profile.rm||{})}};
   const by=(arr,inc,key)=>{const m=new Map(arr.map(x=>[key(x),x]));(inc||[]).forEach(x=>m.set(key(x),x));return[...m.values()].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));};
   S.logs=by(S.logs,d.logs,x=>x.id||x.date);S.bw=by(S.bw,d.bw,x=>x.date);S.runs=by(S.runs,d.runs,x=>x.id);S.food=by(S.food,d.food,x=>x.id);
@@ -1729,12 +1740,14 @@ async function fbInit(){
 }
 function authMsg(e){const c=e&&e.code||'';return({'auth/popup-closed-by-user':'로그인 창이 닫혔습니다.','auth/popup-blocked':'팝업이 차단되었습니다.','auth/invalid-credential':'이메일 또는 비밀번호가 맞지 않습니다.','auth/wrong-password':'비밀번호가 맞지 않습니다.','auth/user-not-found':'가입된 이메일이 아닙니다. 가입하기를 누르세요.','auth/email-already-in-use':'이미 가입된 이메일입니다. 로그인하세요.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/invalid-email':'이메일 형식이 맞지 않습니다.','auth/unauthorized-domain':'이 주소가 Firebase 승인 도메인에 없습니다. 콘솔에서 추가하세요.','auth/network-request-failed':'네트워크 오류입니다.'}[c])||(e&&e.message)||'오류가 발생했습니다.';}
 async function loginGoogle(){
+  if(!S.cloudConsent){toast('클라우드 저장 동의에 먼저 체크해 주세요');return;}
   if(!(await fbInit()))return;fb.err='';const p=new firebase.auth.GoogleAuthProvider();
   try{if(isStandalone()&&isIOS())await fb.auth.signInWithRedirect(p);else await fb.auth.signInWithPopup(p);}
   catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/cancelled-popup-request'].includes(e.code)){try{await fb.auth.signInWithRedirect(p);return;}catch(e2){fb.err=authMsg(e2);}}else fb.err=authMsg(e);acctRefresh();}
 }
 async function loginEmail(signup){
-  const em=$('acEm').value.trim(),pw=$('acPw').value;if(!em||!pw){toast('이메일과 비밀번호를 입력하세요');return;}
+  if(!S.cloudConsent){toast('클라우드 저장 동의에 먼저 체크해 주세요');return;}
+  const em=$('acEm').value.trim(),pw=$('acPw').value;if(!em||!pw){toast('이메일과 비밀번호를 입력하세요');return;}if(signup&&pw.length<8){toast('비밀번호는 8자 이상으로 정하세요');return;}
   if(!(await fbInit()))return;fb.err='';
   try{signup?await fb.auth.createUserWithEmailAndPassword(em,pw):await fb.auth.signInWithEmailAndPassword(em,pw);}catch(e){fb.err=authMsg(e);acctRefresh();}
 }
@@ -1748,7 +1761,7 @@ async function syncNow(manual){
     let push=false;
     const rU=r&&r.json?(r.updatedAt||0):0,changed=rU&&rU!==(S.syncedRemote||0),dirty=!!S.dirty;
     if(r&&r.json){
-      const remote=JSON.parse(r.json);
+      const remote=sanitizeData(JSON.parse(r.json));
       if(changed&&dirty){mergeIn(remote);push=true;if(manual!=='silent')toast('다른 기기 기록과 합쳤습니다');}
       else if(changed){const keep={theme:S.theme,hideInstall:S.hideInstall,cloud:1};S={...structuredClone(DEF),...remote,...keep};S.routines=(S.routines||[]).map(normRoutine);S.dirty=0;S.syncedRemote=rU;applyTheme();if(manual!=='silent')toast('클라우드 기록을 불러왔습니다');}
       else push=dirty;
@@ -1774,10 +1787,11 @@ function acctBody(){
     <button class="btn danger" style="margin-top:10px" onclick="deleteCloud()">클라우드 데이터와 계정 삭제</button>`;}
   return`<div class="card"><div class="muted" style="margin-bottom:12px">로그인하면 기록이 클라우드에 자동 저장되어, 폰을 바꾸거나 여러 기기에서 써도 그대로 이어집니다. 로그인하지 않아도 앱은 그대로 쓸 수 있습니다.</div>
     ${fb.err?`<div class="note n-bad" style="margin:0 0 10px">${esc(fb.err)}</div>`:''}
+    <label style="display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;font-size:13px;line-height:1.5;cursor:pointer"><input type="checkbox" id="acAgree" ${S.cloudConsent?'checked':''} onchange="S.cloudConsent=this.checked?new Date().toISOString():'';saveLocal()" style="width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--pri)"><span>(필수) 운동·체중·인바디·식단 등 <b>건강 관련 기록(민감정보)</b>을 클라우드에 저장하고, 이를 위해 Google Firebase 서버(<b>싱가포르</b>)로 보내 보관하는 데 동의합니다. <button class="link" style="font-size:12px" onclick="event.preventDefault();openPrivacy()">자세히</button></span></label>
     <button class="btn" onclick="loginGoogle()">Google로 로그인</button></div>
   <div class="card"><div class="card-t" style="margin-bottom:10px">이메일로 로그인</div>
     <div class="field"><input class="inp" id="acEm" type="email" placeholder="이메일" autocomplete="username"></div>
-    <div class="field"><input class="inp" id="acPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password"></div>
+    <div class="field"><input class="inp" id="acPw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="current-password"></div>
     <div class="row-btns"><button class="btn sub" onclick="loginEmail(false)">로그인</button><button class="btn ghost" onclick="loginEmail(true)">가입하기</button></div>
     <div class="tiny" style="margin-top:8px">홈 화면에 설치한 아이폰 앱에서는 이메일 로그인이 더 안정적입니다.</div></div>`;
 }
@@ -2237,7 +2251,7 @@ function openWeekReport(off=-1){
 /* ── 바코드 스캔 (Open Food Facts) ── */
 let _scan={stream:null,raf:0,reader:null};
 function stopScan(){try{cancelAnimationFrame(_scan.raf);}catch(e){}try{_scan.reader&&_scan.reader.reset();}catch(e){}if(_scan.stream)_scan.stream.getTracks().forEach(t=>t.stop());_scan={stream:null,raf:0,reader:null};}
-function loadScript(src){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
+function loadScript(src,integrity){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;if(integrity){s.integrity=integrity;s.crossOrigin='anonymous';}s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
 async function openBarcode(){
   openSheet(`<div class="sheet-h"><h2>바코드 스캔</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <div style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:3/4"><video id="bcV" playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
@@ -2251,7 +2265,7 @@ async function openBarcode(){
       _scan.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});v.srcObject=_scan.stream;await v.play();
       const loop=async()=>{if(!_scan.stream)return;try{const r=await det.detect(v);if(r.length){const c=r[0].rawValue;stopScan();lookupBarcode(c);return;}}catch(e){}_scan.raf=requestAnimationFrame(loop);};loop();
     }else{
-      msg('스캐너 불러오는 중...');if(!window.ZXing)await loadScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js');
+      msg('스캐너 불러오는 중...');if(!window.ZXing)await loadScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js','sha384-BzBxP10ZE72aitqj5UMmUsbKFliP/DZqA8Wq+BNNhlIJDGoEd1tpkMYXOg9+n6sB');
       const rd=new ZXing.BrowserMultiFormatReader();_scan.reader=rd;msg('제품 뒷면 바코드를 네모 안에 맞추세요.');
       rd.decodeFromConstraints({video:{facingMode:'environment'}},v,(res)=>{if(res&&_scan.reader){const c=res.getText();stopScan();lookupBarcode(c);}});
       _scan.stream=null;
@@ -2414,19 +2428,22 @@ function openCSV(){
 function openWelcome(){
   openSheet(`<div style="text-align:center;padding:10px 4px 4px"><div class="brand" style="justify-content:center;font-size:26px;font-weight:900"><i style="width:44px;height:44px;border-radius:12px"><svg viewBox="40 40 432 432">${LOGO_MARK}</svg></i>OH_UN!</div><div class="muted" style="margin-top:6px">오늘 운동, 완료!</div></div>
   <div class="card">${[['프로그램이 오늘 할 운동을 알려 줘요','5×5·5/3/1·하이록스 등 검증된 플랜을 고르면 요일별 운동과 무게가 자동으로 나옵니다.'],['운동 모드로 세트·휴식을 한 화면에서','동작 그림, 휴식 타이머, 원판 계산, 자동 증량 제안까지.'],['러닝·인바디·식단도 함께','식약처 DB 29만 개 음식 검색, 인바디 분석, 러닝 부하 관리.'],['기록은 내 기기에','로그인 없이 바로 쓸 수 있고, 원하면 계정으로 백업·동기화합니다.']].map(([t,d],i)=>`<div style="display:flex;gap:12px;padding:8px 0"><b style="width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px">${i+1}</b><div><div class="li-t">${t}</div><div class="tiny" style="margin-top:2px">${d}</div></div></div>`).join('')}</div>
-  <button class="btn" onclick="S.welcomed=1;saveLocal();closeSheet();setTimeout(openOnboarding,300)">시작하기</button>
-  <div class="tiny" style="text-align:center;margin-top:10px">시작하면 <button class="link" style="font-size:12px" onclick="openPrivacy()">개인정보·이용 안내</button>에 동의한 것으로 봅니다.</div>`);
+  <label style="display:flex;gap:10px;align-items:center;margin:0 4px 12px;font-size:14px;cursor:pointer"><input type="checkbox" id="wcAge" style="width:20px;height:20px;accent-color:var(--pri)"><span>만 14세 이상이며 <button class="link" style="font-size:14px" onclick="event.preventDefault();openPrivacy()">개인정보·이용 안내</button>를 확인했습니다</span></label>
+  <button class="btn" onclick="if(!$('wcAge').checked){toast('만 14세 이상 확인에 체크해 주세요');return;}S.welcomed=new Date().toISOString();saveLocal();closeSheet();setTimeout(openOnboarding,300)">시작하기</button>`);
 }
 function openPrivacy(){
   const sec=(t,b)=>`<div class="card"><div class="card-t" style="margin-bottom:6px">${t}</div><div class="muted" style="line-height:1.65;font-size:14px">${b}</div></div>`;
   openSheet(`<div class="sheet-h"><h2>개인정보 · 이용 안내</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   ${sec('어디에 저장되나요','모든 기록은 이 기기의 브라우저 저장소에 저장됩니다. 로그인한 경우에만 Google Firebase 서버(본인 계정만 읽고 쓸 수 있도록 보안 규칙 적용)에 같은 내용이 동기화됩니다.')}
   ${sec('어떤 정보를 다루나요','프로필(이름, 성별, 나이, 키, 체중, 1RM), 운동·러닝·인바디·식단 기록, 로그인 시 이메일 주소. 광고, 행동 분석 도구, 제3자 제공은 없습니다.')}
+  ${sec('클라우드 저장과 국외 보관 (로그인한 경우만)','받는 곳: Google LLC (Firebase) · 보관 국가: 싱가포르 데이터센터 · 항목: 이메일, 위의 기록 전체 · 목적: 기기 간 백업·동기화 · 보유 기간: 계정을 삭제할 때까지 · 거부: 로그인하지 않으면 보내지 않으며 앱은 그대로 쓸 수 있습니다. 운동·체중·인바디·식단 기록은 건강 관련 정보라 로그인 전에 따로 동의를 받습니다.')}
+  ${sec('이용 대상','만 14세 이상만 이용할 수 있습니다.')}
   ${sec('외부로 보내는 것','음식 온라인 검색과 바코드 조회 시 검색어·바코드 번호가 Open Food Facts로 전송됩니다. 아이폰 바코드 스캔 시 스캐너 프로그램을 jsDelivr에서 내려받습니다. 식약처 음식 DB와 운동 그림은 앱 안의 파일이라 검색 내용이 밖으로 나가지 않습니다.')}
   ${sec('카메라','오운완 공유 카드에 사진을 넣을 때만 사용합니다. 촬영한 사진은 기기 안에서 카드로 합성될 뿐 저장소나 서버에 올라가지 않습니다.')}
+  ${sec('백업 파일 주의','JSON·CSV 백업 파일에는 건강 기록이 그대로 들어 있습니다. 다른 사람에게 보내거나 공용 PC에 남기지 마세요.')}
   ${sec('삭제','더보기 › 데이터 백업 · 복원 › 모든 데이터 삭제로 기기 기록을 지웁니다. 클라우드 기록과 계정은 더보기 › 계정 · 클라우드 › 클라우드 데이터와 계정 삭제로 지웁니다.')}
   ${sec('건강 관련 안내','운동·식단 제안은 일반적인 정보이며 의학적 진단이나 전문 트레이닝을 대신하지 않습니다. 통증이나 지병이 있으면 전문가와 상의하세요.')}
-  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털), Open Food Facts (ODbL)')}`);
+  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털), Open Food Facts (ODbL) · 바코드: ZXing (Apache 2.0) · 로그인·저장: Firebase (Google)')}`);
 }
 async function deleteCloud(){
   if(!fb.user)return;
@@ -2495,7 +2512,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='6.3.2';
+const APP_VER='6.4';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
