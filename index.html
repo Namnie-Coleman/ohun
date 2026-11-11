@@ -283,6 +283,16 @@ body.wmode .rest,body.wmode .tabbar{display:none!important;}
 table.t{width:100%;border-collapse:collapse;font-size:13px;}
 table.t td{padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;}
 table.t tr:last-child td{border-bottom:none;}
+.fold{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}.fold>summary{cursor:pointer;font-weight:700;font-size:14px;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:4px 0}.fold>summary::-webkit-details-marker{display:none}.fold>summary::after{content:'▾';color:var(--text3);font-size:12px;margin-left:6px}.fold[open]>summary::after{content:'▴'}.fold>summary .tiny{margin-left:auto}
+.hm{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px}.hm-h{text-align:center;font-size:11px;color:var(--text3);padding-bottom:2px}
+.hm-c{aspect-ratio:1;border:0;border-radius:8px;background:var(--card2);color:var(--text);font:inherit;font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0;cursor:pointer}
+.hm-c.td{box-shadow:inset 0 0 0 2px var(--pri)}.hm-c.sel{outline:2px solid var(--text);outline-offset:1px}.hm-c i{display:flex;gap:2px;height:5px}
+.hm-c b,.hm-lg b{width:5px;height:5px;border-radius:50%;display:inline-block}.d-f{background:var(--good)}.d-r{background:var(--warn)}.d-w{background:var(--text3)}
+.hm-lg{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text2);margin-top:10px}.hm-lg span{display:flex;align-items:center;gap:4px}.hm-sw{width:10px!important;height:10px!important;border-radius:3px!important;background:var(--pri)}
+.row-card{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:inherit;color:inherit;border:0;cursor:pointer}
+.wk-strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:4px 0 12px}.wk-d{display:flex;flex-direction:column;align-items:center;gap:3px}.wk-d i{width:32px;height:32px;border-radius:50%;background:var(--card2);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:13px;font-weight:700;color:var(--text3)}.wk-d span{font-size:11px;color:var(--text3)}.wk-d.on i{background:var(--pri);color:#fff}.wk-d.td i{box-shadow:0 0 0 2px var(--card),0 0 0 4px var(--pri)}
+.credit{display:block;text-align:center;margin:14px auto 4px;font-size:12px;color:var(--text3);text-decoration:none;padding:8px}.credit b{color:var(--pri);font-weight:700}
+.wcups{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}.wcups i{width:16px;height:22px;border-radius:3px 3px 6px 6px;border:2px solid var(--pri);opacity:.35}.wcups i.on{background:var(--pri);opacity:1}
 </style>
 </head>
 <body>
@@ -365,6 +375,38 @@ table.t tr:last-child td{border-bottom:none;}
 <div class="wm" id="wm"></div>
 
 <script>
+/* OH_UN! 코드 목차 (구역 머리글 '═══'로 검색)
+   01. 데이터
+   02. 유틸
+   03. 과학 로직
+   04. 아이콘
+   05. 탭 / 내비
+   06. 시트
+   07. 차트 (SVG)
+   08. 홈
+   09. 종목 라이브러리
+   10. 동작 애니메이션 (2D 운동학)
+   11. 근육 지도
+   12. 종목 가이드 (동작 · 근육 · 내 기록)
+   13. 운동 모드
+   14. 주간 부위별 볼륨
+   15. 운동 기록 (진행 중 세션)
+   16. 종목 선택 시트
+   17. 루틴
+   18. 기록
+   19. 식단
+   20. 첫 설정 · 맞춤 제언
+   21. 더보기
+   22. 프로그램 (요일·주차 플랜)
+   23. v6: 자동 조정 · RIR · 공유 카드 · 주간 리포트 · 슈퍼세트 · 바코드 · 휴식 알림
+   24. 식약처 식품영양성분 DB (공공데이터포털 · 정적 파일)
+   25. v6.3: 초성·영어 검색 · 빠른 음식 · 끼니 템플릿 · CSV · 공개판 안내 · 카메라 공유 카드
+   26. 식단 v2: 끼니별 (아침·점심·저녁·간식)
+   27. 오운완 공유 카드 v2: 크기 선택 · 간결한 좌하단 텍스트 · 필터 · 사진 편집
+   28. WOD (크로스핏) · 단독 도구 (타이머 · 스톱워치 · 인터벌 · 페이스)
+   29. 설치 · 오프라인
+   30. 시작
+   규칙: 함수·상수 이름 중복 금지(테스트 t_dup 검사) · 날짜는 today()/daysAgo()/ymdL()만 사용(toISOString 날짜 변환 금지) */
 /* ══════════════════════ 데이터 ══════════════════════ */
 const KEY='rts_app_v4';
 const DEF={prog:null,profile:{name:'',height:0,weight:0,age:0,gender:'male',goal:'hypertrophy',exp:'intermediate',freq:4,rm:{squat:0,dead:0,bench:0,ohp:0,row:0}},
@@ -526,7 +568,7 @@ function chart(el,labels,series,opt={}){
   let g='';
   for(let i=0;i<=3;i++){const v=mn+(mx-mn)*i/3,yy=y(v);g+=`<line class="grid" x1="${pl}" x2="${W-pr}" y1="${yy}" y2="${yy}"/><text class="axis" x="${pl-5}" y="${yy+3}" text-anchor="end">${opt.yfmt?opt.yfmt(v):v>=1000?r1(v/1000)+'k':(mx-mn)<10?r1(v):Math.round(v)}</text>`;}
   const step=Math.max(1,Math.ceil(n/6));
-  labels.forEach((l,i)=>{if(i%step===0||i===n-1)g+=`<text class="axis" x="${x(i)}" y="${H-5}" text-anchor="middle">${l}</text>`;});
+  labels.forEach((l,i)=>{if((i%step===0&&(i===n-1||n-1-i>=step*.6))||i===n-1)g+=`<text class="axis" x="${x(i)}" y="${H-5}" text-anchor="middle">${l}</text>`;});
   series.forEach(s=>{
     if(opt.bar){const bw=Math.max(4,Math.min(22,iw/n-4));s.data.forEach((v,i)=>{if(!v)return;const yy=y(v),h=pt+ih-yy;g+=`<path d="M${x(i)-bw/2},${pt+ih}V${yy+Math.min(4,h)}q0,-4 4,-4h${bw-8}q4,0 4,4V${pt+ih}z" fill="${s.color}"/>`;});}
     else{let d='';s.data.forEach((v,i)=>{if(v==null)return;d+=(d?'L':'M')+x(i)+','+y(v);});g+=`<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
@@ -555,6 +597,7 @@ function renderHome(){
   let h='';
   if(!p.weight)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>시작하기</b>운동 목적과 인바디를 알려주시면 식단 목표와 추천 루틴을 맞춰 드려요.<div style="margin-top:10px"><button class="btn sm" onclick="openOnboarding()">1분 설정</button></div></div>`;
   {const dw=new Date().getDay(),lw=weekStats(-1);if([0,1,2].includes(dw)&&lw.n&&S.repSeen!==lw.a)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>지난 주 리포트</b>${lw.days}일 운동 · 볼륨 ${fmt(lw.vol)}kg${lw.km?` · 러닝 ${lw.km}km`:''}<div style="margin-top:10px;display:flex;gap:8px"><button class="btn sm" onclick="S.repSeen='${lw.a}';save();openWeekReport(-1);renderHome()">리포트 보기</button><button class="btn ghost sm" onclick="S.repSeen='${lw.a}';save();renderHome()">닫기</button></div></div>`;}
+  if(S.remind&&S.remind.on){const [hh,mm]=(S.remind.time||'21:00').split(':').map(Number),nw=new Date();if(nw.getHours()*60+nw.getMinutes()>=hh*60+mm){const m=remindMissing();if(m.length)h+=`<button class="card row-card" style="background:var(--warn-soft)" onclick="go('${m[0]==='식단'?'diet':'log'}')"><div class="li-main"><div class="li-t">오늘 ${m.join('·')} 기록이 비어 있어요</div><div class="li-s">눌러서 바로 기록하기</div></div><span class="chev">›</span></button>`;}}
   if(S.prog)h+=progHomeHTML();
   // 컨디션
   if(c){
@@ -563,10 +606,10 @@ function renderHome(){
     h+=`<div class="card"><div class="card-h"><div class="card-t">오늘 컨디션</div><button class="link" onclick="openCheck()">다시 체크</button></div>
       <div class="ring-wrap"><div class="ring"><svg width="92" height="92"><circle cx="46" cy="46" r="40" fill="none" stroke="var(--card2)" stroke-width="9"/><circle cx="46" cy="46" r="40" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${circ*(1-sc/100)}"/></svg><div class="ring-v"><b>${sc}</b><span>회복 지수</span></div></div>
       <div><span class="badge b-${it.cls}">${it.l}</span><div class="muted" style="margin-top:6px">${it.d}</div><div class="tiny" style="margin-top:4px">수면 ${c.sleep}h · 컨디션 ${c.cond}/10</div></div></div>
-      ${recs?`<div class="sec" style="margin:14px 0 0">오늘 권장 중량 · ${GOAL_L[p.goal]}</div><div>${recs}</div>`:`<div class="tiny" style="margin-top:12px">프로필에 1RM을 입력하면 권장 중량이 표시됩니다.</div>`}
+      ${recs?`<details class="fold"><summary>오늘 권장 중량 <span class="tiny">${GOAL_L[p.goal]}</span></summary><div>${recs}</div></details>`:`<div class="tiny" style="margin-top:12px">프로필에 1RM을 입력하면 권장 중량이 표시됩니다.</div>`}
     </div>`;
   }else{
-    h+=`<div class="card"><div class="card-t" style="margin-bottom:4px">오늘 컨디션 체크</div><div class="muted" style="margin-bottom:12px">수면과 컨디션으로 오늘 운동 강도를 정합니다.</div><button class="btn" onclick="openCheck()">30초 체크하기</button></div>`;
+    h+=`<button class="card row-card" onclick="openCheck()"><div class="li-main"><div class="li-t">오늘 컨디션 체크</div><div class="li-s">수면·컨디션으로 오늘 강도 정하기 · 30초</div></div><span class="badge b-pri">체크</span></button>`;
   }
   // 오늘의 운동
   {const rs=S.routines.length?S.routines.map((r,i)=>['mine',i,r]):(S.profile.weight?recRoutines():[0,1,2,3]).map(i=>['preset',i,PRESETS[i]]);
@@ -575,23 +618,17 @@ function renderHome(){
    h+=`<div class="card"><div class="card-h"><div class="card-t">오늘의 운동</div><button class="link" onclick="openRoutineSheet()">루틴 관리</button></div>
    ${tr>=0&&!draft.exs.length?`<button class="btn" style="margin-bottom:10px" onclick="startRoutine('mine',${tr})">${DAYS[new Date().getDay()]}요일 · ${esc(S.routines[tr].name)} 시작</button>`:(!draft.exs.length&&S.routines.some(r=>(r.days||[]).length)?(()=>{for(let k=1;k<=7;k++){const wd=(new Date().getDay()+k)%7,i=S.routines.findIndex(r=>(r.days||[]).includes(wd));if(i>=0)return`<div class="muted" style="margin-bottom:10px">오늘은 지정된 루틴이 없는 날입니다 · 다음: ${DAYS[wd]}요일 ${esc(S.routines[i].name)}</div>`;}return'';})():'')}
    ${draft.exs.length?`<div class="muted" style="margin-bottom:10px">${esc(draft.routine||'진행 중인 운동')} · ${draft.exs.length}종목 · ${td}/${tt}세트 완료</div><button class="btn" onclick="openWM()">${td?'운동 모드 이어하기':'운동 모드로 시작'}</button>`
-   :`<div class="tiny" style="margin-bottom:8px">${S.routines.length?'내 루틴':'맞춤 추천 루틴'} · 누르면 바로 운동 모드로 시작합니다</div><div class="list" style="background:var(--card2);margin:0">${rs.map(([src,i,r])=>`<button class="li" style="border-color:var(--line)" onclick="startRoutine('${src}',${i})"><div class="li-main"><div class="li-t">${esc(r.name)}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트${(r.days||[]).length?' · '+r.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS[d]).join(''):''}</div></div><span class="badge b-pri">시작</span></button>`).join('')}</div>`}</div>`;}
-  // 이번 달 오운완
-  {const now=new Date(),y=now.getFullYear(),m=now.getMonth(),first=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();
-   const key=d=>`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-   const done=new Set([...S.logs.map(l=>l.date),...S.runs.map(r=>r.date)]);
-   let st=0;for(let i=0;i<400;i++){const d=daysAgo(i);if(done.has(d))st++;else if(i>0)break;}
-   const cnt=[...Array(dim)].filter((_,i)=>done.has(key(i+1))).length,td=now.getDate();
-   h+=`<div class="card"><div class="card-h"><div class="card-t">${m+1}월 오운완</div><span class="card-s">${cnt}일 운동${st>1?` · ${st}일 연속`:''}</span></div>
-   <div class="cal">${['일','월','화','수','목','금','토'].map(d=>`<i class="cal-h">${d}</i>`).join('')}${'<i></i>'.repeat(first)}${[...Array(dim)].map((_,i)=>{const d=i+1,on=done.has(key(d));return`<i class="${on?'on':''}${d===td?' td':''}">${d}</i>`;}).join('')}</div></div>`;}
+   :S.prog?`<div class="tiny">프로그램 진행 중 · 위 카드에서 오늘 운동을 시작하세요. 다른 운동은 루틴 관리에서 고를 수 있어요.</div>`:`<div class="tiny" style="margin-bottom:8px">${S.routines.length?'내 루틴':'맞춤 추천 루틴'} · 누르면 바로 운동 모드로 시작합니다</div><div class="list" style="background:var(--card2);margin:0">${rs.map(([src,i,r])=>`<button class="li" style="border-color:var(--line)" onclick="startRoutine('${src}',${i})"><div class="li-main"><div class="li-t">${esc(r.name)}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트${(r.days||[]).length?' · '+r.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS[d]).join(''):''}</div></div><span class="badge b-pri">시작</span></button>`).join('')}</div>`}</div>`;}
   if(!isStandalone()&&!S.hideInstall)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>앱처럼 쓰기</b>홈 화면에 설치하면 전체 화면·오프라인으로 실행되고 데이터도 더 안전합니다.<div style="margin-top:10px;display:flex;gap:8px"><button class="btn sm" onclick="installApp()">설치 방법</button><button class="btn ghost sm" onclick="S.hideInstall=1;save();renderHome()">닫기</button></div></div>`;
   if(S.logs.length+S.runs.length>=10&&(!S.lastBackup||S.lastBackup<daysAgo(14)))h+=`<div class="note n-warn" style="margin:0 0 12px"><b>백업한 지 오래됐어요</b>데이터는 이 기기에만 있습니다. 2주에 한 번 백업 파일을 저장해 두세요.<div style="margin-top:10px"><button class="btn sm" onclick="exportData().then(()=>renderHome())">지금 백업</button></div></div>`;
-  // 이번 주
-  const dl=deloadInfo();
-  h+=`<div class="card"><div class="card-h"><div class="card-t">최근 7일</div>${dl?`<span class="badge b-${dl.cls}">${dl.l}</span>`:''}</div>
-    <div class="stats"><div class="stat"><b>${wk.length}</b><span>운동 횟수</span></div><div class="stat"><b>${wkVol>=10000?r1(wkVol/1000)+'k':fmt(wkVol)}</b><span>볼륨 kg</span></div><div class="stat"><b>${r1(wkRun)}</b><span>러닝 km</span></div></div>
-    ${dl&&dl.cls!=='good'?`<div class="note n-${dl.cls}"><b>${dl.l}</b>${dl.d}</div>`:''}
-    </div>`;
+  // 최근 7일 (오운완 줄 + 숫자)
+  {const done=new Set([...S.logs.map(l=>l.date),...S.runs.map(r=>r.date)]);
+   let st=0;for(let i=0;i<400;i++){const d=daysAgo(i);if(done.has(d))st++;else if(i>0)break;}
+   const dl=deloadInfo(),strip=[6,5,4,3,2,1,0].map(i=>{const d=daysAgo(i),dt=new Date(d+'T12:00');return`<div class="wk-d${done.has(d)?' on':''}${i===0?' td':''}"><i>${dt.getDate()}</i><span>${DAYS[dt.getDay()]}</span></div>`;}).join('');
+   h+=`<div class="card" onclick="go('hist');histK='workout';histSub='cal';renderHist()" style="cursor:pointer"><div class="card-h"><div class="card-t">최근 7일</div><span class="card-s">${st>1?`${st}일 연속 · `:''}${dl?`<span class="badge b-${dl.cls}">${dl.l}</span>`:''}</span></div>
+    <div class="wk-strip">${strip}</div>
+    <div class="stats"><div class="stat"><b>${wk.length}</b><span>운동</span></div><div class="stat"><b>${wkVol>=10000?r1(wkVol/1000)+'k':fmt(wkVol)}</b><span>볼륨 kg</span></div><div class="stat"><b>${r1(wkRun)}</b><span>러닝 km</span></div></div>
+    ${dl&&dl.cls!=='good'?`<div class="note n-${dl.cls}" style="margin-bottom:0"><b>${dl.l}</b>${dl.d}</div>`:''}</div>`;}
   // 식단
   h+=`<div class="card" onclick="go('diet')"><div class="card-h"><div class="card-t">오늘 식단</div><span class="chev">›</span></div>
     ${tg?pbar('칼로리',ft.kcal,tg.kcal,'kcal')+pbar('단백질',ft.p,tg.p,'g','var(--good)'):`<div class="muted">섭취 ${fmt(ft.kcal)} kcal · 단백질 ${r1(ft.p)} g</div>`}</div>`;
@@ -874,17 +911,18 @@ function exHistHTML(name){
   <table class="t" style="margin-top:6px">${[...H].reverse().slice(0,6).map(h=>`<tr><td style="color:var(--text3)">${md(h.date)}</td><td>${t?h.top.r+'초':h.top.w+'kg × '+h.top.r}</td><td style="text-align:right;color:var(--text2)">${h.sets}세트</td></tr>`).join('')}</table>`;
 }
 function guideHTML(name,idp){
-  return`<div class="seg" id="${idp}Seg" style="margin-bottom:10px"><button class="on" data-k="anim">동작</button><button data-k="mus">근육</button><button data-k="his">내 기록</button></div>
-  <div class="gbox"><div id="${idp}Anim"><div class="ph" id="${idp}Ph" style="display:none"></div><svg viewBox="0 0 200 186" id="${idp}Fig"></svg>
+  const ek=!!EKV[name];
+  return`<div class="seg" id="${idp}Seg" style="margin-bottom:10px"><button class="${ek?'on':''}" data-k="anim">${ek?'동작':'도식'}</button><button class="${ek?'':'on'}" data-k="mus">근육</button><button data-k="his">내 기록</button></div>
+  <div class="gbox"><div id="${idp}Anim" style="${ek?'':'display:none'}"><div class="ph" id="${idp}Ph" style="display:none"></div><svg viewBox="0 0 200 186" id="${idp}Fig"></svg>
   <div style="display:flex;justify-content:space-between;align-items:center;min-height:22px;padding:0 4px"><span class="tiny" id="${idp}FigL"></span>${EKV[name]?`<button class="link" style="font-size:12px" id="${idp}Tg" data-n="${esc(name)}" onclick="S.view=S.view==='svg'?'gif':'svg';save();showAnim('${idp}',this.dataset.n)"></button>`:''}</div></div>
-  <div id="${idp}Mus" style="display:none">${muscleSVG(name)}${musLegend(name)}</div>
+  <div id="${idp}Mus" style="${ek?'display:none':''}">${muscleSVG(name)}${musLegend(name)}${ek?'':'<div class="tiny" style="text-align:center;margin-top:6px">이 종목은 동작 그림이 없어 근육 지도를 먼저 보여 줘요 · 간단한 움직임은 도식 탭</div>'}</div>
   <div id="${idp}His" style="display:none"></div></div>`;
 }
 function bindGuide(idp,name){
   bindSeg(idp+'Seg',k=>{$(idp+'Anim').style.display=k==='anim'?'':'none';$(idp+'Mus').style.display=k==='mus'?'':'none';$(idp+'His').style.display=k==='his'?'':'none';
     if(k==='anim')showAnim(idp,name);else cancelAnimationFrame(animRaf);
     if(k==='his'){$(idp+'His').innerHTML=exHistHTML(name);const H=exHistory(name).slice(-20),t=isTimed(name);if($('ehChart'))chart($('ehChart'),H.map(h=>md(h.date)),[{name:t?'초':'추정 1RM',data:H.map(h=>t?h.top.r:h.est||null),color:'var(--s1)'}],{h:140,fmt:v=>v+(t?'초':' kg')});}});
-  showAnim(idp,name);
+  if(EKV[name])showAnim(idp,name);else cancelAnimationFrame(animRaf);
 }
 function openGuide(name){
   const i=exInfo(name);
@@ -1264,21 +1302,93 @@ function saveRt(){
 /* ══════════════════════ 기록 ══════════════════════ */
 let histK='workout';
 function renderHist(){({workout:histWorkout,body:histBody,run:histRun})[histK]();}
+let histSub='sum',calYM='',histEx='';
 function histWorkout(){
   const L=S.logs;if(!L.length){$('histBody').innerHTML='<div class="card empty">운동을 저장하면 여기에 쌓입니다</div>';return;}
-  const rec=L.slice(-14),dl=deloadInfo();
-  const best={};L.forEach(l=>l.exs.forEach(e=>e.sets.forEach(s=>{if(s.w&&s.r&&s.r<=12){const v=r1(est1RM(s.w,s.r));if(!best[e.name]||v>best[e.name])best[e.name]=v;}})));
-  const bestArr=Object.entries(best).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  $('histBody').innerHTML=`
-  <button class="btn sub" style="margin-bottom:12px" onclick="openWeekReport(-1)">주간 리포트 보기</button>
-  <div class="card"><div class="card-h"><div class="card-t">이번 주 부위별 세트</div><span class="card-s">최근 7일</span></div>${weekVolHTML()}<div class="tiny">경력(${EXP_L[S.profile.exp]}) 기준 주간 권장 범위 · Israetel 2019</div></div>
+  const tabs=[['sum','요약'],['cal','캘린더'],['ex','종목']];
+  const head=`<div class="chips" style="margin-bottom:12px">${tabs.map(([k,l])=>`<button class="chip ${histSub===k?'on':''}" onclick="histSub='${k}';histWorkout()">${l}</button>`).join('')}</div>`;
+  $('histBody').innerHTML=head+`<div id="hwBody"></div>`;
+  ({sum:hwSum,cal:hwCal,ex:hwEx})[histSub]();
+}
+/* 요약: 이번 주 숫자 + 부위별(접힘) + 최근 기록 */
+function hwSum(){
+  const L=S.logs,[ws,we]=weekBounds(0),wk=L.filter(l=>l.date>=ws&&l.date<=we);
+  const wv=wk.reduce((a,l)=>a+(l.vol||0),0),wsets=wk.reduce((a,l)=>a+l.exs.reduce((b,e)=>b+e.sets.filter(x=>x.done!==false).length,0),0);
+  const wsC=weekSets(),zs=PART6.map(([k])=>zone(k,wsC[k]||0).cls),cnt=c=>zs.filter(x=>x===c).length;
+  const dl=deloadInfo(),pl=plateaus();
+  const rec=L.slice(-14),n=Math.min(window._hwN||15,L.length);
+  $('hwBody').innerHTML=`
+  <div class="card"><div class="card-h"><div class="card-t">이번 주</div><button class="link" onclick="openWeekReport(-1)">지난 주 리포트</button></div>
+    <div class="stats"><div class="stat"><b>${wk.length}</b><span>운동</span></div><div class="stat"><b>${fmt(wv)}</b><span>볼륨 kg</span></div><div class="stat"><b>${wsets}</b><span>세트</span></div></div>
+    <details class="fold"><summary>부위별 세트 <span class="tiny">적정 ${cnt('good')} · 부족 ${cnt('pri')} · 많음 ${cnt('warn')+cnt('bad')}</span></summary>${weekVolHTML()}<div class="tiny">경력(${EXP_L[S.profile.exp]}) 기준 주간 권장 범위 · Israetel 2019</div></details>
+  </div>
+  ${dl&&dl.cls!=='good'?`<div class="note n-${dl.cls}" style="margin:0 0 12px"><b>디로드 체크 · ${dl.l}</b>피로 지수 ${dl.score} · 연속 ${dl.weeks}주. ${dl.d}</div>`:''}
+  ${pl.length?`<div class="note n-warn" style="margin:0 0 12px"><b>정체 감지</b>${pl.map(x=>`${esc(x.name)} ${x.weeks}주째 ${x.best}kg 근처`).join(' · ')}. 반복 범위를 바꾸거나(예: 5회→8회) 한 주 디로드 후 다시 올려 보세요.</div>`:''}
   <div class="card"><div class="card-h"><div class="card-t">세션별 볼륨</div><span class="card-s">최근 ${rec.length}회 · kg</span></div><div id="chVol"></div></div>
-  ${dl?`<div class="card"><div class="card-h"><div class="card-t">디로드 체크</div><span class="badge b-${dl.cls}">${dl.l}</span></div>
-    <div class="stats"><div class="stat"><b>${dl.score}</b><span>피로 지수</span></div><div class="stat"><b>${dl.cond||'-'}</b><span>평균 컨디션</span></div><div class="stat"><b>${dl.weeks}</b><span>연속 훈련 주</span></div></div>
-    <div class="note n-${dl.cls}"><b>${dl.cls==='good'?'현재 전략':'디로드 방법'}</b>${dl.d}</div></div>`:''}
-  ${bestArr.length?`<div class="card"><div class="card-t" style="margin-bottom:6px">종목별 추정 1RM 최고</div><table class="t">${bestArr.map(([n,v])=>`<tr><td>${esc(n)}</td><td style="text-align:right;font-weight:700">${v} kg</td></tr>`).join('')}</table></div>`:''}
-  <div class="sec">전체 기록</div><div class="list">${[...L].reverse().slice(0,40).map(l=>`<button class="li" onclick="openLog('${l.id}')"><div class="li-main"><div class="li-t">${md(l.date)} · ${PART_L[l.part]||l.part}</div><div class="li-s">${esc(l.exs.map(e=>e.name).filter(Boolean).join(', ')||'-')}</div></div><div class="li-v">${fmt(l.vol)}<span class="tiny"> kg</span></div><span class="chev">›</span></button>`).join('')}</div>`;
-  chart($('chVol'),rec.map(l=>md(l.date)),[{name:'볼륨',data:rec.map(l=>l.vol),color:'var(--s1)'}],{bar:true,fmt:v=>fmt(v)+' kg'});
+  <div class="sec">전체 기록 <span class="tiny">${L.length}회</span></div><div class="list">${[...L].reverse().slice(0,n).map(logRow).join('')}</div>
+  ${n<L.length?`<button class="btn ghost" style="margin-top:8px" onclick="window._hwN=(window._hwN||15)+30;hwSum()">더 보기</button>`:''}`;
+  chart($('chVol'),rec.map(l=>md(l.date)),[{name:'볼륨',data:rec.map(l=>l.vol),color:'var(--s1)'}],{bar:true,fmt:v=>fmt(v)+' kg',h:140});
+}
+function logRow(l){return`<button class="li" onclick="openLog('${l.id}')"><div class="li-main"><div class="li-t">${md(l.date)} · ${esc(l.title||PART_L[l.part]||'운동')}</div><div class="li-s">${esc(l.exs.map(e=>e.name).filter(Boolean).join(', ')||'-')}</div></div><div class="li-v">${fmt(l.vol||0)}<span class="tiny"> kg</span></div><span class="chev">›</span></button>`;}
+/* 캘린더 히트맵: 운동 볼륨 농도 + 식단·체중·러닝 점 */
+function hwCal(){
+  const t=new Date();const ym=calYM||`${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;const [Y,M]=ym.split('-').map(Number);
+  const first=new Date(Y,M-1,1),days=new Date(Y,M,0).getDate(),lead=(first.getDay()+6)%7,pre=ym+'-';
+  const vol={},food={},bw={},run={};
+  S.logs.forEach(l=>{if(l.date.startsWith(pre))vol[l.date]=(vol[l.date]||0)+(l.vol||1);});
+  S.food.forEach(f=>{if(f.date&&f.date.startsWith(pre))food[f.date]=(food[f.date]||0)+(f.kcal||0);});
+  S.bw.forEach(x=>{if(x.date.startsWith(pre))bw[x.date]=1;});S.runs.forEach(x=>{if(x.date.startsWith(pre))run[x.date]=(run[x.date]||0)+(x.km||0);});
+  const mx=Math.max(1,...Object.values(vol)),td=today();
+  let cells='';for(let i=0;i<lead;i++)cells+='<div></div>';
+  for(let d=1;d<=days;d++){const k=pre+String(d).padStart(2,'0'),v=vol[k],a=v?.25+.75*Math.min(1,v/mx):0;
+    cells+=`<button class="hm-c${k===td?' td':''}${k===calSel?' sel':''}" style="${v?`background:color-mix(in srgb,var(--pri) ${Math.round(a*100)}%,transparent);color:${a>.55?'#fff':'var(--text)'}`:''}" onclick="calSel='${k}';hwCal()"><span>${d}</span><i>${food[k]?'<b class="d-f"></b>':''}${run[k]?'<b class="d-r"></b>':''}${bw[k]?'<b class="d-w"></b>':''}</i></button>`;}
+  const mv=(dm)=>{const x=new Date(Y,M-1+dm,1);return`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`;};
+  const nW=Object.keys(vol).length,nF=Object.keys(food).length,kmS=Object.values(run).reduce((a,b)=>a+b,0);
+  const sel=calSel&&calSel.startsWith(pre)?calSel:'';
+  $('hwBody').innerHTML=`<div class="card">
+    <div class="card-h"><button class="btn ghost sm" onclick="calYM='${mv(-1)}';calSel='';hwCal()">‹</button><div class="card-t">${Y}년 ${M}월</div><button class="btn ghost sm" ${ym>=td.slice(0,7)?'disabled':''} onclick="calYM='${mv(1)}';calSel='';hwCal()">›</button></div>
+    <div class="hm">${['월','화','수','목','금','토','일'].map(x=>`<div class="hm-h">${x}</div>`).join('')}${cells}</div>
+    <div class="hm-lg"><span><b class="hm-sw"></b>운동 볼륨</span><span><b class="d-f"></b>식단</span><span><b class="d-r"></b>러닝</span><span><b class="d-w"></b>체중</span></div>
+    <div class="stats" style="margin-top:10px"><div class="stat"><b>${nW}</b><span>운동한 날</span></div><div class="stat"><b>${nF}</b><span>식단 기록</span></div><div class="stat"><b>${r1(kmS)}</b><span>러닝 km</span></div></div>
+  </div>${sel?calDay(sel):'<div class="tiny" style="text-align:center">날짜를 누르면 그날 기록이 보여요</div>'}`;
+}
+let calSel='';
+function calDay(k){
+  const L=S.logs.filter(l=>l.date===k),F=S.food.filter(f=>f.date===k),R=S.runs.filter(r=>r.date===k),W=S.bw.find(x=>x.date===k);
+  const kc=F.reduce((a,f)=>a+(f.kcal||0),0),pr=F.reduce((a,f)=>a+(f.p||0),0);
+  const dt=new Date(k+'T12:00');
+  return`<div class="sec">${dt.getMonth()+1}월 ${dt.getDate()}일 (${DAYS[dt.getDay()]})</div>
+  ${L.length?`<div class="list">${L.map(logRow).join('')}</div>`:''}
+  ${R.length?`<div class="list" style="margin-top:8px">${R.map(r=>`<div class="li"><div class="li-main"><div class="li-t">러닝 ${r.km}km</div><div class="li-s">${r.min}분</div></div></div>`).join('')}</div>`:''}
+  <div class="card" style="margin-top:8px"><div class="stats"><div class="stat"><b>${fmt(Math.round(kc))}</b><span>섭취 kcal</span></div><div class="stat"><b>${Math.round(pr)}</b><span>단백질 g</span></div><div class="stat"><b>${W?W.weight:'-'}</b><span>체중 kg</span></div></div>
+  <button class="btn ghost sm" style="margin-top:10px" onclick="dietDate='${k}'===today()?'':'${k}';go('diet')">이날 식단 보기</button></div>
+  ${!L.length&&!R.length&&!F.length&&!W?'<div class="card empty">기록 없음</div>':''}`;
+}
+/* 종목별 진척: 세션별 추정 1RM 추이 */
+function exRMHist(name){const out=[];S.logs.forEach(l=>{let b=0,bw=0,br=0;l.exs.forEach(e=>{if(e.name!==name)return;e.sets.forEach(x=>{if(x.done===false||!x.w||!x.r||x.r>12)return;const v=est1RM(x.w,x.r);if(v>b){b=v;bw=x.w;br=x.r;}});});if(b)out.push({date:l.date,rm:r1(b),w:bw,r:br});});return out;}
+function hwEx(){
+  const cnt={};S.logs.forEach(l=>l.exs.forEach(e=>{if(e.sets.some(x=>x.w&&x.r&&x.r<=12))cnt[e.name]=(cnt[e.name]||0)+1;}));
+  const names=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  if(!names.length){$('hwBody').innerHTML='<div class="card empty">무게를 기록한 종목이 없어요</div>';return;}
+  if(!names.includes(histEx))histEx=names[0];
+  const H=exRMHist(histEx),best=H.reduce((a,x)=>x.rm>a.rm?x:a,H[0]),last=H.at(-1),first=H[0],h12=H.slice(-20);
+  const d4=H.filter(x=>x.date>=daysAgo(28)),p4=H.filter(x=>x.date<daysAgo(28)&&x.date>=daysAgo(56));
+  const avg=a=>a.length?a.reduce((s,x)=>s+x.rm,0)/a.length:0,tr=d4.length&&p4.length?r1(avg(d4)-avg(p4)):null;
+  $('hwBody').innerHTML=`<div class="chips scroll" style="margin-bottom:12px">${names.slice(0,15).map(n=>`<button class="chip ${n===histEx?'on':''}" onclick="histEx=this.dataset.n;hwEx()" data-n="${esc(n)}">${esc(n)}</button>`).join('')}</div>
+  <div class="card"><div class="card-h"><div class="card-t">${esc(histEx)} 추정 1RM</div><span class="card-s">최근 ${h12.length}회</span></div><div id="chEx"></div>
+    <div class="stats"><div class="stat"><b>${best.rm}</b><span>최고 kg</span></div><div class="stat"><b>${last.rm}</b><span>최근 kg</span></div><div class="stat"><b style="color:var(--${tr==null?'text':tr>=0?'good':'bad'})">${tr==null?'-':(tr>0?'+':'')+tr}</b><span>4주 변화</span></div></div>
+    <div class="tiny" style="margin-top:8px">최고 기록 ${md(best.date)} ${best.w}kg × ${best.r}회 · 첫 기록 대비 ${r1(last.rm-first.rm)>=0?'+':''}${r1(last.rm-first.rm)}kg · Epley 공식</div></div>
+  <div class="list">${[...H].reverse().slice(0,12).map(x=>`<div class="li"><div class="li-main"><div class="li-t">${md(x.date)}</div><div class="li-s">${x.w}kg × ${x.r}회</div></div><div class="li-v">${x.rm}<span class="tiny"> kg</span></div></div>`).join('')}</div>`;
+  chart($('chEx'),h12.map(x=>md(x.date)),[{name:'1RM',data:h12.map(x=>x.rm),color:'var(--pri)'}],{fmt:v=>v+' kg',h:150});
+}
+/* 정체 감지: 최근 3주 이상 추정 1RM이 최고치 2.5% 안에서 머문 주요 종목 */
+function plateaus(){
+  const out=[];const cnt={};S.logs.slice(-40).forEach(l=>l.exs.forEach(e=>cnt[e.name]=(cnt[e.name]||0)+1));
+  Object.entries(cnt).filter(x=>x[1]>=4).forEach(([n])=>{const H=exRMHist(n);if(H.length<5)return;
+    const best=Math.max(...H.map(x=>x.rm)),bi=H.findIndex(x=>x.rm===best),since=H[bi].date;
+    const wk=Math.floor((new Date(today()+'T12:00')-new Date(since+'T12:00'))/864e5/7);
+    const after=H.slice(bi+1);if(wk>=3&&after.length>=3&&H.at(-1).date>=daysAgo(10))out.push({name:n,weeks:wk,best:Math.round(H[bi].w)});});
+  return out.slice(0,3);
 }
 function openLog(id){
   const l=S.logs.find(x=>x.id===id);if(!l)return;
@@ -1599,11 +1709,33 @@ function openPlan(first){
 }
 
 /* ══════════════════════ 더보기 ══════════════════════ */
-const TI={timer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>',
+const TI={plate:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h20"/><rect x="5" y="6" width="3" height="12" rx="1"/><rect x="16" y="6" width="3" height="12" rx="1"/><rect x="8.5" y="8.5" width="2" height="7" rx=".8"/><rect x="13.5" y="8.5" width="2" height="7" rx=".8"/></svg>',timer:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>',
  watch:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="14" r="7"/><path d="M12 10v4M10 3h4M12 3v4M18.5 7.5l1.5-1.5"/></svg>',
  intv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h4l2-6 4 12 2-6h6"/></svg>',
  pace:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-6"/></svg>',
  wod:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8h12v8H6zM3 10v4M21 10v4"/></svg>'};
+/* 원판 계산기 */
+function openPlateTool(){
+  const o=S.plateOpt||{bar:20,has25:1};
+  openSheet(`<div class="sheet-h"><h2>원판 계산</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="card"><div class="chips" style="margin-bottom:8px">${[60,80,100,120,140,180].map(v=>`<button class="chip" onclick="$('ptW').value=${v};plateCalc()">${v}kg</button>`).join('')}</div>
+  <div class="g2"><div class="field" style="grid-column:1/-1"><label class="lbl">목표 무게 (kg)</label><input class="inp" id="ptW" inputmode="decimal" value="${o.last||100}" oninput="plateCalc()"></div>
+  <div class="field"><label class="lbl">바 무게</label><select class="inp" id="ptB" onchange="plateCalc()">${[20,15,10,7].map(v=>`<option value="${v}" ${o.bar==v?'selected':''}>${v}kg</option>`).join('')}</select></div>
+  <div class="field"><label class="lbl">25kg 원판</label><select class="inp" id="pt25" onchange="plateCalc()"><option value="1" ${o.has25?'selected':''}>있음</option><option value="0" ${o.has25?'':'selected'}>없음</option></select></div></div>
+  <div id="ptOut"></div></div>`);plateCalc();
+}
+function plateCalc(){
+  const w=num($('ptW').value),bar=num($('ptB').value),h25=$('pt25').value==='1';S.plateOpt={bar,has25:h25?1:0,last:w};saveLocal();
+  const set=[...(h25?[25]:[]),20,15,10,5,2.5,1.25],col={25:'#d33',20:'#2a78d6',15:'#e0b400',10:'#2e9e5b',5:'#ddd',2.5:'#333',1.25:'#999'},ht={25:100,20:100,15:86,10:72,5:56,2.5:44,1.25:36};
+  if(!(w>bar)){$('ptOut').innerHTML=`<div class="muted" style="margin-top:10px">바(${bar}kg)보다 무거운 무게를 입력하세요</div>`;return;}
+  let side=(w-bar)/2;const out=[];for(const p of set){while(side>=p-1e-9){out.push(p);side-=p;}}
+  const real=bar+out.reduce((a,b)=>a+b,0)*2;
+  let x=150;const svg=out.map(p=>{const t=p>=10?14:p>=2.5?10:8,r=`<rect x="${x}" y="${60-ht[p]/2}" width="${t}" height="${ht[p]}" rx="3" fill="${col[p]}" stroke="var(--line)"/>`;x+=t+2;return r;}).join('');
+  const cnt={};out.forEach(p=>cnt[p]=(cnt[p]||0)+1);
+  $('ptOut').innerHTML=`<svg viewBox="0 0 340 120" style="width:100%;display:block;margin-top:12px"><rect x="10" y="56" width="320" height="8" rx="4" fill="var(--text3)"/><rect x="136" y="46" width="12" height="28" rx="3" fill="var(--text2)"/>${svg}</svg>
+    <div class="card-t" style="margin-top:8px">한쪽에 ${out.length?Object.entries(cnt).sort((a,b)=>b[0]-a[0]).map(([p,n])=>`${p}kg × ${n}`).join(' + '):'원판 없음'}</div>
+    <div class="tiny" style="margin-top:4px">바 ${bar}kg + 원판 ${r1(real-bar)}kg = ${r1(real)}kg${Math.abs(real-w)>.01?` · ${r1(w-real)}kg는 맞출 수 없어 ${r1(real)}kg로 계산`:''}</div>`;
+}
 function renderMore(){
   const p=S.profile;
   const row=(t,s,fn,right='')=>`<button class="li" style="padding:11px 14px;min-height:0" onclick="${fn}"><div class="li-main"><div class="li-t" style="font-size:15px">${t}</div>${s?`<div class="li-s">${s}</div>`:''}</div>${right||'<span class="chev">›</span>'}</button>`;
@@ -1615,12 +1747,13 @@ function renderMore(){
   <div class="sec">도구</div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
     ${tile(TI.timer,'타이머','openTimerTool()')}${tile(TI.watch,'스톱워치',"tmOpen({kind:'stopwatch',title:'스톱워치'})")}${tile(TI.intv,'인터벌','openIntervalTool()')}
-    ${tile(TI.pace,'페이스·랩','openPaceTool()')}${tile(I.calc,'1RM 계산','openCalc()')}${tile(TI.wod,'WOD',"go('log');document.querySelector('#logSeg [data-k=wod]').click()")}</div>
+    ${tile(TI.pace,'페이스·랩','openPaceTool()')}${tile(I.calc,'1RM 계산','openCalc()')}${tile(TI.plate,'원판 계산','openPlateTool()')}</div>
   <div class="sec">내 운동</div>
-  <div class="list">${row('맞춤 제언','운동 목적 · 인바디 기반 식단과 추천 루틴','openPlan()')}${row('루틴 · 프로그램',`${S.routines.length}개 저장됨${S.prog?' · 프로그램 진행 중':''}`,'openRoutineSheet()')}${row('휴식 타이머','','openRestSet()',`<span class="tiny">${S.rest?S.rest+'초':'끔'}</span>`)}${row('음성 안내','타이머 3·2·1 카운트다운','S.voice=S.voice?0:1;saveLocal();renderMore()',`<span class="badge ${S.voice?'b-good':''}">${S.voice?'켜짐':'꺼짐'}</span>`)}${row('나에게 맞추기','처음 설정 다시 하기','openOnboarding()')}</div>
+  <div class="list">${row('맞춤 제언','운동 목적 · 인바디 기반 식단과 추천 루틴','openPlan()')}${row('기록 리마인더',S.remind&&S.remind.on?`매일 ${S.remind.time}`:'','openRemind()',`<span class="badge ${S.remind&&S.remind.on?'b-good':''}">${S.remind&&S.remind.on?'켜짐':'꺼짐'}</span>`)}${row('휴식 타이머','','openRestSet()',`<span class="tiny">${S.rest?S.rest+'초':'끔'}</span>`)}${row('음성 안내','타이머 3·2·1 카운트다운','S.voice=S.voice?0:1;saveLocal();renderMore()',`<span class="badge ${S.voice?'b-good':''}">${S.voice?'켜짐':'꺼짐'}</span>`)}${row('나에게 맞추기','처음 설정 다시 하기','openOnboarding()')}</div>
   <div class="sec">앱</div>
   <div class="list">${row('계정 · 클라우드',fb.user?`${esc(fb.user.email||'로그인됨')} · ${fb.state||'연결됨'}`:'로그인하면 여러 기기에서 같은 기록','openAccount()')}${isStandalone()?'':row('홈 화면에 설치','앱처럼 전체 화면 · 오프라인 실행','installApp()')}${row('데이터 백업 · 복원','JSON · CSV 내보내기','openData()')}${row('화면 테마','',"S.theme=S.theme==='auto'?'light':S.theme==='light'?'dark':'auto';applyTheme();saveLocal();renderMore()",`<span class="tiny">${{auto:'시스템',light:'라이트',dark:'다크'}[S.theme||'auto']}</span>`)}${row('개인정보 · 이용 안내','','openPrivacy()')}</div>
-  <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">OH_UN! (오운!) v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>운동 그림: Everkinetic (CC BY-SA 4.0)<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>`;
+  <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">OH_UN! (오운!) v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>운동 그림: Everkinetic (CC BY-SA 4.0)<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>
+  <a class="credit" href="https://www.instagram.com/proteinvillian/" target="_blank" rel="noopener">만든 사람 <b>@proteinvillian</b> · Instagram</a>`;
 }
 function openProfile(){
   const p=S.profile,o=(m,v)=>Object.entries(m).map(([k,l])=>`<option value="${k}" ${String(v)===k?'selected':''}>${l}</option>`).join('');
@@ -1719,6 +1852,7 @@ function mergeIn(d){
   if(d.prog&&!S.prog)S.prog=d.prog;
   (d.wods||[]).forEach(m=>{S.wods=S.wods||[];if(!S.wods.some(x=>x.id===m.id))S.wods.push(m);});
   (d.myWods||[]).forEach(m=>{S.myWods=S.myWods||[];if(!S.myWods.some(x=>x.id===m.id))S.myWods.push(m);});
+  if(d.water&&typeof d.water==='object'){S.water=S.water||{};for(const[k,v]of Object.entries(d.water))if(/^\d{4}-\d\d-\d\d$/.test(k)&&typeof v==='number')S.water[k]=Math.max(S.water[k]||0,v);}
   (d.meals||[]).forEach(m=>{S.meals=S.meals||[];if(!S.meals.some(x=>x.id===m.id))S.meals.push(m);});
 }
 function openTheme(){
@@ -1761,16 +1895,31 @@ async function loginEmail(signup){
   try{signup?await fb.auth.createUserWithEmailAndPassword(em,pw):await fb.auth.signInWithEmailAndPassword(em,pw);}catch(e){fb.err=authMsg(e);acctRefresh();}
 }
 async function logout(){if(!fb.ready)return;await fb.auth.signOut();S.cloud=0;saveLocal();toast('로그아웃 · 기기 데이터는 유지됩니다');acctRefresh();}
+/* 클라우드 본문 압축: 'gz:'+base64(gzip). 압축 미지원 브라우저는 평문 */
+async function packJSON(str){
+  if(typeof CompressionStream==='undefined')return str;
+  try{const buf=await new Response(new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
+    const u=new Uint8Array(buf);let b='';for(let i=0;i<u.length;i+=0x8000)b+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return'gz:'+btoa(b);}catch(e){return str;}
+}
+async function unpackJSON(raw){
+  if(typeof raw!=='string'||!raw.startsWith('gz:'))return raw;
+  const bin=atob(raw.slice(3)),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  return await new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
+}
 function cloudQueue(){if(!fb.user)return;clearTimeout(fb.t);fb.state='대기';fb.t=setTimeout(()=>syncNow(),4000);}
 const arrOf=x=>x?(Array.isArray(x)?x:Object.values(x)):[];
 async function syncNow(manual){
   if(!fb.user||fb.busy)return;fb.busy=true;fb.state='동기화 중';acctRefresh();
   try{
-    const ref=fb.db.ref(`users/${fb.user.uid}/ohun`),snap=await ref.get(),r=snap.val();
+    const ref=fb.db.ref(`users/${fb.user.uid}/ohun`);
+    // 1) 업데이트 시각(숫자 하나)만 먼저 확인 → 바뀌었을 때만 본문을 받는다
+    const rU=(await ref.child('updatedAt').get()).val()||0;
     let push=false;
-    const rU=r&&r.json?(r.updatedAt||0):0,changed=rU&&rU!==(S.syncedRemote||0),dirty=!!S.dirty;
-    if(r&&r.json){
-      const remote=sanitizeData(JSON.parse(r.json));
+    const changed=rU&&rU!==(S.syncedRemote||0),dirty=!!S.dirty;
+    if(rU&&!changed){push=dirty;}
+    else if(rU){
+      const raw=(await ref.child('json').get()).val();
+      const remote=sanitizeData(JSON.parse(await unpackJSON(raw)));
       if(changed&&dirty){mergeIn(remote);push=true;if(manual!=='silent')toast('다른 기기 기록과 합쳤습니다');}
       else if(changed){const keep={theme:S.theme,hideInstall:S.hideInstall,cloud:1};S={...structuredClone(DEF),...remote,...keep};S.routines=(S.routines||[]).map(normRoutine);S.dirty=0;S.syncedRemote=rU;applyTheme();if(manual!=='silent')toast('클라우드 기록을 불러왔습니다');}
       else push=dirty;
@@ -1781,7 +1930,7 @@ async function syncNow(manual){
         const d={profiles:arrOf(old.profiles),logs:arrOf(old.logs),runLogs:arrOf(old.runLogs),bwLog:arrOf(old.bwLog),foodLog:arrOf(old.foodLog)};
         setTimeout(()=>confirmSheet(`이전 Road to Strongman 클라우드에서 운동 ${d.logs.length}건을 찾았습니다. 가져올까요?`,()=>{mergeIn(convertV3(d));save();go(curTab);toast('이전 기록을 가져왔습니다');},'가져오기',false),300);}
     }
-    if(push){const t=Date.now();S.dirty=0;S.updatedAt=t;S.syncedRemote=t;await ref.set({json:JSON.stringify(S),updatedAt:t,device:navigator.userAgent.slice(0,80)});}
+    if(push){const t=Date.now();S.dirty=0;S.updatedAt=t;S.syncedRemote=t;await ref.set({json:await packJSON(JSON.stringify(S)),updatedAt:t,device:navigator.userAgent.slice(0,80)});}
     saveLocal();fb.state='완료 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});fb.err='';
     if(changed&&!push||changed&&dirty)go(curTab);
   }catch(e){fb.state='실패';fb.err=e.code==='PERMISSION_DENIED'||/permission/i.test(e.message)?'데이터베이스 권한이 없습니다. 보안 규칙을 확인하세요.':'동기화 실패: '+(e.message||'');}
@@ -2158,6 +2307,28 @@ function ssAdvance(){  // 슈퍼세트면 같은 라운드의 다음 종목으�
 
 /* ── 휴식 끝 알림 ── */
 let _rnT=null,_rnEnd=0;
+/* 기록 리마인더: 앱이 열려 있거나 백그라운드일 때 지정 시각 알림 + 앱을 열면 홈 배너 */
+let _remT=null;
+function remindMissing(){const d=today(),m=[];if(!S.food.some(f=>f.date===d))m.push('식단');
+  if(S.prog||S.routines.some(r=>(r.days||[]).includes(new Date().getDay()))){if(!S.logs.some(l=>l.date===d)&&!S.runs.some(r=>r.date===d))m.push('운동');}return m;}
+function scheduleRemind(){clearTimeout(_remT);const R=S.remind;if(!R||!R.on)return;
+  const [hh,mm]=(R.time||'21:00').split(':').map(Number),t=new Date();t.setHours(hh,mm,0,0);if(t<=new Date())t.setDate(t.getDate()+1);
+  _remT=setTimeout(async()=>{const m=remindMissing();if(m.length&&'Notification' in window&&Notification.permission==='granted'&&S.remindShown!==today()){S.remindShown=today();saveLocal();
+    const opt={body:`오늘 ${m.join('·')} 기록이 아직 없어요`,tag:'ohun-remind',icon:'icons/icon-192.png',badge:'icons/icon-96.png'};
+    try{const reg=await navigator.serviceWorker?.getRegistration();if(reg)reg.showNotification('OH_UN! 기록 알림',opt);else new Notification('OH_UN! 기록 알림',opt);}catch(e){}}
+    scheduleRemind();},Math.min(t-new Date(),2147000000));
+}
+function openRemind(){const R=S.remind||{on:0,time:'21:00'};
+  openSheet(`<div class="sheet-h"><h2>기록 리마인더</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="card"><div class="muted" style="margin-bottom:12px">정한 시각까지 오늘 식단(루틴이 있는 날은 운동도) 기록이 없으면 알려 드려요.</div>
+  <div class="g2"><div class="field"><label class="lbl">알림 시각</label><input class="inp" type="time" id="rmT" value="${R.time||'21:00'}"></div>
+  <div class="field"><label class="lbl">상태</label><select class="inp" id="rmOn"><option value="1" ${R.on?'selected':''}>켜기</option><option value="0" ${R.on?'':'selected'}>끄기</option></select></div></div>
+  <div class="note n-pri" style="margin:4px 0 12px"><b>참고</b>웹앱 특성상 앱이 완전히 종료되면 알림을 보낼 수 없어요. 대신 앱을 열면 홈에 빠진 기록을 알려 드립니다.</div>
+  <button class="btn" onclick="saveRemind()">저장</button></div>`);
+}
+async function saveRemind(){const on=$('rmOn').value==='1';S.remind={on:on?1:0,time:$('rmT').value||'21:00'};
+  if(on&&'Notification' in window&&Notification.permission==='default'){try{await Notification.requestPermission();}catch(e){}}
+  saveLocal();scheduleRemind();closeSheet();toast(on?`매일 ${S.remind.time} 리마인더 켜짐`:'리마인더 꺼짐');if(curTab==='more')renderMore();}
 function scheduleRestNoti(){
   if(restEnd===_rnEnd)return;_rnEnd=restEnd;clearTimeout(_rnT);
   if(!S.restNoti||!('Notification' in window)||Notification.permission!=='granted'||!(restEnd>Date.now()))return;
@@ -2214,8 +2385,48 @@ function openWeekReport(off=-1){
   ${bwd!=null?`<div class="tiny" style="margin-top:10px;text-align:center">체중 ${bwd>0?'+':''}${bwd}kg (${bw[0].weight} → ${bw.at(-1).weight})</div>`:''}</div>
   ${prs.length?`<div class="card"><div class="card-t" style="margin-bottom:6px">이번 주 신기록 (추정 1RM)</div>${prs.map(r=>`<div style="display:flex;justify-content:space-between;padding:5px 0"><span>${esc(r.n)} <span class="tiny">${r.s.w}kg×${r.s.r}</span></span><b>${Math.round(r.v)}kg <span class="tiny" style="color:var(--good)">+${Math.round(r.v-r.prev)}</span></b></div>`).join('')}</div>`:''}
   <div class="card"><div class="card-t" style="margin-bottom:8px">부위별 세트</div>${PART6.filter(([k])=>VOL.intermediate[k]).map(([k,l])=>{const n=c.parts[k]||0,z=zone(k,n);return`<div style="display:flex;justify-content:space-between;padding:4px 0"><span>${l}</span><span>${n}세트 <span class="badge b-${z.cls}" style="padding:1px 7px;font-size:11px">${z.l}</span></span></div>`;}).join('')}</div>
-  <div class="card"><div class="card-t" style="margin-bottom:6px">다음 주 제언</div><ol class="cues">${tips.slice(0,5).map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>`);
+  <div class="card"><div class="card-t" style="margin-bottom:6px">다음 주 제언</div><ol class="cues">${tips.slice(0,5).map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>
+  ${c.n||c.km?`<button class="btn sub" onclick="openWeekCard(${off})">공유 카드 만들기</button>`:''}`);
 }
+/* 주간 리포트 공유 카드 */
+async function makeWeekCard(off,scale=1){
+  const o=cardOpt(),[W0,H0]=CARD_SIZES[o.size]||CARD_SIZES.feed,W=Math.round(W0*scale),H=Math.round(H0*scale),k=scale;
+  const c=weekStats(off),prs=weekPRs(c.a,c.b).slice(0,3);
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const FF='-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
+  const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#3b8cec');gr.addColorStop(1,'#1d5fc0');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  drawBarbell(g,W/2,H*.2,W*.92,.12);g.fillStyle='#fff';
+  try{const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 88 336 336">${LOGO_MARK}</svg>`));g.drawImage(im,64*k,62*k,56*k,56*k);}catch(e){}
+  g.font=`800 ${36*k}px ${FF}`;g.fillText('OH_UN!',132*k,103*k);
+  const f=d=>{const x=new Date(d+'T12:00');return`${x.getMonth()+1}.${x.getDate()}`;};
+  g.textAlign='right';g.font=`500 ${28*k}px ${FF}`;g.globalAlpha=.9;g.fillText(`${f(c.a)} – ${f(c.b)}`,W-64*k,100*k);g.textAlign='left';g.globalAlpha=1;
+  const x=64*k,np=prs.length,blockH=(92+40+60+70+110+(np?60+50*np:0))*k;let y=Math.max(H*.36,H-100*k-blockH)+92*k;
+  let gb=g.createLinearGradient(0,y-160*k,0,H);gb.addColorStop(0,'rgba(18,60,130,0)');gb.addColorStop(1,'rgba(14,45,105,.45)');g.fillStyle=gb;g.fillRect(0,y-160*k,W,H);g.fillStyle='#fff';
+  g.font=`900 ${92*k}px ${FF}`;g.fillText('이번 주 오운완',x-4*k,y);y+=40*k;
+  // 요일 점
+  const done=new Set(c.L.map(l=>l.date).concat(c.R.map(r=>r.date)));const dw=(W-2*x)/7;
+  for(let i=0;i<7;i++){const d=new Date(c.a+'T12:00');d.setDate(d.getDate()+i);const on=done.has(ymdL(d)),cx=x+dw*i+dw/2,cy=y+60*k;
+    g.beginPath();g.arc(cx,cy,30*k,0,Math.PI*2);g.fillStyle=on?'#fff':'rgba(255,255,255,.18)';g.fill();
+    g.fillStyle=on?'#1d5fc0':'rgba(255,255,255,.75)';g.font=`700 ${24*k}px ${FF}`;g.textAlign='center';g.fillText(DAYS[d.getDay()],cx,cy+9*k);}
+  g.textAlign='left';g.fillStyle='#fff';y+=190*k;
+  const st=[[c.days+'일','운동한 날'],[fmt(c.vol)+'kg','총 볼륨'],[c.km?c.km+'km':c.sets+'세트',c.km?'러닝':'세트']],sw=(W-2*x)/3;
+  st.forEach(([v,l],i)=>{g.font=`800 ${50*k}px ${FF}`;g.fillText(v,x+sw*i,y);g.font=`500 ${26*k}px ${FF}`;g.globalAlpha=.8;g.fillText(l,x+sw*i,y+40*k);g.globalAlpha=1;});
+  y+=120*k;
+  if(np){g.font=`800 ${28*k}px ${FF}`;g.fillStyle='#ffd34d';g.fillText('신기록',x,y);g.fillStyle='#fff';y+=50*k;
+    prs.forEach(r=>{g.font=`700 ${32*k}px ${FF}`;g.fillText(r.n,x,y);const nw=g.measureText(r.n).width;g.font=`500 ${28*k}px ${FF}`;g.globalAlpha=.9;g.fillText(`  추정 1RM ${Math.round(r.v)}kg`,x+nw,y);g.globalAlpha=1;y+=50*k;});}
+  return cv;
+}
+let _wcOff=-1;
+async function openWeekCard(off){_wcOff=off;const o=cardOpt();if(!CARD_SIZES[o.size])o.size='feed';
+  openSheet(`<div class="sheet-h"><h2>주간 카드</h2><button class="link" onclick="openWeekReport(${off})">리포트</button></div>
+  <div style="text-align:center"><img id="wcImg" style="max-width:100%;max-height:52vh;border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.15)"></div>
+  <div class="chips" style="margin:12px 0">${Object.entries({story:'스토리 9:16',feed:'피드 4:5',square:'정사각 1:1'}).map(([k,l])=>`<button class="chip ${o.size===k?'on':''}" onclick="S.cardOpt.size='${k}';saveLocal();openWeekCard(${off})">${l}</button>`).join('')}</div>
+  <div class="g2"><button class="btn" onclick="weekCardOut(1)">공유</button><button class="btn sub" onclick="weekCardOut(0)">저장</button></div>`);
+  const cv=await makeWeekCard(off,.4);$('wcImg').src=cv.toDataURL('image/jpeg',.85);
+}
+async function weekCardOut(share){const cv=await makeWeekCard(_wcOff,1),blob=await cardBlob(cv),name=`ohun_week_${weekBounds(_wcOff)[0]}.jpg`;
+  if(share){const f=new File([blob],name,{type:'image/jpeg'});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'주간 오운완'});}catch(e){}return;}}
+  dlBlob(blob,name);toast('이미지를 저장했습니다');}
 
 /* ── 바코드 스캔 (Open Food Facts) ── */
 let _scan={stream:null,raf:0,reader:null};
@@ -2412,6 +2623,7 @@ function openPrivacy(){
   ${sec('백업 파일 주의','JSON·CSV 백업 파일에는 건강 기록이 그대로 들어 있습니다. 다른 사람에게 보내거나 공용 PC에 남기지 마세요.')}
   ${sec('삭제','더보기 › 데이터 백업 · 복원 › 모든 데이터 삭제로 기기 기록을 지웁니다. 클라우드 기록과 계정은 더보기 › 계정 · 클라우드 › 클라우드 데이터와 계정 삭제로 지웁니다.')}
   ${sec('건강 관련 안내','운동·식단 제안은 일반적인 정보이며 의학적 진단이나 전문 트레이닝을 대신하지 않습니다. 통증이나 지병이 있으면 전문가와 상의하세요.')}
+  ${sec('문의 · 운영자','만든 사람: <a href="https://www.instagram.com/proteinvillian/" target="_blank" rel="noopener" style="color:var(--pri);font-weight:700">@proteinvillian</a> (Instagram)<br>개인정보 열람·정정·삭제 요청이나 오류 제보는 인스타그램 DM으로 보내 주세요. 앱 안에서 직접 삭제하는 방법은 위 \'삭제\' 항목을 참고하세요.')}
   ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털), Open Food Facts (ODbL) · 바코드: ZXing (Apache 2.0) · 로그인·저장: Firebase (Google)')}`);
 }
 async function deleteCloud(){
@@ -2457,6 +2669,8 @@ function addFoodEntry(o){o.date=dietDay();o.meal=dietMeal||(dietDay()===today()?
 function dietShift(d){const x=new Date(dietDay()+'T12:00');x.setDate(x.getDate()+d);const v=ymdL(x);dietDate=v>=today()?'':v;renderDiet();}
 function ring(p,col,size=118,sw=12){const r=(size-sw)/2,c=2*Math.PI*r,o=c*(1-Math.min(1,Math.max(0,p)));
   return`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="${sw}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${o}" transform="rotate(-90 ${size/2} ${size/2})"/></svg>`;}
+const waterTarget=()=>S.profile.weight?Math.round(S.profile.weight*33/250)*250:2000;
+function addWater(ml){const d=dietDay();S.water=S.water||{};S.water[d]=Math.max(0,(S.water[d]||0)+ml);if(!S.water[d])delete S.water[d];save();renderDiet();}
 function renderDiet(){
   const day=dietDay(),tg=dietPlan(),t=foodTotals(day),list=S.food.filter(f=>f.date===day),isT=day===today();
   const left=tg?Math.round(tg.kcal-t.kcal):null,over=left!=null&&left<0;
@@ -2475,6 +2689,10 @@ function renderDiet(){
       ${its.length?`<button class="link" style="font-size:12px" onclick="openSaveMeal('${k}')">저장</button>`:''}<button class="btn sm" style="width:38px;height:38px;padding:0;border-radius:50%;font-size:22px;line-height:1" onclick="openFoodAdd('${k}')" aria-label="${l} 추가">+</button></div>
     ${its.length?`<div style="margin-top:8px;border-top:1px solid var(--line)">${its.map(f=>`<div style="display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(f.name)}</div><div class="tiny">탄 ${r1(f.c)} · 단 ${r1(f.p)} · 지 ${r1(f.f)}</div></div><b style="white-space:nowrap">${fmt(f.kcal)}</b><button class="x" style="position:static" onclick="delFood('${f.id}')" aria-label="삭제">×</button></div>`).join('')}</div>`:''}</div>`;
   });
+  {const wml=(S.water||{})[day]||0,wt=waterTarget(),cups=Math.ceil(wt/250),fill=Math.min(cups,Math.round(wml/250));
+   h+=`<div class="card" style="padding:12px 14px"><div style="display:flex;align-items:center;gap:10px"><div style="flex:1"><div class="card-t">물</div><div class="tiny">${fmt(wml)} / ${fmt(wt)}ml${wml>=wt?' · 목표 달성':''}</div></div>
+     <button class="btn ghost sm" style="width:38px;height:38px;padding:0;border-radius:50%;font-size:20px" onclick="addWater(-250)" aria-label="물 한 컵 빼기" ${wml?'':'disabled'}>−</button><button class="btn sm" style="width:auto;height:38px;padding:0 12px;border-radius:19px" onclick="addWater(250)">+ 1컵</button></div>
+     <div class="wcups">${[...Array(cups)].map((_,i)=>`<i class="${i<fill?'on':''}"></i>`).join('')}</div></div>`;}
   if(tg&&list.length){const ps=MEALS.map(([k])=>list.filter(f=>mealOf(f)===k).reduce((a,f)=>a+(f.p||0),0));const main=ps.slice(0,3).filter(v=>v>0);
     if(main.length>=2&&Math.max(...main)>Math.min(...main)*2.5)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>단백질을 끼니에 고르게</b>끼니마다 ${Math.round(tg.p/4)}g 안팎으로 나누면 근육 합성에 더 유리합니다.</div>`;}
   h+=`<div class="tiny" style="text-align:center;margin-bottom:8px">음식 수치는 대략값입니다. 포장 영양정보가 있으면 직접 입력이 가장 정확합니다.</div>`;
@@ -2814,7 +3032,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='6.5.1';
+const APP_VER='6.6';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
@@ -2831,7 +3049,8 @@ bindSeg('logSeg',k=>{$('logWeight').style.display=k==='weight'?'':'none';$('logR
 bindSeg('histSeg',k=>{histK=k;renderHist();});
 setTimeout(()=>{$('splash').classList.add('off');setTimeout(()=>$('splash').remove(),450);},700);
 go('home');
-initPWA();
+initPWA();scheduleRemind();
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&curTab==='home')renderHome();});
 if(S.cloud)fbInit();
 if(!S.profile.weight&&!S.onb)setTimeout(()=>(!S.welcomed&&!S.logs.length)?openWelcome():openOnboarding(),400);
 renderRunType();
