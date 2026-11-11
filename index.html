@@ -2277,7 +2277,7 @@ const KDB={rows:[],keys:[],st:{1:0,2:0},err:''};   // st: 0 없음, 1 불러오�
 async function gzFetch(paths){
   let last='';
   for(const u of paths){
-    try{const r=await fetch(u,{cache:'no-cache'});if(!r.ok){last=`${u} (${r.status})`;continue;}
+    try{const r=await fetch(u);if(r.status===429||r.status===403)throw new Error('GitHub 접속 제한(잠시 후 다시)');if(!r.ok){last=`${u} (${r.status})`;continue;}
       const buf=new Uint8Array(await r.arrayBuffer());
       if(buf[0]===0x1f&&buf[1]===0x8b){
         if(!('DecompressionStream' in window))throw new Error('이 브라우저는 압축 해제를 지원하지 않습니다 (iOS 16.4 이상 필요)');
@@ -2294,14 +2294,14 @@ async function kdbFetch(n){
 async function kdbLoad(n){
   if(KDB.st[n])return;KDB.st[n]=1;kdbStatus();
   try{const t=await kdbFetch(n);const L=t.split('\n');for(const l of L){if(!l)continue;KDB.rows.push(l);const a=nthTab(l,7);KDB.keys.push((l.slice(0,l.indexOf('\t'))+l.slice(a+1,nthTab(l,8))).toLowerCase().replace(/[\s_·]/g,''));}
-    KDB.st[n]=2;}catch(e){KDB.st[n]=0;KDB.err=e.message;}
+    KDB.st[n]=2;KDB.err='';}catch(e){KDB.st[n]=0;KDB.err=e.message;KDB.failAt=Date.now();}
   kdbStatus();if($('foodQ')&&$('foodQ').value.trim())kdbRender();
 }
 function nthTab(s,n){let p=-1;for(let k=0;k<n;k++){p=s.indexOf('\t',p+1);if(p<0)return s.length;}return p;}
 function kdbParse(l){const a=l.split('\t');return{name:a[0].replace(/_/g,' · '),k:+a[1],p:+a[2],c:+a[3],f:+a[4],ml:a[5]==='1',size:a[6]||'',src:a[7]||'',cat:a[8]||'',t:a[9]||''};}
 function kdbStatus(){const el=$('kdbSt');if(!el)return;
   const n=fmt(KDB.rows.length);
-  el.textContent=KDB.st[1]===1?'식약처 DB 불러오는 중...':KDB.st[2]===1?`음식·원재료 ${n}개 준비됨 · 가공식품 불러오는 중 (처음 한 번, 약 6MB)`:KDB.st[2]===2?`식약처 DB ${n}개에서 검색`:KDB.err?'식약처 DB를 불러오지 못했어요: '+KDB.err:'';}
+  el.textContent=KDB.st[1]===1?'식약처 DB 불러오는 중...':KDB.st[2]===1?`음식·원재료 ${n}개 준비됨 · 가공식품 불러오는 중 (처음 한 번, 약 6MB)`:KDB.st[2]===2?`식약처 DB ${n}개에서 검색`:KDB.err?'식약처 DB를 불러오지 못했어요: '+KDB.err+' · 5분 뒤 자동으로 다시 시도합니다':'';}
 function kdbSearch(q,lim=30){
   const toks=q.toLowerCase().split(/\s+/).map(t=>t.replace(/[_·]/g,'')).filter(Boolean);if(!toks.length)return[];
   const qq=toks.join(''),hits=[];
@@ -2314,7 +2314,7 @@ let _kdbT=null;
 function kdbRender(){
   const el=$('kdbRes');if(!el)return;const q=($('foodQ')?.value||'').trim();
   if(!q){el.innerHTML='';return;}
-  if(!KDB.st[1])kdbLoad(1).then(()=>kdbLoad(2));
+  if(!KDB.st[1]&&!KDB.st[2]&&!KDB.rows.length&&(!KDB.failAt||Date.now()-KDB.failAt>5*60000))kdbLoad(1).then(()=>{if(KDB.st[1]===2)kdbLoad(2);});
   clearTimeout(_kdbT);_kdbT=setTimeout(()=>{
     const ids=kdbSearch(q);
     el.innerHTML=ids.length?`<div class="tiny" style="margin:10px 2px 6px">식약처 식품영양성분 DB</div><div class="list" style="background:var(--card2);margin:0;max-height:420px;overflow-y:auto">${ids.map(i=>{const x=kdbParse(KDB.rows[i]);
@@ -2495,7 +2495,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='6.3.1';
+const APP_VER='6.3.2';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}

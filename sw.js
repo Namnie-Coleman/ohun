@@ -12,7 +12,7 @@ self.addEventListener('install',e=>{e.waitUntil(addEach(SHELL,SHELL_FILES).then(
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==SHELL&&k!==ANIM_VER).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   const r=e.request,u=new URL(r.url);if(r.method!=='GET'||u.origin!==location.origin)return;
-  if(u.pathname.includes('/anim/')||u.pathname.endsWith('ek.pack.gz')||u.pathname.includes('/data/')){e.respondWith(caches.match(r).then(m=>m||fetch(r).then(res=>{if(res.ok){const c=res.clone();caches.open(ANIM_VER).then(x=>x.put(r,c));}return res;})));return;}
+  if(u.pathname.includes('/anim/')||u.pathname.endsWith('ek.pack.gz')||u.pathname.includes('/data/')||u.pathname.endsWith('.gz')){e.respondWith(caches.match(r).then(m=>m||fetch(r).then(res=>{if(res.ok){const c=res.clone();caches.open(ANIM_VER).then(x=>x.put(r,c));}return res;})));return;}
   // 그 외(페이지·매니페스트·아이콘): 네트워크 우선, 오프라인이면 저장본
   e.respondWith(fetch(r).then(res=>{if(res.ok){const c=res.clone();caches.open(SHELL).then(x=>x.put(r.mode==='navigate'?'./index.html':r,c));}return res;})
     .catch(()=>caches.match(r.mode==='navigate'?'./index.html':r).then(m=>m||caches.match('./index.html'))));
