@@ -407,8 +407,9 @@ function convertV3(d,uid){
 /* ══════════════════════ 유틸 ══════════════════════ */
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);};
-const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10);};
+const ymdL=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today=()=>ymdL(new Date());
+const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return ymdL(d);};
 const md=s=>{const [,m,d]=s.split('-');return (+m)+'/'+(+d);};
 const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:0;};
 const fmt=n=>Math.round(n).toLocaleString('ko-KR');
@@ -1429,10 +1430,10 @@ function parseRunFile(text,name){
     tagN(x,'trkpt').forEach(tp=>{const c=num(firstN(tp,'cad'));pts.push({t:Date.parse(firstN(tp,'time')),d:null,hr:num(firstN(tp,'hr')),cad:c?c*2:0,ele:firstN(tp,'ele')?num(firstN(tp,'ele')):null,ll:[num(tp.getAttribute('lat')),num(tp.getAttribute('lon'))]});});
   }else throw new Error('TCX/GPX 파일이 아닙니다');
   const r=parseTrack(pts);if(!r||r.dist<100)throw new Error('거리 정보가 없습니다');
-  const dt=new Date(r.start);dt.setMinutes(dt.getMinutes()-dt.getTimezoneOffset());
+  const dt=new Date(r.start);
   // 케이던스가 이미 양발 기준(>130)이면 2배 보정 취소
   let cad=r.cad;if(cad>260)cad=Math.round(cad/2);
-  return{id:uid('r'),date:dt.toISOString().slice(0,10),type:'easy',km:r1(r.dist/1000*100)/100,min:r1(r.dur/60),hr:r.hr,hrMax:r.hrMax,cad,gain:r.gain,kcal:Math.round(kcal)||0,splits:r.splits,memo:name.replace(/\.(tcx|gpx)$/i,''),src:'watch',start:r.start};
+  return{id:uid('r'),date:ymdL(dt),type:'easy',km:r1(r.dist/1000*100)/100,min:r1(r.dur/60),hr:r.hr,hrMax:r.hrMax,cad,gain:r.gain,kcal:Math.round(kcal)||0,splits:r.splits,memo:name.replace(/\.(tcx|gpx)$/i,''),src:'watch',start:r.start};
 }
 async function importRunFiles(ev){
   const files=[...ev.target.files];ev.target.value='';if(!files.length)return;let ok=0,dup=0,fail=[];
@@ -2020,7 +2021,7 @@ const PROG_LV={all:'전체',beg:'초급',mid:'중급',adv:'상급'};let progLv='
 const lvKey=p=>p.lvl.startsWith('초')?'beg':p.lvl==='중급'?'mid':'adv';
 const progById=id=>PROGRAMS.find(p=>p.id===id);
 function mondayOf(dt){const d=new Date(dt);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
-function progWeek(){const sp=S.prog;if(!sp)return 0;const p=progById(sp.id);if(!p)return 0;const w=Math.floor((mondayOf(new Date())-new Date(sp.start))/(7*864e5))+1+(sp.off||0);return Math.max(1,Math.min(p.weeks,w));}
+function progWeek(){const sp=S.prog;if(!sp)return 0;const p=progById(sp.id);if(!p)return 0;const w=Math.floor(((mondayOf(new Date())-new Date(sp.start+'T00:00'))/864e5+.5)/7)+1+(sp.off||0);return Math.max(1,Math.min(p.weeks,w));}
 function progToday(){const sp=S.prog,p=sp&&progById(sp.id);if(!p)return null;const wd=new Date().getDay(),di=p.sched.indexOf(wd);return{p,w:progWeek(),di,day:di>=0?p.days[di]:null};}
 function missingRM(p){return p.keys.filter(k=>!rmOf(k));}
 
@@ -2080,7 +2081,7 @@ function progToRoutines(id,w){
   save();toast(`${n}개 루틴을 요일에 맞춰 추가했습니다`);closeSheet();go('home');
 }
 function saveProgRM(id){const p=progById(id);missingRM(p).forEach(k=>{const v=num($('prm_'+k)?.value);if(v>0)S.profile.rm[k]=v;});save();openProgram(id);toast('1RM 저장됨');}
-function beginProg(id){const go2=()=>{S.prog={id,start:mondayOf(new Date()).toISOString().slice(0,10),off:0};save();closeSheet();go('home');toast(progById(id).name+' 시작');};
+function beginProg(id){const go2=()=>{S.prog={id,start:ymdL(mondayOf(new Date())),off:0};save();closeSheet();go('home');toast(progById(id).name+' 시작');};
   if(S.prog&&S.prog.id!==id)confirmSheet(`진행 중인 ${progById(S.prog.id)?.name||'프로그램'}을 그만두고 바꿀까요?`,go2,'바꾸기',false);else go2();}
 function shiftProg(d){const p=progById(S.prog.id);const w=progWeek()+d;if(w<1||w>p.weeks)return;S.prog.off=(S.prog.off||0)+d;save();openProgram(p.id,pv.tab,progWeek());}
 function stopProg(){confirmSheet('프로그램을 그만둘까요? 기록은 그대로 남습니다.',()=>{S.prog=null;save();closeSheet();go('home');},'그만하기');}
@@ -2173,16 +2174,18 @@ async function toggleRestNoti(){
 
 /* ── 공유 카드 (스토리 1080×1920) ── */
 function drawBarbell(g,cx,cy,w,a){
-  g.save();g.globalAlpha=a;g.fillStyle='#fff';const rr=(x,y,ww,hh,r)=>{g.beginPath();g.roundRect(x,y,ww,hh,r);g.fill();};
-  rr(cx-w/2,cy-9,w,18,9);                                   // 봉
-  [[-1],[1]].forEach(([d])=>{const s0=cx+d*(w/2-260);
-    [[0,300,46],[56,250,40],[106,190,34],[150,120,26]].forEach(([o,h,t])=>rr(d>0?s0+o:s0-o-t,cy-h/2,t,h,8));   // 20kg·15·10·5 원판
-    rr(d>0?s0-30:s0+6,cy-30,24,60,6);});                     // 칼라
-  g.restore();
+  // w = 봉 전체 길이. 모든 치수를 w에 비례시켜 미리보기·원본 크기에서 같은 모양
+  const u=w/1000,G=g,oc=document.createElement('canvas');oc.width=G.canvas.width;oc.height=G.canvas.height;g=oc.getContext('2d');g.fillStyle='#fff';const rr=(x,y,ww,hh,r)=>{g.beginPath();g.roundRect(x,y,ww,hh,Math.max(1,r));g.fill();};
+  rr(cx-w/2,cy-7*u,w,14*u,7*u);                                        // 봉
+  [-1,1].forEach(d=>{const c0=cx+d*300*u;                               // 칼라(안쪽 멈춤쇠) 위치
+    rr(d>0?c0:c0-16*u,cy-26*u,16*u,52*u,4*u);
+    let o=22*u;[[300,44],[300,44],[220,34],[150,26]].forEach(([h,t])=>{h*=u;t*=u;rr(d>0?c0+o:c0-o-t,cy-h/2,t,h,6*u);o+=t+5*u;});  // 20kg×2·10kg·5kg
+    rr(d>0?c0+o:c0-o-14*u,cy-14*u,14*u,28*u,4*u);});                       // 바깥 칼라
+  G.save();G.setTransform(1,0,0,1,0,0);G.globalAlpha=a;G.drawImage(oc,0,0);G.restore();
 }
 function loadImg(src){return new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src;});}
 /* ── 주간 리포트 ── */
-function weekBounds(off){const m=mondayOf(new Date());m.setDate(m.getDate()+off*7);const e=new Date(m);e.setDate(e.getDate()+6);const f=d=>d.toISOString().slice(0,10);return[f(new Date(m.getTime()-m.getTimezoneOffset()*6e4)),f(new Date(e.getTime()-e.getTimezoneOffset()*6e4))];}
+function weekBounds(off){const m=mondayOf(new Date());m.setDate(m.getDate()+off*7);const e=new Date(m);e.setDate(e.getDate()+6);return[ymdL(m),ymdL(e)];}
 function weekStats(off){
   const[a,b]=weekBounds(off),L=S.logs.filter(l=>l.date>=a&&l.date<=b),R=S.runs.filter(r=>r.date>=a&&r.date<=b);
   const parts={};L.forEach(l=>l.exs.forEach(e=>{const p=partOf(e.name)||BPMAP[l.part];if(p&&VOL.intermediate[p])parts[p]=(parts[p]||0)+e.sets.length;}));
@@ -2451,7 +2454,7 @@ const dietDay=()=>dietDate||today();
 function mealByHour(h){return h>=4&&h<10?'b':h>=10&&h<15?'l':h>=17&&h<22?'d':'s';}
 function mealOf(f){if(f.meal)return f.meal;const t=parseInt(String(f.id||'').slice(1,-3),36);return mealByHour(t>1e12?new Date(t).getHours():20);}
 function addFoodEntry(o){o.date=dietDay();o.meal=dietMeal||(dietDay()===today()?mealByHour(new Date().getHours()):'s');S.food.push(o);}
-function dietShift(d){const x=new Date(dietDay()+'T00:00');x.setDate(x.getDate()+d);const v=x.toISOString().slice(0,10);dietDate=v>today()?today():v;renderDiet();}
+function dietShift(d){const x=new Date(dietDay()+'T12:00');x.setDate(x.getDate()+d);const v=ymdL(x);dietDate=v>=today()?'':v;renderDiet();}
 function ring(p,col,size=118,sw=12){const r=(size-sw)/2,c=2*Math.PI*r,o=c*(1-Math.min(1,Math.max(0,p)));
   return`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--line)" stroke-width="${sw}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${o}" transform="rotate(-90 ${size/2} ${size/2})"/></svg>`;}
 function renderDiet(){
@@ -2520,7 +2523,7 @@ async function makeShareCard(log,scale=1){
   if(ph){const sc=Math.max(W/ph.width,H/ph.height),dw=ph.width*sc,dh=ph.height*sc;
     g.drawImage(ph,(W-dw)/2+(o.ox||0)*(dw-W)/2,(H-dh)/2+(o.oy||0)*(dh-H)/2,dw,dh);
     const anyAdj=o.filter!=='none'||CARD_ADJ.some(([a])=>o[a]);if(anyAdj){const id=g.getImageData(0,0,W,H);adjustPixels(id,o);g.putImageData(id,0,0);}}
-  else{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#3b8cec');gr.addColorStop(1,'#1d5fc0');g.fillStyle=gr;g.fillRect(0,0,W,H);drawBarbell(g,W/2,H*.3,W*1.1,.14);}
+  else{const gr=g.createLinearGradient(0,0,W,H);gr.addColorStop(0,'#3b8cec');gr.addColorStop(1,'#1d5fc0');g.fillStyle=gr;g.fillRect(0,0,W,H);drawBarbell(g,W/2,H*.3,W*.92,.16);}
   // 위·아래 그라데이션 (아래는 연한 파랑)
   let gt=g.createLinearGradient(0,0,0,H*.22);gt.addColorStop(0,'rgba(10,25,55,.38)');gt.addColorStop(1,'rgba(10,25,55,0)');g.fillStyle=gt;g.fillRect(0,0,W,H*.22);
   const lines=o.list?log.exs.map(exLine).filter(Boolean):[],nl=Math.min(lines.length,o.size==='square'?4:6);
@@ -2698,7 +2701,7 @@ function tmTick(){const el=$('tmBig');if(!el||!tm)return;
 const mmssc=s=>{const m=Math.floor(s/60),x=s-m*60;return`${m}:${String(Math.floor(x)).padStart(2,'0')}.${Math.floor((x%1)*10)}`;};
 function tmRender(){
   const ov=$('tmOv');if(!ov||!tm)return;const run=tm.state==='run',done=tm.state==='done',canRound=tm.kind==='amrap'||(tm.kind==='time'&&(tm.rounds||1)>1)||tm.kind==='stopwatch';
-  ov.innerHTML=`<div class="wm-top"><button class="link" onclick="${run?'tmPause();':''}confirmSheet('타이머를 끝낼까요?',()=>{closeSheet();tmClose();},'끝내기')">닫기</button><div style="text-align:center"><b>${esc(tm.title)}</b><div class="tiny">${tm.kind==='stopwatch'?'스톱워치':tm.kind==='countdown'?'타이머':WOD_T[tm.kind]||''}</div></div>
+  ov.innerHTML=`<div class="wm-top"><button class="link" onclick="${run?'tmPause();':''}confirmSheet('타이머를 끝낼까요?',()=>{closeSheet();tmClose();},'끝내기')">닫기</button><div style="text-align:center"><b>${esc(tm.title)}</b>${(()=>{const sub=tm.kind==='stopwatch'?'스톱워치':tm.kind==='countdown'?'타이머':WOD_T[tm.kind]||'';return sub&&sub!==tm.title?`<div class="tiny">${sub}</div>`:''})()}</div>
   <button class="link" onclick="S.voice=S.voice?0:1;saveLocal();tmRender()">${S.voice?'음성 켬':'음성 끔'}</button></div>
   <div class="wm-body" style="text-align:center;padding-top:6vh">
   <div id="tmStep" style="font-size:22px;font-weight:800;min-height:30px;margin-bottom:6px">${tm.state==='pre'?'준비':tm.steps&&tm.kind!=='emom'&&tm.kind!=='tabata'?'':''}</div>
@@ -2811,7 +2814,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='6.5';
+const APP_VER='6.5.1';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
