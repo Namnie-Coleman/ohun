@@ -122,6 +122,7 @@ input[type=range]{width:100%;accent-color:var(--pri);height:28px;}
 
 /* ── 배지 ── */
 .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:700;}
+.b-pri{background:var(--pri-soft);color:var(--pri);}
 .b-good{background:var(--good-soft);color:var(--good);}
 .b-warn{background:var(--warn-soft);color:var(--warn);}
 .b-bad{background:var(--bad-soft);color:var(--bad);}
@@ -356,7 +357,7 @@ table.t tr:last-child td{border-bottom:none;}
 <script>
 /* ══════════════════════ 데이터 ══════════════════════ */
 const KEY='rts_app_v4';
-const DEF={profile:{name:'',height:0,weight:0,age:0,gender:'male',goal:'hypertrophy',exp:'intermediate',freq:4,rm:{squat:0,dead:0,bench:0,ohp:0,row:0}},
+const DEF={prog:null,profile:{name:'',height:0,weight:0,age:0,gender:'male',goal:'hypertrophy',exp:'intermediate',freq:4,rm:{squat:0,dead:0,bench:0,ohp:0,row:0}},
   logs:[],runs:[],bw:[],food:[],routines:[],customEx:[],rest:90,check:null,dietMode:'maintain',theme:'auto'};
 let S;
 function load(){
@@ -542,6 +543,7 @@ function renderHome(){
   const ft=foodTotals(today()),tg=dietTarget();
   let h='';
   if(!p.weight)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>시작하기</b>운동 목적과 인바디를 알려주시면 식단 목표와 추천 루틴을 맞춰 드려요.<div style="margin-top:10px"><button class="btn sm" onclick="openOnboarding()">1분 설정</button></div></div>`;
+  if(S.prog)h+=progHomeHTML();
   // 컨디션
   if(c){
     const sc=c.score,it=intensityOf(sc),col=`var(--${it.cls})`,circ=2*Math.PI*40;
@@ -604,6 +606,8 @@ const PART6=[['chest','가슴'],['back','등'],['legs','하체'],['shoulders','�
 const EQ_L={bb:'바벨',db:'덤벨',kb:'케틀벨',mc:'머신',cb:'케이블',bw:'맨몸',sm:'스트롱맨',run:'러닝'};
 /* [이름, 부위, 장비, 동작패턴, '주동근|보조근', 시간형(초)] */
 const EX_DB=[
+  ['디클라인 덤벨프레스','chest','db','bench','chest|tri,fdelt'],['해머 DY 로우','back','mc','seatrow','lat,trap|rdelt,bi'],['케이블 하이로우','back','cb','seatrow','lat,trap|rdelt,bi'],
+  ['케이블 해머컬','arms','cb','curl','bi,fore'],['리버스 그립 푸시다운','arms','cb','pushdown','tri'],['케이블 풀스루','legs','cb','hinge','glute,ham|lowb'],
   ['벤치프레스','chest','bb','bench','chest|fdelt,tri'],['인클라인 벤치프레스','chest','bb','incline','chest,fdelt|tri'],['디클라인 벤치프레스','chest','bb','bench','chest|tri,fdelt'],
   ['스미스 벤치프레스','chest','mc','bench','chest|fdelt,tri'],['덤벨 벤치프레스','chest','db','bench','chest|fdelt,tri'],['인클라인 덤벨프레스','chest','db','incline','chest,fdelt|tri'],
   ['덤벨 플라이','chest','db','fly','chest|fdelt'],['케이블 플라이','chest','cb','fly','chest|fdelt'],['케이블 크로스오버','chest','cb','fly','chest|fdelt'],
@@ -791,15 +795,28 @@ function runAnim(svgId,name){
 /* 동작 애니메이션: Gym visual (© Gym visual — https://gymvisual.com/)
    hasaneyldrm/exercises-dataset 경유, 180×180 · 개인/비상업 용도. 배경 투명 처리 WebP (anim/ 폴더, 오프라인 캐시) */
 const GV={"벤치프레스":"0025","인클라인 벤치프레스":"0047","디클라인 벤치프레스":"0033","스미스 벤치프레스":"0748","덤벨 벤치프레스":"0289","인클라인 덤벨프레스":"0314","덤벨 플라이":"0308","케이블 플라이":"0188","케이블 크로스오버":"0155","체스트 프레스 머신":"0577","인클라인 체스트 프레스 머신":"1299","펙덱 플라이":"0596","딥스":"0251","푸시업":"0662","디클라인 푸시업":"0279","데드리프트":"0032","스모 데드리프트":"0117","트랩바 데드리프트":"0811","랙풀":"0074","바벨로우":"0027","펜들레이 로우":"3017","T바 로우":"0606","덤벨 로우":"0292","체스트 서포티드 로우":"0327","인버티드 로우":"0499","풀업":"0652","친업":"1326","랫풀다운":"2330","클로즈그립 랫풀다운":"0818","시티드 로우":"0861","원암 케이블 로우":"0214","머신 로우":"1350","스트레이트암 풀다운":"0238","케이블 풀오버":"0237","백 익스텐션":"0489","바벨 슈러그":"0095","덤벨 슈러그":"0406","스쿼트":"0043","프론트 스쿼트":"0042","박스 스쿼트":"0026","스미스 스쿼트":"0770","고블릿 스쿼트":"1760","핵 스쿼트":"0743","레그프레스":"0739","RDL":"0085","덤벨 RDL":"1459","굿모닝":"0044","힙 쓰러스트":"3562","글루트 브릿지":"3013","불가리안 스플릿 스쿼트":"0410","런지":"0336","워킹 런지":"1460","스텝업":"0431","레그컬":"0586","노르딕 컬":"0696","레그 익스텐션":"0585","힙 어브덕션":"0597","힙 어덕션":"0598","카프레이즈":"0605","시티드 카프레이즈":"0594","케틀벨 스윙":"0549","오버헤드프레스":"1456","푸시프레스":"1700","덤벨 숄더프레스":"0405","머신 숄더프레스":"0603","아놀드 프레스":"2137","사이드 레터럴 레이즈":"0334","케이블 레터럴 레이즈":"0178","머신 레터럴 레이즈":"0584","프론트 레이즈":"0310","리어 델트 플라이":"0383","리버스 펙덱":"0602","페이스풀":"0203","업라이트 로우":"0120","바벨컬":"0031","EZ바 컬":"0447","덤벨 컬":"0294","해머컬":"0313","인클라인 덤벨 컬":"0318","컨센트레이션 컬":"0297","프리처 컬":"0592","케이블컬":"0868","리버스 컬":"0080","리스트 컬":"0369","트라이셉스 푸시다운":"0201","로프 푸시다운":"0200","오버헤드 트라이셉스 익스텐션":"0430","케이블 오버헤드 익스텐션":"0194","라잉 트라이셉스 익스텐션":"0060","덤벨 킥백":"0333","클로즈그립 벤치프레스":"0030","트라이셉스 딥스":"0814","벤치 딥스":"0129","플랭크":"2135","사이드 플랭크":"0705","크런치":"0274","바이시클 크런치":"0003","케이블 크런치":"0175","행잉 레그레이즈":"0472","행잉 니레이즈":"1764","라잉 레그레이즈":"0620","앱 롤아웃":"0857","데드버그":"0276","러시안 트위스트":"0687","팔로프 프레스":"0979","파머스 워크":"2133","타이어 플립":"2459","버피":"1160","배틀 로프":"0128","어설트 바이크":"2138","줄넘기":"2612","로그 프레스":"1456","액슬 프레스":"1456","액슬 데드리프트":"0032","서커스 덤벨":"0361","이지런":"0685","템포런":"0685","인터벌 런":"0685","롱런":"0685"};
-function gvSrc(name){const id=GV[name];return id?'anim/'+id+'.webp':null;}
-
+;[['디클라인 덤벨프레스','덤벨 벤치프레스'],['해머 DY 로우','머신 로우'],['케이블 하이로우','원암 케이블 로우'],['케이블 해머컬','케이블컬'],['리버스 그립 푸시다운','트라이셉스 푸시다운']].forEach(([a,b])=>{if(GV[b]&&!GV[a])GV[a]=GV[b];});
+function gvSrc(name){return GV[name]||null;}
+// 운동 애니메이션 113개를 anim.pack 한 파일로 묶어 받음 (GitHub 웹 업로드 100개 제한 회피)
+let animP=null;const animURL={};
+function loadAnimPack(){
+  if(animP)return animP;
+  animP=fetch('anim.pack').then(r=>{if(!r.ok)throw new Error('pack '+r.status);return r.arrayBuffer();}).then(buf=>{
+    const dv=new DataView(buf);if(String.fromCharCode(...new Uint8Array(buf,0,4))!=='OHAN')throw new Error('bad pack');
+    const hl=dv.getUint32(4,true),idx=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,8,hl))),base=8+hl;
+    for(const[id,[o,l]]of Object.entries(idx))animURL[id]=URL.createObjectURL(new Blob([new Uint8Array(buf,base+o,l)],{type:'image/webp'}));
+    return true;}).catch(e=>{animP=null;return false;});
+  return animP;
+}
+async function animSrc(id){if(animURL[id])return animURL[id];const ok=await loadAnimPack();return ok&&animURL[id]?animURL[id]:'anim/'+id+'.webp';}
 function showAnim(idp,name){
   const ph=$(idp+'Ph'),fig=$(idp+'Fig'),tg=$(idp+'Tg'),lab=$(idp+'FigL');if(!ph)return;
-  const src=gvSrc(name);
-  const useSvg=()=>{ph.style.display='none';fig.style.display='';runAnim(idp+'Fig',name);if(tg)tg.textContent=src?'애니메이션으로 보기':'';};
-  if(!src||S.view==='svg'){useSvg();return;}
+  const id=gvSrc(name);
+  const useSvg=()=>{ph.style.display='none';fig.style.display='';runAnim(idp+'Fig',name);if(tg)tg.textContent=id?'애니메이션으로 보기':'';};
+  if(!id||S.view==='svg'){useSvg();return;}
   cancelAnimationFrame(animRaf);fig.style.display='none';ph.style.display='';if(tg)tg.textContent='도식으로 보기';if(lab)lab.textContent='© Gym visual';
-  const im=ph.querySelector('img');im.onerror=useSvg;im.src=src;
+  const im=ph.querySelector('img');im.onerror=useSvg;im.removeAttribute('src');const tok=im.dataset.tok=Math.random();
+  animSrc(id).then(u=>{if(im.dataset.tok==String(tok))im.src=u;});
 }
 
 /* ══════════════════════ 근육 지도 ══════════════════════ */
@@ -1140,16 +1157,20 @@ const PRESETS_RAW=[
   {cat:'hybrid',name:'하이브리드 D · 전신 컨디셔닝',exs:['데드리프트 3×5','케틀벨 스윙 4×15','파머스 워크 4×40','버피 3×10','이지런 1×900']},
   {cat:'hybrid',name:'하이브리드 E · 롱런',exs:['롱런 1×3600']},
 ];
-const RS_CAT={all:'전체',basic:'기본',female:'여성',hybrid:'하이브리드'};let rsCat='all';
+const RS_CAT={all:'전체',nnm:'남니콜먼',basic:'기본',female:'여성',hybrid:'하이브리드'};let rsCat='all';
 function parseLine(s){const m=s.match(/^(.*?)\s*(\d+)\s*[×xX*]\s*(\d+)/);if(!m)return{name:s.replace(/\(.*?\)/g,'').trim(),n:3,r:10};return{name:m[1].replace(/\(.*?\)/g,'').trim(),n:Math.min(10,+m[2]),r:+m[3]};}
 function normRoutine(r){if(Array.isArray(r.items))return r;return{id:r.id||uid('rt'),cat:r.cat,name:r.name||'루틴',items:(r.exs||[]).map(l=>{const t=parseLine(l);return{name:t.name,sets:t.n,reps:t.r,w:''};})};}
 const PRESETS=PRESETS_RAW.map(normRoutine);
 function rtSummary(r){const pc={};let n=0;r.items.forEach(it=>{n+=it.sets;const p=partOf(it.name);if(p)pc[p]=(pc[p]||0)+it.sets;});return{n,parts:Object.entries(pc).sort((a,b)=>b[1]-a[1]).map(([p,c])=>`${PART_L[p]} ${c}`).join(' · ')};}
-function openRoutineSheet(){
+let rsView='rt';
+function openRoutineSheet(view){
+  if(view)rsView=view;
   const card=(r,src,i)=>{const s=rtSummary(r);return`<div class="card" style="margin-bottom:8px"><div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><div class="li-t">${esc(r.name)}</div>
     <div class="li-s" style="white-space:normal">${r.items.length}종목 · ${s.n}세트${s.parts?' · '+s.parts:''}</div><div class="tiny" style="margin-top:4px">${esc(r.items.map(x=>x.name).join(', '))}</div></div>
     <div style="display:flex;flex-direction:column;gap:6px"><button class="btn sm" onclick="startRoutine('${src}',${i})">시작</button><button class="btn ghost sm" onclick="${src==='mine'?`openRtEditor(${i})`:`copyPreset(${i})`}">${src==='mine'?'편집':'복사'}</button></div></div></div>`;};
-  openSheet(`<div class="sheet-h"><h2>루틴</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  const seg=`<div class="seg"><button class="${rsView==='rt'?'on':''}" onclick="openRoutineSheet('rt')">루틴</button><button class="${rsView==='prog'?'on':''}" onclick="openRoutineSheet('prog')">프로그램 (주차별)</button></div>`;
+  if(rsView==='prog'){openSheet(`<div class="sheet-h"><h2>프로그램</h2><button class="link" onclick="closeSheet()">닫기</button></div>${seg}<div class="tiny" style="margin:-4px 4px 10px">요일별 운동과 주차별 무게 진행이 정해진 플랜입니다. 1RM 기준으로 무게를 자동 계산합니다.</div>${progListHTML()}`);return;}
+  openSheet(`<div class="sheet-h"><h2>루틴</h2><button class="link" onclick="closeSheet()">닫기</button></div>${seg}
   <div class="row-btns" style="margin-bottom:6px"><button class="btn" onclick="openRtEditor(-1)">+ 새 루틴 만들기</button></div>
   ${draft.exs.length?`<button class="btn ghost" style="margin-bottom:6px" onclick="routineFromDraft(draft)">지금 입력 중인 운동을 루틴으로</button>`:''}
   <div class="sec">내 루틴</div>${S.routines.length?S.routines.map((r,i)=>card(r,'mine',i)).join(''):'<div class="card empty">추천 루틴을 복사하거나 새로 만들어 보세요</div>'}
@@ -1644,6 +1665,7 @@ function mergeIn(d){
   S.logs=by(S.logs,d.logs,x=>x.date);S.bw=by(S.bw,d.bw,x=>x.date);S.runs=by(S.runs,d.runs,x=>x.id);S.food=by(S.food,d.food,x=>x.id);
   S.routines=by(S.routines,(d.routines||[]).map(normRoutine),x=>x.id||x.name);
   (d.customEx||[]).forEach(x=>{if(!S.customEx.some(y=>y.name===x.name))S.customEx.push(x);});
+  if(d.prog&&!S.prog)S.prog=d.prog;
 }
 function openTheme(){
   openSheet(`<div class="sheet-h"><h2>화면 테마</h2><button class="link" onclick="closeSheet()">닫기</button></div>
@@ -1728,6 +1750,231 @@ function openAccount(){openSheet(`<div class="sheet-h"><h2>계정 · 클라우�
 window.addEventListener('online',()=>{if(S.cloud)fbInit().then(()=>syncNow('silent'));});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&fb.user)syncNow('silent');});
 
+/* ══════════════════════ 프로그램 (요일·주차 플랜) ══════════════════════ */
+// 1RM(프로필) 기준으로 주차별 중량을 자동 계산. 1RM이 없으면 기록에서 추정.
+const PK_NAME={squat:'스쿼트',bench:'벤치프레스',dead:'데드리프트',ohp:'오버헤드프레스',row:'바벨로우'};
+function rmOf(k){
+  const v=S.profile.rm[k];if(v>0)return v;
+  const n=PK_NAME[k];let best=0;S.logs.slice(-60).forEach(l=>l.exs.forEach(e=>{if(e.name===n)e.sets.forEach(s=>{const w=num(s.w),r=num(s.r);if(w>0&&r>0&&r<=12)best=Math.max(best,est1RM(w,r));});}));
+  return best;
+}
+const RD=x=>x>0?round25(x):'';
+const isLow=k=>k==='squat'||k==='dead';
+const rampS=(t,ms,r)=>ms.map(m=>[RD(t*m),r]);
+const pctS=(k,list,base)=>{const b=base!=null?base:rmOf(k);return list.map(([p,r,a])=>[RD(b*p),r,a]);};
+const RUN_PACE={이지런:375,템포런:330,롱런:375,'인터벌 런':300};
+// 아이템: {n, s, r, w} 고정 / {n, f:(w)=>[[kg,reps,amrap]...]} 계산 / {n, km} 러닝
+function itemSets(it,w){
+  if(it.f)return it.f(w).map(([kg,r,a])=>({w:kg,r,a:!!a}));
+  if(it.km)return[{w:'',r:Math.round(it.km*(RUN_PACE[it.n]||360)/60)*60,km:it.km}];
+  return Array.from({length:it.s||3},()=>({w:it.w||'',r:it.r||10}));
+}
+function setsLabel(it,w){
+  const ss=itemSets(it,w);if(!ss.length)return'';
+  if(ss[0].km)return`${ss[0].km}km · 약 ${Math.round(ss[0].r/60)}분`;
+  const g=[];ss.forEach(s=>{const k=(s.w?s.w+'kg':'')+'×'+s.r+(s.a?'+':''),l=g[g.length-1];if(l&&l.k===k)l.n++;else g.push({k,n:1});});
+  if(g.length===1)return`${ss.length}세트 · ${g[0].k.replace(/^×/,'')}${ss[0].w?'':'회'}`;
+  return g.map(x=>x.n>1?`${x.k} ${x.n}세트`:x.k).join(' · ');
+}
+const WD=['일','월','화','수','목','금','토'];
+
+/* ── 남니콜먼 근비대 (사용자 플랜) ── */
+const NNM_RUN=[[5,6,15],[5,6,16],[6,7,18],[5,5,13],[6,7,19],[6,8,21],[7,8,23],[5,6,16],[7,8,24],[7,9,26],[8,9,28],[6,6,18],[8,10,30],[8,10,26],[8,10,32],[6,8,20],[8,10,28],[6,8,22],[5,6,16],[5,4,42.2]];
+const NNM_NOTE=['적응 주 · 표의 중량 하단으로 시작','모든 반복 성공 시 메인 종목 +2.5kg(상체)/+5kg(하체)','빌드 3주차 · LSD 18km','회복 주 · 웨이트 세트 40% 감량, 중량 90%, 러닝 거리 축소',
+ '블록 2 시작 · LSD 19km','LSD 하프 거리(21km) 첫 도달','LSD 23km · 젤/물 섭취 연습 시작','회복 주 · 웨이트·러닝 모두 축소',
+ '마라톤 볼륨 증가 · 월·목 하체 메인 종목 1세트씩 감소','LSD 26km · 후반 5km 마라톤 목표 페이스','LSD 28km','회복 주',
+ '최장 블록 · LSD 30km','LSD 26km 중 16km를 마라톤 목표 페이스로','최장거리 32km · 이후 더 늘리지 않음','회복 주',
+ 'LSD 28km 중 20km 목표 페이스 · 레이스 장비·보급 리허설','테이퍼 1 · 웨이트 중량 유지, 볼륨 40% 감소','테이퍼 2 · 하체 웨이트 가볍게, 러닝 거리 축소','레이스 주 · 하체 웨이트 없음, 토/일 레이스'];
+function nnmAdj(w){const dl=w%4===0&&w<=16,blk=(w-1)%4;return{dl,inc:dl?0:Math.min(blk,2),taper:w>=18,race:w===20,cut:w>=9&&w<=17};}
+function nnmLift(k,base,step){return w=>{const a=nnmAdj(w);return a.dl?base*0.9:base+(a.taper?2*step:a.inc*step);};}
+function nnmSets(s,w,leg){const a=nnmAdj(w);let n=s;if(a.dl)n=Math.max(2,Math.round(s*0.6));else if(a.taper)n=Math.max(2,Math.round(s*0.6));else if(a.cut&&leg)n=Math.max(3,s-1);return n;}
+const nF=(base,step,s,r,leg)=>w=>{const kg=nnmLift(0,base,step)(w);return Array.from({length:nnmSets(s,w,leg)},()=>[RD(kg),r]);};
+const nS=(s,r,kg,leg)=>w=>Array.from({length:nnmSets(s,w,leg)},()=>[kg||'',r]);
+const NNM_DAYS=[
+ {t:'월 · 하체 파워 & 코어',items:w=>nnmAdj(w).race?[{n:'플랭크',f:()=>[['',60],['',60],['',60]]}]:[
+   {n:'스쿼트',f:nF(150,5,5,7,1),note:'140~160kg · 마지막 세트 탑싱글 또는 드롭'},{n:'덤벨 RDL',f:nS(4,10,38,1),note:'한손 36~40kg'},
+   {n:'워킹 런지',f:nS(4,20,18,1),note:'한손 16~20kg · 왕복 20걸음'},{n:'힙 쓰러스트',f:nF(110,5,4,12,1),note:'100~120kg'},
+   {n:'카프레이즈',f:nS(5,20,20),note:'체중 + 20kg'},{n:'행잉 레그레이즈',f:nS(6,20)}]},
+ {t:'화 · 가슴 & 삼두 + 회복 조깅',items:w=>[
+   {n:'벤치프레스',f:nF(107.5,2.5,5,9),note:'100~115kg'},{n:'인클라인 덤벨프레스',f:nS(4,10,34),note:'한손 32~36kg'},
+   {n:'덤벨 플라이',f:nS(4,13,16),note:'한손 14~18kg'},{n:'디클라인 덤벨프레스',f:nS(4,15,28),note:'한손 26~30kg 또는 딥스'},
+   {n:'오버헤드 트라이셉스 익스텐션',f:nS(4,11,35),note:'EZ바 30~40kg'},{n:'로프 푸시다운',f:nS(5,13,40),note:'35~45kg · 마지막 드롭세트'},
+   {n:'이지런',km:NNM_RUN[w-1][0],note:'회복 조깅 · 6:00~6:30/km'}]},
+ {t:'수 · 등 & 이두',items:w=>[
+   {n:'풀업',f:nS(5,10),note:'최대 반복 · 네거티브 2초'},{n:'펜들레이 로우',f:nF(90,2.5,4,9),note:'80~100kg'},
+   {n:'해머 DY 로우',f:nS(4,11,45),note:'원암 교대 · 편측 40~50kg'},{n:'케이블 하이로우',f:nS(4,13,45),note:'40~50kg · 정점 1초'},
+   {n:'덤벨 로우',f:nS(4,10,39),note:'36~42kg'},{n:'EZ바 컬',f:nS(4,11,32.5),note:'30~35kg'},{n:'해머컬',f:nS(5,12,18),note:'한손 16~20kg'}]},
+ {t:'목 · 하체 볼륨 + 템포런',items:w=>nnmAdj(w).race?[{n:'이지런',km:4,note:'레이스 페이스 1km 포함'}]:[
+   {n:'레그프레스',f:nS(4,15,180,1),note:'160~200kg 또는 고블릿 스쿼트 36~40kg'},{n:'레그컬',f:nS(5,15,40,1),note:'35~45kg'},
+   {n:'케이블 풀스루',f:nS(4,15,'',1),note:'또는 덤벨 스티프 데드 한손 24~28kg'},{n:'카프레이즈',f:nS(5,20,20)},{n:'플랭크',f:nS(4,60)},
+   {n:'템포런',km:NNM_RUN[w-1][1],note:'5:20~5:40/km'}]},
+ {t:'금 · 어깨 3D & 팔',items:w=>[
+   {n:'덤벨 숄더프레스',f:nS(5,11,28),note:'한손 26~30kg'},{n:'사이드 레터럴 레이즈',f:nS(6,17,12),note:'한손 10~14kg · 마지막 드롭'},
+   {n:'리어 델트 플라이',f:nS(5,20,10),note:'한손 8~12kg'},{n:'라잉 트라이셉스 익스텐션',f:nS(4,11,32.5),note:'슈퍼세트 A1 · 인클라인 덤벨 컬과 교대'},
+   {n:'인클라인 덤벨 컬',f:nS(4,11,13),note:'슈퍼세트 A2'},{n:'덤벨 킥백',f:nS(4,15,9),note:'슈퍼세트 B1'},{n:'케이블 해머컬',f:nS(4,15,30),note:'슈퍼세트 B2'},
+   {n:'리버스 그립 푸시다운',f:nS(4,15,''),note:'케이블컬과 교대 · 펌핑 마무리'},{n:'케이블컬',f:nS(4,15,'')}]},
+ {t:'토 · LSD 장거리',items:w=>[{n:'롱런',km:NNM_RUN[w-1][2],note:nnmAdj(w).race?'풀마라톤 레이스':'6:00~6:30/km · 15km 이상은 출발 전 가벼운 탄수화물 권장'}]},
+];
+
+/* ── 공개 프로그램 ── */
+const t5=(k,w)=>rmOf(k)*0.857*Math.pow(1.025,w-4);   // Madcow: 4주차 = 현재 5RM
+const SL_ORDER=w=>w%2?['A','B','A']:['B','A','B'];
+function slKg(k,w,d){const n=(w-1)*3+d,cnt=k==='squat'?n:(k==='bench'||k==='row')?Math.ceil(n/2):Math.floor(n/2),inc=k==='dead'?5:2.5;const s0=rmOf(k)*0.857*0.5,cap=rmOf(k)*0.857*1.1;return Math.min(s0+cnt*inc,cap||Infinity);}
+const tmOf=(k,w)=>rmOf(k)*0.9+Math.floor((w-1)/4)*(isLow(k)?5:2.5);
+const W531=[[[.65,5],[.75,5],[.85,5,1]],[[.70,3],[.80,3],[.90,3,1]],[[.75,5],[.85,3],[.95,1,1]],[[.40,5],[.50,5],[.60,5]]];
+const f531=k=>w=>pctS(k,W531[(w-1)%4],tmOf(k,w));
+const fBBB=k=>w=>(w-1)%4===3?[]:pctS(k,Array(5).fill([[.5,.55,.6][Math.min(2,Math.floor((w-1)/4))],10]),tmOf(k,w));
+const i5=(k,w)=>rmOf(k)*0.857+(w-1)*(isLow(k)?2.5:1.25);
+const tmPress=(w,vol)=>(w%2===1)===vol?'bench':'ohp';
+function gzT1(k,w){const r=rmOf(k),kg=r*0.857*0.85+(w-1)*(isLow(k)?5:2.5),p=r?kg/r:0;if(p<=.88)return[...Array(4).fill([RD(kg),3]),[RD(kg),3,1]];if(p<=.92)return[...Array(5).fill([RD(kg),2]),[RD(kg),2,1]];const k2=Math.min(kg,r*.95);return[...Array(9).fill([RD(k2),1]),[RD(k2),1,1]];}
+function gzT2(k,w){const r=rmOf(k),kg=r*0.5+(w-1)*(isLow(k)?5:2.5),p=r?kg/r:0;const rep=p<=.65?10:p<=.72?8:6;return Array(3).fill([RD(Math.min(kg,r*.8)),rep]);}
+const phulP=(k,p,s,r,w)=>{const dl=w===8;const kg=rmOf(k)*p+Math.floor((w-1)/2)*(isLow(k)?5:2.5);const n=dl?Math.max(2,s-1):s+(w>=4&&w<8?1:0);return Array(n).fill([RD(dl?kg*.6:kg),r]);};
+const smo=(k,add)=>w=>{const a=add[Math.min(w,3)-1];return[[.70,6,6],[.75,7,5],[.80,8,4],[.85,10,3]].map(([p,s,r])=>Array(s).fill([RD(rmOf(k)*p+a),r]));};
+function smolov(k,add){const S4=smo(k,add);const nm=PK_NAME[k];return[0,1,2,3].map(d=>({t:['월 · 6×6 @70%','수 · 7×5 @75%','금 · 8×4 @80%','토 · 10×3 @85%'][d],
+  tw:w=>w===4?['월 · 휴식','수 · 가볍게 3×3 @70%','금 · 휴식','토 · 1RM 테스트'][d]:null,
+  items:w=>w===4?[[],[{n:nm,f:()=>pctS(k,[[.7,3],[.7,3],[.7,3]])}],[],[{n:nm,f:()=>pctS(k,[[.6,3],[.75,2],[.85,1],[.92,1],[.97,1],[1.03,1]]),note:'신기록 시도 · 실패해도 그 전 무게가 새 기준'}]][d]:[{n:nm,f:w=>S4(w)[d]}]}));}
+
+const PROGRAMS=[
+ {id:'nnm',name:'남니콜먼 근비대',sub:'근비대(주) + 봄 풀마라톤 완주(부)',lvl:'상급',freq:'주 6회',weeks:20,sched:[1,2,3,4,5,6],keys:[],days:NNM_DAYS,
+  about:'오전 09:30 웨이트 · 화/목 야간 러닝 · 토 LSD · 일 완전 휴식. 메인 세트 간 90초, 고립·슈퍼세트 60초로 90분 안에 끝낸다.',
+  rules:['단백질 하루 180g 고정 · 22:30 프로틴 40g','템포런·LSD 전후 이온음료와 나트륨 보충 (경련 예방)','4주마다 회복 주 (16주차까지)','9주차부터 마라톤 거리가 늘어나므로 월·목 하체 메인 종목 1세트씩 감소','18~20주차 테이퍼: 중량은 유지, 볼륨을 줄인다'],
+  weekNote:w=>NNM_NOTE[w-1],mine:1,
+  src:[['원본: 사용자 업로드 텍스트',''],['주차별 러닝·테이퍼는 오운! 제언','']]},
+ {id:'madcow',name:'매드카우 5×5',sub:'주 단위 선형 증량 · 근력+근비대',lvl:'중급',freq:'주 3회',weeks:8,sched:[1,3,5],keys:['squat','bench','row','ohp','dead'],
+  days:[
+   {t:'월 · 헤비 (5×5 램프)',items:w=>[{n:'스쿼트',f:w=>rampS(t5('squat',w),[.5,.625,.75,.875,1],5)},{n:'벤치프레스',f:w=>rampS(t5('bench',w),[.5,.625,.75,.875,1],5)},{n:'바벨로우',f:w=>rampS(t5('row',w),[.5,.625,.75,.875,1],5)},{n:'백 익스텐션',s:2,r:10},{n:'크런치',s:4,r:12}]},
+   {t:'수 · 라이트',items:w=>[{n:'스쿼트',f:w=>rampS(t5('squat',w),[.5,.625,.75,.75],5),note:'월요일 3세트째 무게까지만'},{n:'오버헤드프레스',f:w=>rampS(t5('ohp',w),[.625,.75,.875,1],5)},{n:'데드리프트',f:w=>rampS(t5('dead',w),[.625,.75,.875,1],5)},{n:'크런치',s:3,r:12}]},
+   {t:'금 · PR (트리플)',items:w=>['squat','bench','row'].map(k=>({n:PK_NAME[k],f:w=>{const t=t5(k,w);return[...rampS(t,[.5,.625,.75,.875],5),[RD(t*1.025),3],[RD(t*.75),8]];},note:'트리플 = 다음 주 월요일 5회 무게'})).concat([{n:'딥스',s:3,r:6},{n:'바벨컬',s:3,r:8},{n:'라잉 트라이셉스 익스텐션',s:3,r:8}])}],
+  about:'월요일 무겁게, 수요일 가볍게, 금요일 트리플로 다음 주 무게를 미리 들어 본다. 일부러 가볍게 시작해 4주차쯤 현재 5RM에 도달하고, 그 뒤 매주 2.5%씩 신기록을 쌓는다.',
+  rules:['매주 모든 무게 +2.5%','금요일 트리플 무게 = 다음 주 월요일 탑 세트','같은 무게에서 2주 연속 실패 시 1주 디로드(-10%) 후 3주차 무게부터 재시작','액세서리는 60~90초, 메인 램프는 3~5분 휴식'],
+  weekNote:w=>w<=3?'적응 주 · 현재 5RM보다 가볍게, 폼 점검':w===4?'현재 5RM 타이 · 금요일 트리플이 첫 신기록':w<=6?'매주 +2.5% · 월요일 5회 신기록 도전':'정체가 오기 쉬운 구간 · 2주 실패 시 디로드 후 3주차부터 재시작',
+  src:[['StrengthLog · Madcow 5×5','https://www.strengthlog.com/madcow-5x5/'],['Lift Vault · Madcow 스프레드시트','https://liftvault.com/programs/strength/madcow-5x5-spreadsheet/']]},
+ {id:'sl5',name:'스트롱리프트 5×5',sub:'매 세션 증량 · 입문 근력',lvl:'초급',freq:'주 3회',weeks:12,sched:[1,3,5],keys:['squat','bench','row','ohp','dead'],
+  days:[0,1,2].map(d=>({t:w=>`${['월','수','금'][d]} · 운동 ${SL_ORDER(w)[d]}`,items:w=>SL_ORDER(w)[d]==='A'?[{n:'스쿼트',f:w=>Array(5).fill([RD(slKg('squat',w,d)),5])},{n:'벤치프레스',f:w=>Array(5).fill([RD(slKg('bench',w,d)),5])},{n:'바벨로우',f:w=>Array(5).fill([RD(slKg('row',w,d)),5])}]
+    :[{n:'스쿼트',f:w=>Array(5).fill([RD(slKg('squat',w,d)),5])},{n:'오버헤드프레스',f:w=>Array(5).fill([RD(slKg('ohp',w,d)),5])},{n:'데드리프트',f:w=>[[RD(slKg('dead',w,d)),5]]}]})),
+  about:'운동 A(스쿼트·벤치·로우)와 B(스쿼트·OHP·데드)를 번갈아 한다. 5RM의 50%에서 시작해 성공할 때마다 무게를 올린다.',
+  rules:['5×5 성공 시 다음 세션 +2.5kg (데드리프트 +5kg)','같은 무게 3회 연속 실패 시 10% 내려서 다시 올라가기','휴식: 쉬우면 90초, 어려우면 3분, 실패 직후 5분','진행이 주 단위로 느려지면 매드카우·텍사스 메소드로 넘어간다'],
+  weekNote:w=>w%2?'A-B-A 주':'B-A-B 주',
+  src:[['StrongLifts · Madcow 안내(SL 졸업 후)','https://stronglifts.com/madcow-5x5/workout-guide']]},
+ {id:'texas',name:'텍사스 메소드',sub:'볼륨-회복-강도 · 주간 5RM 갱신',lvl:'중급',freq:'주 3회',weeks:12,sched:[1,3,5],keys:['squat','bench','ohp','dead'],
+  days:[
+   {t:'월 · 볼륨',items:w=>[{n:'스쿼트',f:w=>Array(5).fill([RD(i5('squat',w)*.9),5])},{n:PK_NAME[tmPress(w,1)],f:w=>Array(5).fill([RD(i5(tmPress(w,1),w)*.9),5])},{n:'데드리프트',f:w=>[[RD(i5('dead',w)*.9),5]]},{n:'바벨로우',s:3,r:8}]},
+   {t:'수 · 회복',items:w=>[{n:'스쿼트',f:w=>Array(2).fill([RD(i5('squat',w)*.9*.8),5]),note:'월요일 무게의 80%'},{n:PK_NAME[tmPress(w,0)],f:w=>Array(3).fill([RD(i5(tmPress(w,0),w)*.9*.9),5])},{n:'친업',s:3,r:8},{n:'백 익스텐션',s:3,r:10}]},
+   {t:'금 · 강도 (5RM)',items:w=>[{n:'스쿼트',f:w=>[[RD(i5('squat',w)),5]],note:'새 5RM'},{n:PK_NAME[tmPress(w,1)],f:w=>[[RD(i5(tmPress(w,1),w)),5]]},{n:'데드리프트',f:w=>[[RD(i5('dead',w)+5),5]]},{n:'친업',s:3,r:8}]}],
+  about:'월요일 5×5(금요일 5RM의 90%)로 자극, 수요일은 가볍게 회복, 금요일에 5RM 신기록. 벤치와 OHP는 주마다 볼륨/강도 역할을 바꾼다.',
+  rules:['금요일 5RM 성공 시 다음 주 하체 +2.5kg, 상체 +1.25kg','금요일 실패 시 먼저 월요일 5×5를 4×5 또는 3×5로 줄인다','그래도 정체면 월요일 무게를 5~10% 낮추고 다시 쌓는다','월-수-금처럼 세션 사이 48시간 확보'],
+  weekNote:w=>w%2?'벤치 볼륨 · OHP 회복 주':'OHP 볼륨 · 벤치 회복 주',
+  src:[['Fitness Volt · Texas Method','https://fitnessvolt.com/strength-gains-texas-method/'],['Liftosaur · Texas Method','https://liftosaur.com/programs/texasmethod']]},
+ {id:'bbb',name:'5/3/1 BBB',sub:'웬들러 4주 사이클 + 5×10 볼륨',lvl:'중급',freq:'주 4회',weeks:12,sched:[1,2,4,5],keys:['ohp','dead','bench','squat'],
+  days:[['ohp','친업',5,10],['dead','행잉 레그레이즈',5,15],['bench','덤벨 로우',5,10],['squat','레그컬',5,10]].map(([k,a,s,r],i)=>({t:`${['월','화','목','금'][i]} · ${PK_NAME[k]}`,items:w=>[{n:PK_NAME[k],f:f531(k),note:'마지막 세트는 최대 반복(+)'},{n:PK_NAME[k],f:fBBB(k),note:'BBB 5×10'},{n:a,s,r}].filter(x=>!x.f||x.f(w).length)})),
+  about:'트레이닝 맥스(TM) = 1RM의 90%. 1주 5s, 2주 3s, 3주 5/3/1, 4주 디로드를 반복하고 같은 운동을 5×10으로 한 번 더 한다.',
+  rules:['사이클(4주)마다 TM 상체 +2.5kg, 하체 +5kg','+세트는 폼이 무너지기 전까지 최대 반복','BBB는 TM 50%로 시작해 사이클마다 55%, 60%','디로드 주에는 BBB 생략'],
+  weekNote:w=>['5s 주 (65·75·85%)','3s 주 (70·80·90%)','5/3/1 주 (75·85·95%)','디로드 (40·50·60%)'][(w-1)%4]+` · 사이클 ${Math.floor((w-1)/4)+1}`,
+  src:[['Lift Vault · 5/3/1 계산기','https://liftvault.com/resources/531-calculator/'],['Lift Vault · 5/3/1 BBB','https://liftvault.com/programs/strength/jim-wendlers-531-spreadsheet/']]},
+ {id:'gzclp',name:'GZCLP',sub:'T1·T2·T3 3단 구조 선형 진행',lvl:'초중급',freq:'주 4회',weeks:12,sched:[1,2,4,5],keys:['squat','bench','ohp','dead'],
+  days:[['squat','bench','랫풀다운'],['ohp','dead','덤벨 로우'],['bench','squat','랫풀다운'],['dead','ohp','덤벨 로우']].map(([a,b,c],i)=>({t:`${['월','화','목','금'][i]} · ${['A1','B1','A2','B2'][i]}`,
+   items:w=>[{n:PK_NAME[a],f:w=>gzT1(a,w),note:'T1 · 마지막 세트 최대 반복'},{n:PK_NAME[b],f:w=>gzT2(b,w),note:'T2'},{n:c,s:3,r:15,note:'T3 · 마지막 세트 최대 반복, 25회 넘으면 증량'}]})),
+  about:'T1 무겁게(5×3+), T2 중간(3×10), T3 가볍게(3×15+). 같은 날 T1과 T2는 다른 리프트로 번갈아 한다.',
+  rules:['T1 성공 시 다음 주 상체 +2.5kg, 하체 +5kg','T1 실패: 5×3 → 6×2 → 10×1 순으로 같은 무게 유지하며 단계 변경','T2 실패: 3×10 → 3×8 → 3×6','10×1까지 실패하면 5RM 재측정 후 85%로 재시작'],
+  weekNote:w=>w<=4?'T1 5×3+ 단계':w<=8?'정체 오면 단계 변경 시점':'단계 3 진입 가능 · 5RM 재측정 준비',
+  src:[['Liftosaur · GZCLP','https://www.liftosaur.com/programs/gzclp'],['Boostcamp · GZCL 방법론','https://www.boostcamp.app/methodology/gzcl']]},
+ {id:'phul',name:'PHUL',sub:'파워 + 근비대 상하체 분할',lvl:'중급',freq:'주 4회',weeks:8,sched:[1,2,4,5],keys:['bench','row','ohp','squat','dead'],
+  days:[
+   {t:'월 · 상체 파워',items:w=>[{n:'벤치프레스',f:w=>phulP('bench',.82,3,5,w)},{n:'인클라인 덤벨프레스',s:3,r:8},{n:'바벨로우',f:w=>phulP('row',.82,3,5,w)},{n:'랫풀다운',s:3,r:8},{n:'오버헤드프레스',f:w=>phulP('ohp',.7,2,8,w)},{n:'바벨컬',s:2,r:8},{n:'라잉 트라이셉스 익스텐션',s:2,r:8}]},
+   {t:'화 · 하체 파워',items:w=>[{n:'스쿼트',f:w=>phulP('squat',.82,3,5,w)},{n:'데드리프트',f:w=>phulP('dead',.8,3,5,w)},{n:'레그프레스',s:4,r:12},{n:'레그컬',s:4,r:8},{n:'카프레이즈',s:4,r:8}]},
+   {t:'목 · 상체 근비대',items:w=>[{n:'인클라인 벤치프레스',f:w=>phulP('bench',.6,3,10,w)},{n:'덤벨 플라이',s:3,r:12},{n:'시티드 로우',s:3,r:12},{n:'원암 케이블 로우',s:3,r:12},{n:'사이드 레터럴 레이즈',s:3,r:12},{n:'인클라인 덤벨 컬',s:3,r:12},{n:'케이블 오버헤드 익스텐션',s:3,r:12}]},
+   {t:'금 · 하체 근비대',items:w=>[{n:'프론트 스쿼트',f:w=>phulP('squat',.55,3,10,w)},{n:'런지',s:3,r:12},{n:'레그 익스텐션',s:3,r:15},{n:'레그컬',s:3,r:15},{n:'시티드 카프레이즈',s:4,r:12},{n:'카프레이즈',s:4,r:8}]}],
+  about:'상하체를 파워 날(3~5회)과 근비대 날(8~12회)로 두 번씩. 근력과 근육량을 함께 올리는 주 4회 구성.',
+  rules:['파워 리프트는 2주마다 상체 +2.5kg, 하체 +5kg','적응 후(4주차~) 메인 컴파운드에 4번째 세트 추가','2주 연속 반복 수가 떨어지면 1주 디로드 (8주차 기본 배치)','근비대 날은 범위 상단(12회) 채우면 증량'],
+  weekNote:w=>w<=3?'적응 · 3세트':w<8?'메인 종목 4세트':'디로드 · 60%',
+  src:[['Lift Vault · PHUL','https://liftvault.com/programs/strength/phul-spreadsheet/'],['Boostcamp · PHUL (Brandon Campbell)','https://www.boostcamp.app/coaches/brandon-campbell/phul-4-day-split']]},
+ {id:'smoS',name:'스몰로프 Jr · 스쿼트',sub:'3주 고빈도 집중 · 1RM 돌파',lvl:'상급',freq:'주 4회',weeks:4,sched:[1,3,5,6],keys:['squat'],days:smolov('squat',[0,5,10]),
+  about:'3주간 스쿼트만 주 4회. 6×6·7×5·8×4·10×3을 70~85%로 하고 매주 무게를 더한다. 4주차에 1RM 테스트.',
+  rules:['2주차 +5kg, 3주차 +10kg (힘들면 절반만)','실제 1RM보다 약간 낮게 입력해 시작하는 것이 안전','기간 중 다른 하체 중량 운동은 최소화','10×3 날은 세트 간 4~5분 휴식'],
+  weekNote:w=>['기본 퍼센트','+5kg','+10kg','회복 후 1RM 테스트'][w-1],
+  src:[['Lift Vault · Smolov Jr','https://liftvault.com/programs/lift-specific/smolov/'],['Liftosaur · Smolov Jr','https://www.liftosaur.com/programs/smolov-jr']]},
+ {id:'smoB',name:'스몰로프 Jr · 벤치',sub:'3주 고빈도 집중 · 벤치 1RM',lvl:'상급',freq:'주 4회',weeks:4,sched:[1,3,5,6],keys:['bench'],days:smolov('bench',[0,2.5,5]),
+  about:'벤치프레스만 3주간 주 4회. 스쿼트판과 같은 구조에 증량 폭을 작게.',
+  rules:['2주차 +2.5kg, 3주차 +5kg','어깨 통증이 오면 즉시 중단','다른 가슴·삼두 운동은 최소화','손목 랩은 80% 이상에서 도움'],
+  weekNote:w=>['기본 퍼센트','+2.5kg','+5kg','회복 후 1RM 테스트'][w-1],
+  src:[['Lift Vault · Smolov Jr','https://liftvault.com/programs/lift-specific/smolov/'],['Liftosaur · Smolov Jr','https://www.liftosaur.com/programs/smolov-jr']]},
+];
+// 남니콜먼 근비대 요일 루틴을 추천 루틴 목록에도 추가 (1주차 기준)
+NNM_DAYS.forEach((d,i)=>PRESETS.push({id:'nnm'+i,cat:'nnm',name:'남니콜먼 근비대 · '+d.t,days:[[1,2,3,4,5,6][i]],items:d.items(1).map(it=>{const ss=itemSets(it,1);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||''};})}));
+const PROG_LV={all:'전체',beg:'초급',mid:'중급',adv:'상급'};let progLv='all';
+const lvKey=p=>p.lvl.startsWith('초')?'beg':p.lvl==='중급'?'mid':'adv';
+const progById=id=>PROGRAMS.find(p=>p.id===id);
+const dayT=(d,w)=>(d.tw&&d.tw(w))||(typeof d.t==='function'?d.t(w):d.t);
+const dayItems=(d,w)=>(typeof d.items==='function'?d.items(w):d.items)||[];
+function mondayOf(dt){const d=new Date(dt);d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d;}
+function progWeek(){const sp=S.prog;if(!sp)return 0;const p=progById(sp.id);if(!p)return 0;const w=Math.floor((mondayOf(new Date())-new Date(sp.start))/(7*864e5))+1+(sp.off||0);return Math.max(1,Math.min(p.weeks,w));}
+function progToday(){const sp=S.prog,p=sp&&progById(sp.id);if(!p)return null;const wd=new Date().getDay(),di=p.sched.indexOf(wd);return{p,w:progWeek(),di,day:di>=0?p.days[di]:null};}
+function missingRM(p){return p.keys.filter(k=>!rmOf(k));}
+
+function progListHTML(){
+  return`<div class="chips" style="margin:0 0 10px">${Object.entries(PROG_LV).map(([k,l])=>`<button class="chip ${progLv===k?'on':''}" onclick="progLv='${k}';openRoutineSheet('prog')">${l}</button>`).join('')}</div>`+
+  PROGRAMS.filter(p=>p.mine||progLv==='all'||lvKey(p)===progLv).map(p=>`<button class="card" style="display:block;width:100%;text-align:left;margin-bottom:8px" onclick="openProgram('${p.id}')">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div class="li-t">${esc(p.name)}</div>${S.prog&&S.prog.id===p.id?'<span class="badge b-good">진행 중</span>':p.mine?'<span class="badge b-pri">내 플랜</span>':''}</div>
+    <div class="li-s" style="white-space:normal">${esc(p.sub)}</div><div class="tiny" style="margin-top:4px">${p.lvl} · ${p.freq} · ${p.weeks}주 · ${p.sched.map(d=>WD[d]).join('')}</div></button>`).join('');
+}
+let pv={id:'',tab:'day',w:1};
+function openProgram(id,tab,w){
+  const p=progById(id);if(!p)return;const act=S.prog&&S.prog.id===id;
+  pv={id,tab:tab||pv.tab||'day',w:w||(act?progWeek():1)};if(pv.w>p.weeks)pv.w=1;
+  const miss=missingRM(p);
+  let h=`<div class="sheet-h"><h2>${esc(p.name)}</h2><button class="link" onclick="openRoutineSheet('prog')">목록</button></div>
+  <div class="muted" style="margin:-4px 4px 10px">${esc(p.sub)} · ${p.lvl} · ${p.freq} · ${p.weeks}주</div>`;
+  if(miss.length)h+=`<div class="note n-warn" style="margin:0 0 12px"><b>1RM을 입력하면 무게가 계산됩니다</b>
+    <div class="g2" style="margin-top:8px">${miss.map(k=>`<div class="field" style="margin:0"><label class="lbl">${PK_NAME[k]} 1RM</label><input class="inp" type="number" inputmode="decimal" id="prm_${k}" placeholder="kg"></div>`).join('')}</div>
+    <button class="btn sm" style="margin-top:8px" onclick="saveProgRM('${id}')">저장</button></div>`;
+  h+=`<div class="seg"><button class="${pv.tab==='day'?'on':''}" onclick="openProgram('${id}','day',${pv.w})">요일별</button><button class="${pv.tab==='week'?'on':''}" onclick="openProgram('${id}','week',${pv.w})">주차별</button><button class="${pv.tab==='how'?'on':''}" onclick="openProgram('${id}','how',${pv.w})">방법</button></div>`;
+  if(pv.tab==='day'){
+    h+=`<div class="chips scroll" style="flex-wrap:nowrap;overflow-x:auto;margin:0 0 8px;padding-bottom:4px">${Array.from({length:p.weeks},(_,i)=>`<button class="chip ${pv.w===i+1?'on':''}" onclick="openProgram('${id}','day',${i+1})">${i+1}주${act&&progWeek()===i+1?' ·지금':''}</button>`).join('')}</div>
+    <div class="tiny" style="margin:0 4px 10px">${esc(p.weekNote?p.weekNote(pv.w):'')}</div>`;
+    p.days.forEach((d,di)=>{const its=dayItems(d,pv.w);
+      h+=`<div class="card" style="margin-bottom:8px"><div class="card-h"><div class="card-t">${esc(dayT(d,pv.w))}</div>${its.length?`<button class="btn sm" onclick="startProgDay('${id}',${di},${pv.w})">시작</button>`:''}</div>
+      ${its.length?its.map(it=>`<div style="padding:6px 0;border-top:1px solid var(--line)"><b style="font-weight:600">${esc(it.n)}</b><div style="font-size:13px;color:var(--text);margin-top:2px">${setsLabel(it,pv.w)}</div>${it.note?`<div class="tiny">${esc(it.note)}</div>`:''}</div>`).join(''):'<div class="muted">휴식</div>'}</div>`;});
+  }else if(pv.tab==='week'){
+    const lifts=p.keys.length?p.keys:null;
+    h+=`<div class="card" style="padding:6px 10px;overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px"><tr style="color:var(--text2)"><th style="text-align:left;padding:6px 4px">주</th>${lifts?lifts.map(k=>`<th style="text-align:right;padding:6px 4px">${PK_NAME[k].replace('오버헤드프레스','OHP').replace('벤치프레스','벤치').replace('데드리프트','데드').replace('바벨로우','로우')}</th>`).join(''):'<th style="text-align:right;padding:6px 4px">화</th><th style="text-align:right;padding:6px 4px">목</th><th style="text-align:right;padding:6px 4px">토 LSD</th>'}<th style="text-align:left;padding:6px 4px">제언</th></tr>`;
+    for(let w=1;w<=p.weeks;w++){
+      let cells='';
+      if(lifts)cells=lifts.map(k=>{let best=null;p.days.forEach(d=>dayItems(d,w).forEach(it=>{if(it.n===PK_NAME[k]&&it.f)it.f(w).forEach(([kg,r])=>{if(kg&&(!best||kg>best[0]))best=[kg,r];});}));return`<td style="text-align:right;padding:6px 4px;white-space:nowrap">${best?best[0]+'×'+best[1]:'-'}</td>`;}).join('');
+      else cells=NNM_RUN[w-1].map(x=>`<td style="text-align:right;padding:6px 4px">${x}km</td>`).join('');
+      h+=`<tr style="border-top:1px solid var(--line);${act&&progWeek()===w?'background:var(--pri-soft)':''}" onclick="openProgram('${id}','day',${w})"><td style="padding:6px 4px;font-weight:700">${w}</td>${cells}<td style="padding:6px 4px;color:var(--text2);min-width:120px">${esc(p.weekNote?p.weekNote(w):'')}</td></tr>`;
+    }
+    h+=`</table></div><div class="tiny" style="margin:6px 4px">${lifts?'각 주에서 가장 무거운 세트(kg×회). 행을 누르면 그 주의 요일별 계획이 열립니다.':'러닝 거리 진행표. 행을 누르면 그 주의 요일별 계획이 열립니다.'}</div>`;
+  }else{
+    h+=`<div class="card"><div class="muted" style="line-height:1.6">${esc(p.about)}</div></div>
+    <div class="card"><div class="card-t" style="margin-bottom:6px">진행 규칙</div><ol class="cues">${p.rules.map(r=>`<li>${esc(r)}</li>`).join('')}</ol></div>
+    <div class="card"><div class="card-t" style="margin-bottom:6px">주간 일정</div><div class="muted">${p.sched.map((d,i)=>`${WD[d]} ${esc(dayT(p.days[i],1).replace(/^.\s·\s/,''))}`).join('<br>')}</div></div>
+    <div class="card"><div class="card-t" style="margin-bottom:6px">출처</div>${p.src.map(([t,u])=>u?`<a class="link" style="display:block;padding:3px 0" href="${u}" target="_blank" rel="noopener">${esc(t)}</a>`:`<div class="tiny">${esc(t)}</div>`).join('')}</div>`;
+  }
+  h+=act?`<div class="row-btns" style="margin-top:10px"><button class="btn ghost" onclick="shiftProg(-1)">주차 -1</button><button class="btn ghost" onclick="shiftProg(1)">주차 +1</button></div><button class="btn danger" style="margin-top:8px" onclick="stopProg()">프로그램 그만하기</button>`
+    :`<button class="btn" style="margin-top:10px" onclick="beginProg('${id}')">이번 주부터 시작</button><div class="tiny" style="margin:6px 4px">시작하면 오늘 화면에 그날 운동이 무게와 함께 표시됩니다.</div>`;
+  openSheet(h);
+}
+function saveProgRM(id){const p=progById(id);missingRM(p).forEach(k=>{const v=num($('prm_'+k)?.value);if(v>0)S.profile.rm[k]=v;});save();openProgram(id);toast('1RM 저장됨');}
+function beginProg(id){const go2=()=>{S.prog={id,start:mondayOf(new Date()).toISOString().slice(0,10),off:0};save();closeSheet();go('home');toast(progById(id).name+' 시작');};
+  if(S.prog&&S.prog.id!==id)confirmSheet(`진행 중인 ${progById(S.prog.id)?.name||'프로그램'}을 그만두고 바꿀까요?`,go2,'바꾸기',false);else go2();}
+function shiftProg(d){const p=progById(S.prog.id);const w=progWeek()+d;if(w<1||w>p.weeks)return;S.prog.off=(S.prog.off||0)+d;save();openProgram(p.id,pv.tab,progWeek());}
+function stopProg(){confirmSheet('프로그램을 그만둘까요? 기록은 그대로 남습니다.',()=>{S.prog=null;save();closeSheet();go('home');},'그만하기');}
+function startProgDay(id,di,w){
+  const p=progById(id),d=p.days[di],its=dayItems(d,w);
+  const doIt=()=>{draft.exs=its.map(it=>({id:uid('e'),name:it.n,up:0,sets:itemSets(it,w).map(s=>({w:s.w===''?'':s.w,r:s.r,done:false}))}));
+    draft.routine=`${p.name} ${w}주 · ${dayT(d,w)}`;draft.startedAt=0;saveDraft();closeSheet();if(curTab!=='log')go('log');renderExList();openWM();};
+  if(draft.exs.length)confirmSheet('입력 중인 운동을 이 계획으로 바꿀까요?',doIt,'바꾸기');else doIt();
+}
+function progHomeHTML(){
+  const t=progToday();if(!t)return'';const{p,w,di,day}=t;
+  let nx='';if(!day){for(let k=1;k<=7;k++){const wd=(new Date().getDay()+k)%7,i=p.sched.indexOf(wd);if(i>=0){nx=`다음: ${WD[wd]}요일 · ${dayT(p.days[i],w)}`;break;}}}
+  const its=day?dayItems(day,w):[];
+  return`<div class="card"><div class="card-h"><div class="card-t">${esc(p.name)} · ${w}/${p.weeks}주</div><button class="link" onclick="openProgram('${p.id}','day',${w})">전체 보기</button></div>
+  <div class="tiny" style="margin-bottom:10px">${esc(p.weekNote?p.weekNote(w):'')}</div>
+  ${day&&its.length?`<div class="muted" style="margin-bottom:8px">${esc(dayT(day,w))}</div><div style="margin-bottom:10px">${its.slice(0,6).map(it=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:3px 0"><span>${esc(it.n)}</span><span class="tiny">${setsLabel(it,w)}</span></div>`).join('')}${its.length>6?`<div class="tiny">외 ${its.length-6}종목</div>`:''}</div>
+   <button class="btn" onclick="startProgDay('${p.id}',${di},${w})">오늘 운동 시작</button>`:`<div class="muted">오늘은 휴식입니다. ${nx}</div>`}</div>`;
+}
+
 /* ══════════════════════ 설치 · 오프라인 ══════════════════════ */
 let installEvt=null;
 const LOGO_MARK='<path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>';
@@ -1756,12 +2003,13 @@ async function runInstallCheck(){
   let man=null;try{const r=await fetch('manifest.json',{cache:'no-store'});ok('manifest.json',r.ok,'GitHub 저장소 맨 위에 manifest.json을 올리세요.');if(r.ok)man=await r.json();}catch(e){ok('manifest.json',false,'파일을 읽지 못했습니다.');}
   const icons=(man&&man.icons)||[{src:'icons/icon-192.png'},{src:'icons/icon-512.png'}];
   for(const ic of icons){try{const r=await fetch(ic.src,{cache:'no-store'});ok('아이콘 '+ic.src,r.ok&&/image/.test(r.headers.get('content-type')||''),'icons 폴더째로 저장소에 올리세요.');}catch(e){ok('아이콘 '+ic.src,false,'icons 폴더째로 저장소에 올리세요.');}}
+  try{const r=await fetch('anim.pack',{method:'HEAD',cache:'no-store'});ok('운동 애니메이션(anim.pack)',r.ok,'anim.pack 파일을 저장소 맨 위에 올리세요.');}catch(e){ok('anim.pack',false);}
   try{const r=await fetch('sw.js',{cache:'no-store'});ok('sw.js',r.ok,'sw.js를 저장소 맨 위에 올리세요.');}catch(e){ok('sw.js',false);}
   try{const reg=await navigator.serviceWorker?.getRegistration();ok('오프라인 작동(서비스 워커)',!!(reg&&reg.active),'새로고침 후 다시 검사하세요.');}catch(e){ok('서비스 워커',false);}
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='5.3';
+const APP_VER='5.4';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
