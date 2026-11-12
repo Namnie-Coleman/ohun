@@ -7,6 +7,7 @@
 | 식품영양성분 (`data/`) | 식품의약품안전처·농촌진흥청·해양수산부, 공공데이터포털 「전국통합식품영양성분정보 표준데이터」 | 공공데이터, 이용허락범위 제한 없음 | 필요한 항목만 골라 압축, 출처 표시 |
 | 음식 온라인 검색·바코드 | Open Food Facts — https://world.openfoodfacts.org | 데이터 ODbL 1.0 / 개별 항목 DbCL | 사용자가 고른 항목만 개인 기록에 저장 (DB 재배포 없음), 출처 표시 |
 | 바코드 인식 (아이폰) | ZXing — @zxing/library 0.21.3 (jsDelivr, 무결성 해시로 검증) | Apache 2.0 | 필요할 때만 내려받음 |
+| 인바디 사진 글자 인식 (`ocr/`) | Tesseract.js 7.0.0, tesseract.js-core 7.0.0 (Jerome Wu 외), 한국어 학습 데이터 tessdata 4.0.0_best_int (Google/Tesseract OCR) | Apache 2.0 | 앱 서버에 원본 그대로 두고 사용자가 사진 입력을 처음 누를 때만 내려받음. 사진은 기기 안에서만 처리 |
 | 로그인·클라우드 저장 | Firebase JS SDK 10.12.2 (Google) | Apache 2.0 | Google 서버에서 불러옴 |
 | 아이콘 글꼴 | Poppins (Indian Type Foundry) | SIL OFL 1.1 | 아이콘 이미지 안에만 사용 |
 
