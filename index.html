@@ -317,6 +317,13 @@ table.t tr:last-child td{border-bottom:none;}
 .fg-row{padding:10px 0!important;border-top:1px solid var(--line);gap:10px}.fg-row:disabled{opacity:1;cursor:default}
 .ios-ins{background:var(--pri-soft);border-radius:16px;padding:14px;margin:0 0 12px}.ios-ins-h{display:flex;justify-content:space-between;align-items:center;gap:8px}.ios-ins-h b{font-size:15px}
 .ios-steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px}.ios-steps li{display:flex;align-items:center;gap:8px}.ios-steps li>span{width:22px;height:22px;border-radius:50%;background:var(--pri);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.ws-row{display:grid;grid-template-columns:22px 1fr 1fr 1fr auto;grid-template-areas:'n nm nm nm a' '. r u k .';gap:5px;align-items:center;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}.ws-row>.ro-n{grid-area:n}.ws-row>input:nth-of-type(1){grid-area:nm}.ws-row>input:nth-of-type(2){grid-area:r}.ws-row>select{grid-area:u}.ws-row>input:nth-of-type(3){grid-area:k}.ws-row>.ws-act{grid-area:a}.ws-row .inp{padding:8px 6px;font-size:14px;min-width:0}.ws-row .ro-n{width:22px;height:22px;font-size:11px}.ws-act{display:flex;gap:2px}
+.insbar{position:fixed;left:12px;right:12px;bottom:calc(72px + var(--safe-b));z-index:39;max-width:536px;margin:0 auto;display:none;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 8px 10px 12px;box-shadow:0 8px 24px rgba(0,0,0,.16)}.insbar.on{display:flex;animation:insUp .3s ease-out}
+@keyframes insUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}.ins-ic{width:38px;height:38px;border-radius:10px;flex:none}.ins-m{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}.ins-m b{font-size:14px}.ins-m span{font-size:11.5px;color:var(--text2);line-height:1.35}
+.insbar .btn.sm{width:auto;flex:none;padding:0 14px;height:36px}.ins-x{flex:none;width:30px;height:36px;border:0;background:none;color:var(--text3);font-size:20px;cursor:pointer}
+body.insbar-on .view{padding-bottom:calc(150px + var(--safe-b))}body.insbar-on .toast{bottom:calc(140px + var(--safe-b))}
+.ios-steps li>div{flex:1}.ios-arrow{position:fixed;left:50%;bottom:calc(4px + var(--safe-b));transform:translateX(-50%);font-size:30px;color:var(--pri);z-index:200;animation:iosB 1s ease-in-out infinite;pointer-events:none;font-weight:700}
+@keyframes iosB{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
 </style>
 </head>
 <body>
@@ -396,6 +403,7 @@ table.t tr:last-child td{border-bottom:none;}
 <div class="splash" id="splash"><div><svg class="splash-logo" viewBox="88 88 336 336" aria-hidden="true"><path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/></svg><b>OH_UN!</b><span>오늘 운동, 완료!</span></div></div>
 <div class="toast" id="toast"></div>
 <div class="rest" id="rest"></div>
+<div class="insbar" id="insBar"></div>
 <div class="wm" id="wm"></div>
 
 <script>
@@ -558,7 +566,7 @@ window.addEventListener('popstate',()=>{
   if(navPushed){navPushed=false;if($('sheet').classList.contains('on')){closeSheet();return;}if(wm.open){closeWM();return;}}
   if(curTab!=='home'){go('home',true);}
 });
-function go(k,fromPop){
+function go(k,fromPop){if(typeof renderInstallBar==='function')setTimeout(renderInstallBar,0);
   if(!fromPop&&k!=='home'&&curTab==='home'){try{history.pushState({tab:1},'');}catch(e){}}
   curTab=k;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+k));renderTabbar();
   const titles={home:'OH_UN!',log:'운동 기록',hist:'기록',diet:'식단',more:'더보기'};
@@ -645,7 +653,6 @@ function renderHome(){
    ${tr>=0&&!draft.exs.length?`<button class="btn" style="margin-bottom:10px" onclick="startRoutine('mine',${tr})">${DAYS[new Date().getDay()]}요일 · ${esc(S.routines[tr].name)} 시작</button>`:(!draft.exs.length&&S.routines.some(r=>(r.days||[]).length)?(()=>{for(let k=1;k<=7;k++){const wd=(new Date().getDay()+k)%7,i=S.routines.findIndex(r=>(r.days||[]).includes(wd));if(i>=0)return`<div class="muted" style="margin-bottom:10px">오늘은 지정된 루틴이 없는 날입니다 · 다음: ${DAYS[wd]}요일 ${esc(S.routines[i].name)}</div>`;}return'';})():'')}
    ${draft.exs.length?`<div class="muted" style="margin-bottom:10px">${esc(draft.routine||'진행 중인 운동')} · ${draft.exs.length}종목 · ${td}/${tt}세트 완료</div><button class="btn" onclick="openWM()">${td?'운동 모드 이어하기':'운동 모드로 시작'}</button>`
    :S.prog?`<div class="tiny">프로그램 진행 중 · 위 카드에서 오늘 운동을 시작하세요. 다른 운동은 루틴 관리에서 고를 수 있어요.</div>`:`<div class="tiny" style="margin-bottom:8px">${S.routines.length?'내 루틴':'맞춤 추천 루틴'} · 누르면 바로 운동 모드로 시작합니다</div><div class="list" style="background:var(--card2);margin:0">${rs.map(([src,i,r])=>`<button class="li" style="border-color:var(--line)" onclick="startRoutine('${src}',${i})"><div class="li-main"><div class="li-t">${esc(r.name)}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트${(r.days||[]).length?' · '+r.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS[d]).join(''):''}</div></div><span class="badge b-pri">시작</span></button>`).join('')}</div>`}</div>`;}
-  if(isIOS()&&!isStandalone()&&!(S.iosHide&&S.iosHide>daysAgo(7)))h+=iosInstallHTML();
   if(S.logs.length+S.runs.length>=10&&(!S.lastBackup||S.lastBackup<daysAgo(14)))h+=`<div class="note n-warn" style="margin:0 0 12px"><b>백업한 지 오래됐어요</b>데이터는 이 기기에만 있습니다. 2주에 한 번 백업 파일을 저장해 두세요.<div style="margin-top:10px"><button class="btn sm" onclick="exportData().then(()=>renderHome())">지금 백업</button></div></div>`;
   // 최근 7일 (오운완 줄 + 숫자)
   {const done=new Set([...S.logs.map(l=>l.date),...S.runs.map(r=>r.date)]);
@@ -732,7 +739,8 @@ const EX_DB=[
   ['로잉 머신','cond','mc','none','lat,quad|ham,bi',2],
   ['이지런','cond','run','none','quad,calf|ham,glute',1],['템포런','cond','run','none','quad,calf|ham,glute',1],['인터벌 런','cond','run','none','quad,calf|glute,ham',1],['롱런','cond','run','none','quad,calf|ham,glute',1],['어설트 바이크','cond','mc','none','quad|glute',1],['줄넘기','cond','bw','calf','calf|quad',1]
 ,
-  ['시티드 레그컬','legs','mc','legcurl','ham|calf'],['라잉 레그컬','legs','mc','legcurl','ham|calf'],['스탠딩 레그컬','legs','mc','legcurl','ham|calf'],['펜듈럼 스쿼트','legs','mc','squat','quad,glute|adduct'],['브이 스쿼트','legs','mc','squat','quad,glute|adduct'],['벨트 스쿼트','legs','mc','squat','quad,glute|adduct'],['내로우 핵 스쿼트','legs','mc','squat','quad|glute'],['싱글 레그프레스','legs','mc','legpress','quad,glute|ham'],['시시 스쿼트','legs','bw','squat','quad|'],['스미스 런지','legs','mc','lunge','quad,glute|ham'],['힙 쓰러스트 머신','legs','mc','hipthrust','glute|ham'],['글루트 킥백 머신','legs','mc','hipthrust','glute|ham'],['케이블 글루트 킥백','legs','cb','hipthrust','glute|ham'],['케이블 힙 어덕션','legs','cb','none','adduct|'],['레그프레스 카프레이즈','legs','mc','calf','calf|'],['동키 카프레이즈','legs','mc','calf','calf|'],['스미스 카프레이즈','legs','mc','calf','calf|'],['디클라인 체스트 프레스 머신','chest','mc','bench','chest|tri,fdelt'],['와이드 체스트 프레스 머신','chest','mc','bench','chest|tri,fdelt'],['스미스 인클라인 벤치프레스','chest','mc','incline','chest,fdelt|tri'],['인클라인 덤벨 플라이','chest','db','fly','chest|fdelt'],['인클라인 케이블 플라이','chest','cb','fly','chest|fdelt'],['로우 투 하이 케이블 플라이','chest','cb','fly','chest|fdelt'],['어시스트 딥스','chest','mc','dips','chest,tri|fdelt'],['어시스트 풀업','back','mc','vpull','lat|bi,rdelt'],['와이드그립 랫풀다운','back','cb','pulldown','lat|bi,rdelt'],['언더그립 랫풀다운','back','cb','pulldown','lat|bi'],['원암 랫풀다운','back','cb','pulldown','lat|bi'],['머신 랫풀다운','back','mc','pulldown','lat|bi,rdelt'],['머신 로우로우','back','mc','row','lat,trap|bi,rdelt'],['머신 하이로우','back','mc','row','lat|trap,bi'],['T바 로우 머신','back','mc','row','lat,trap|bi,rdelt'],['스미스 로우','back','mc','row','lat,trap|bi,rdelt'],['머신 풀오버','back','mc','pullover','lat|chest,tri'],['덤벨 풀오버','back','db','pullover','lat,chest|tri'],['백 익스텐션 머신','back','mc','hinge','lowb|glute,ham'],['스미스 슈러그','back','mc','shrug','trap|'],['케이블 슈러그','back','cb','shrug','trap|'],['스미스 밀리터리 프레스','shoulders','mc','ohp','fdelt,sdelt|tri'],['스미스 업라이트 로우','shoulders','mc','uprow','sdelt,trap|'],['케이블 프론트 레이즈','shoulders','cb','raise','fdelt|'],['케이블 리어 델트 플라이','shoulders','cb','revfly','rdelt|trap'],['케이블 Y 레이즈','shoulders','cb','raise','sdelt|trap'],['원암 덤벨 오버헤드 익스텐션','arms','db','ohext','tri|'],['원암 케이블 푸시다운','arms','cb','pushdown','tri|'],['V바 푸시다운','arms','cb','pushdown','tri|'],['트라이셉스 익스텐션 머신','arms','mc','pushdown','tri|'],['케이블 트라이셉스 킥백','arms','cb','pushdown','tri|'],['스미스 클로즈그립 벤치프레스','arms','mc','bench','tri,chest|fdelt'],['스파이더 컬','arms','db','curl','bi|fore'],['프리처 컬 머신','arms','mc','curl','bi|'],['머신 컬','arms','mc','curl','bi|'],['케이블 프리처 컬','arms','cb','curl','bi|'],['원암 케이블 컬','arms','cb','curl','bi|'],['오버헤드 케이블 컬','arms','cb','curl','bi|'],['원암 덤벨 프리처 컬','arms','db','curl','bi|'],['복근 크런치 머신','core','mc','crunch','abs|'],['로터리 토르소','core','mc','crunch','obl|abs'],['디클라인 크런치','core','bw','crunch','abs|'],['캡틴스 체어 레그레이즈','core','mc','hlr','abs|obl']];
+  ['시티드 레그컬','legs','mc','legcurl','ham|calf'],['라잉 레그컬','legs','mc','legcurl','ham|calf'],['스탠딩 레그컬','legs','mc','legcurl','ham|calf'],['펜듈럼 스쿼트','legs','mc','squat','quad,glute|adduct'],['브이 스쿼트','legs','mc','squat','quad,glute|adduct'],['벨트 스쿼트','legs','mc','squat','quad,glute|adduct'],['내로우 핵 스쿼트','legs','mc','squat','quad|glute'],['싱글 레그프레스','legs','mc','legpress','quad,glute|ham'],['시시 스쿼트','legs','bw','squat','quad|'],['스미스 런지','legs','mc','lunge','quad,glute|ham'],['힙 쓰러스트 머신','legs','mc','hipthrust','glute|ham'],['글루트 킥백 머신','legs','mc','hipthrust','glute|ham'],['케이블 글루트 킥백','legs','cb','hipthrust','glute|ham'],['케이블 힙 어덕션','legs','cb','none','adduct|'],['레그프레스 카프레이즈','legs','mc','calf','calf|'],['동키 카프레이즈','legs','mc','calf','calf|'],['스미스 카프레이즈','legs','mc','calf','calf|'],['디클라인 체스트 프레스 머신','chest','mc','bench','chest|tri,fdelt'],['와이드 체스트 프레스 머신','chest','mc','bench','chest|tri,fdelt'],['스미스 인클라인 벤치프레스','chest','mc','incline','chest,fdelt|tri'],['인클라인 덤벨 플라이','chest','db','fly','chest|fdelt'],['인클라인 케이블 플라이','chest','cb','fly','chest|fdelt'],['로우 투 하이 케이블 플라이','chest','cb','fly','chest|fdelt'],['어시스트 딥스','chest','mc','dips','chest,tri|fdelt'],['어시스트 풀업','back','mc','vpull','lat|bi,rdelt'],['와이드그립 랫풀다운','back','cb','pulldown','lat|bi,rdelt'],['언더그립 랫풀다운','back','cb','pulldown','lat|bi'],['원암 랫풀다운','back','cb','pulldown','lat|bi'],['머신 랫풀다운','back','mc','pulldown','lat|bi,rdelt'],['머신 로우로우','back','mc','row','lat,trap|bi,rdelt'],['머신 하이로우','back','mc','row','lat|trap,bi'],['T바 로우 머신','back','mc','row','lat,trap|bi,rdelt'],['스미스 로우','back','mc','row','lat,trap|bi,rdelt'],['머신 풀오버','back','mc','pullover','lat|chest,tri'],['덤벨 풀오버','back','db','pullover','lat,chest|tri'],['백 익스텐션 머신','back','mc','hinge','lowb|glute,ham'],['스미스 슈러그','back','mc','shrug','trap|'],['케이블 슈러그','back','cb','shrug','trap|'],['스미스 밀리터리 프레스','shoulders','mc','ohp','fdelt,sdelt|tri'],['스미스 업라이트 로우','shoulders','mc','uprow','sdelt,trap|'],['케이블 프론트 레이즈','shoulders','cb','raise','fdelt|'],['케이블 리어 델트 플라이','shoulders','cb','revfly','rdelt|trap'],['케이블 Y 레이즈','shoulders','cb','raise','sdelt|trap'],['원암 덤벨 오버헤드 익스텐션','arms','db','ohext','tri|'],['원암 케이블 푸시다운','arms','cb','pushdown','tri|'],['V바 푸시다운','arms','cb','pushdown','tri|'],['트라이셉스 익스텐션 머신','arms','mc','pushdown','tri|'],['케이블 트라이셉스 킥백','arms','cb','pushdown','tri|'],['스미스 클로즈그립 벤치프레스','arms','mc','bench','tri,chest|fdelt'],['스파이더 컬','arms','db','curl','bi|fore'],['프리처 컬 머신','arms','mc','curl','bi|'],['머신 컬','arms','mc','curl','bi|'],['케이블 프리처 컬','arms','cb','curl','bi|'],['원암 케이블 컬','arms','cb','curl','bi|'],['오버헤드 케이블 컬','arms','cb','curl','bi|'],['원암 덤벨 프리처 컬','arms','db','curl','bi|'],['복근 크런치 머신','core','mc','crunch','abs|'],['로터리 토르소','core','mc','crunch','obl|abs'],['디클라인 크런치','core','bw','crunch','abs|'],['캡틴스 체어 레그레이즈','core','mc','hlr','abs|obl'],
+  ['푸시 프레스','shoulders','bb','ohp','fdelt,sdelt|tri,quad'],['스모 데드리프트 하이풀','back','bb','uprow','trap,glute|sdelt,ham'],['토즈 투 바','core','bw','hlr','abs|lat,obl'],['덤벨 스러스터','legs','db','squat','quad,fdelt|glute,tri'],['터키시 겟업','core','kb','none','obl,abs|fdelt,glute']];
 const MUS_L={chest:'대흉근',fdelt:'전면 삼각근',sdelt:'측면 삼각근',rdelt:'후면 삼각근',bi:'상완이두근',tri:'상완삼두근',fore:'전완근',abs:'복직근',obl:'복사근',
   quad:'대퇴사두근',ham:'햄스트링',glute:'둔근',adduct:'내전근',calf:'종아리',lat:'광배근',trap:'승모근',lowb:'척추기립근'};
 const MUS_DEF={chest:'chest|fdelt,tri',back:'lat|trap,bi',legs:'quad,glute|ham',shoulders:'fdelt,sdelt|tri',arms:'bi,tri|fore',core:'abs|obl',cond:'quad|abs'};
@@ -1172,11 +1180,11 @@ let restEnd=0,restInt=null;
 function startRest(sec){
   sec=sec??S.rest;if(!sec)return;restEnd=Date.now()+sec*1000;
   const el=$('rest');el.innerHTML=`<span class="rest-l">휴식</span><b id="restT"></b><button onclick="restEnd-=15000;tickRest()">−15초</button><button onclick="restEnd+=15000;tickRest()">+15초</button><button onclick="restEnd=0;tickRest()">건너뛰기</button>`;
-  el.classList.add('on');document.body.classList.add('resting');clearInterval(restInt);restInt=setInterval(tickRest,250);tickRest();
+  el.classList.add('on');document.body.classList.add('resting');renderInstallBar();clearInterval(restInt);restInt=setInterval(tickRest,250);tickRest();
 }
 function tickRest(){scheduleRestNoti();
   const left=Math.ceil((restEnd-Date.now())/1000);
-  if(left<=0){clearInterval(restInt);$('rest').classList.remove('on');document.body.classList.remove('resting');if(restEnd&&left>-2){try{navigator.vibrate&&navigator.vibrate([200,100,200]);}catch(e){}toast('휴식 끝 · 다음 세트');}return;}
+  if(left<=0){clearInterval(restInt);$('rest').classList.remove('on');document.body.classList.remove('resting');renderInstallBar();if(restEnd&&left>-2){try{navigator.vibrate&&navigator.vibrate([200,100,200]);}catch(e){}toast('휴식 끝 · 다음 세트');}return;}
   $('restT').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');
 }
 
@@ -1321,7 +1329,7 @@ const PRESETS_RAW=[
   {cat:'hybrid',name:'하이브리드 D · 전신 컨디셔닝',exs:['데드리프트 3×5','케틀벨 스윙 4×15','파머스 워크 4×40','버피 3×10','이지런 1×900']},
   {cat:'hybrid',name:'하이브리드 E · 롱런',exs:['롱런 1×3600']},
 ];
-const RS_CAT={all:'전체',nnm:'남니콜먼',hyrox:'하이록스',basic:'기본',female:'여성',hybrid:'하이브리드'};let rsCat='all';
+const RS_CAT={all:'전체',nnm:'남니콜먼 근비대',nns:'남니콜먼 스트렝스',basic:'기본',female:'여성',hybrid:'하이브리드'};let rsCat='all';
 function parseLine(s){const m=s.match(/^(.*?)\s*(\d+)\s*[×xX*]\s*(\d+)/);if(!m)return{name:s.replace(/\(.*?\)/g,'').trim(),n:3,r:10};return{name:m[1].replace(/\(.*?\)/g,'').trim(),n:Math.min(10,+m[2]),r:+m[3]};}
 function normRoutine(r){if(Array.isArray(r.items))return r;return{id:r.id||uid('rt'),cat:r.cat,name:r.name||'루틴',items:(r.exs||[]).map(l=>{const t=parseLine(l);return{name:t.name,sets:t.n,reps:t.r,w:''};})};}
 const PRESETS=PRESETS_RAW.map(normRoutine);
@@ -1340,7 +1348,7 @@ function openRoutineSheet(view){
   ${draft.exs.length?`<button class="btn ghost" style="margin-bottom:6px" onclick="routineFromDraft(draft)">지금 입력 중인 운동을 루틴으로</button>`:''}
   <div class="sec">내 루틴</div>${S.routines.length?S.routines.map((r,i)=>card(r,'mine',i)).join(''):'<div class="card empty">추천 루틴을 복사하거나 새로 만들어 보세요</div>'}
   <div class="sec">추천 루틴</div><div class="chips" style="margin:0 0 10px">${Object.entries(RS_CAT).map(([k,l])=>`<button class="chip ${rsCat===k?'on':''}" onclick="rsCat='${k}';openRoutineSheet();setTimeout(()=>$('rsP').scrollIntoView({block:'start'}),0)">${l}</button>`).join('')}</div>
-  <div id="rsP">${['nnm','hyrox'].includes(rsCat)?`<button class="btn sub" style="margin-bottom:8px" onclick="presetsToRoutines('${rsCat}')">요일별로 한 번에 내 루틴에 추가</button>`:''}${PRESETS.map((r,i)=>[r,i]).filter(([r])=>rsCat==='all'||r.cat===rsCat).sort((a,b)=>rsCat==='all'?0:((a[0].days||[9])[0]-tdw+7)%7-((b[0].days||[9])[0]-tdw+7)%7).map(([r,i])=>card(r,'preset',i)).join('')}</div>`);
+  <div id="rsP">${['nnm','nns'].includes(rsCat)?`<button class="btn sub" style="margin-bottom:8px" onclick="presetsToRoutines('${rsCat}')">요일별로 한 번에 내 루틴에 추가</button>`:''}${PRESETS.map((r,i)=>[r,i]).filter(([r])=>r.cat!=='hyrox'&&(rsCat==='all'||r.cat===rsCat)).sort((a,b)=>rsCat==='all'?0:((a[0].days||[9])[0]-tdw+7)%7-((b[0].days||[9])[0]-tdw+7)%7).map(([r,i])=>card(r,'preset',i)).join('')}</div>`);
 }
 function startRoutine(src,i){
   const r=(src==='mine'?S.routines:PRESETS)[i];if(!r)return;
@@ -1935,32 +1943,6 @@ function foodSearch(){
   kdbRender();kdbStatus();
   el.innerHTML=res.length?`<div class="list" style="background:var(--card2);margin:0;max-height:360px;overflow-y:auto">${res.map(f=>`<button class="li" style="border-color:var(--line)" data-n="${esc(f[0])}" onclick="pickFood(this.dataset.n)"><div class="li-main"><div class="li-t">${esc(f[0])} <span class="tiny">${f[1]}</span></div><div class="li-s">단 ${f[3]} · 탄 ${f[4]} · 지 ${f[5]}</div></div><div class="li-v">${f[2]}<span class="tiny"> kcal</span></div></button>`).join('')}</div>`:'';
 }
-async function offSearch(){
-  const q=($('foodQ')?.value||'').trim();if(!q){toast('검색어를 먼저 입력하세요');return;}
-  const el=$('foodRes');el.innerHTML='<div class="tiny">검색 중...</div>';
-  try{
-    const r=await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&json=1&page_size=15&fields=product_name,product_name_ko,brands,nutriments`);
-    const d=await r.json();const items=(d.products||[]).map(p=>{const n=p.nutriments||{};return{name:(p.product_name_ko||p.product_name||'').trim(),brand:(p.brands||'').split(',')[0],k:n['energy-kcal_100g'],p:n.proteins_100g||0,c:n.carbohydrates_100g||0,f:n.fat_100g||0};}).filter(x=>x.name&&x.k);
-    window._off=items;
-    el.innerHTML=items.length?`<div class="tiny" style="margin-bottom:6px">Open Food Facts · 100g 기준</div><div class="list" style="background:var(--card2);margin:0;max-height:360px;overflow-y:auto">${items.map((x,i)=>`<button class="li" style="border-color:var(--line)" onclick="pickOff(${i})"><div class="li-main"><div class="li-t">${esc(x.name)}</div><div class="li-s">${esc(x.brand)} · 단 ${r1(x.p)} · 탄 ${r1(x.c)} · 지 ${r1(x.f)}</div></div><div class="li-v">${Math.round(x.k)}<span class="tiny"> kcal</span></div></button>`).join('')}</div>`:'<div class="tiny">온라인에서도 찾지 못했어요. 영문이나 브랜드명으로 검색해 보세요.</div>';
-  }catch(e){el.innerHTML='<div class="tiny">인터넷 연결을 확인하세요. 온라인 검색은 네트워크가 필요합니다.</div>';}
-}
-function pickOff(i){
-  const x=window._off[i];
-  openSheet(`<div class="sheet-h"><h2>${esc(x.name)}</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="card"><div class="muted" style="margin-bottom:10px">100g당 ${Math.round(x.k)} kcal · 단 ${r1(x.p)} · 탄 ${r1(x.c)} · 지 ${r1(x.f)}</div>
-  <label class="lbl">먹은 양</label><div class="unit-wrap"><input class="inp" id="offG" inputmode="decimal" value="100"><span class="u">g</span></div></div>
-  <button class="btn" onclick="addOff(${i})">추가</button>`);
-}
-function addOff(i){const x=window._off[i],g=num($('offG').value)||100,m=g/100;addFoodEntry({id:uid('f'),date:today(),name:`${x.name} ${g}g`,kcal:Math.round(x.k*m),p:r1(x.p*m),c:r1(x.c*m),f:r1(x.f*m)});save();closeSheet();renderDiet();toast('추가됨');}
-function pickFood(name){
-  const f=FOOD_DB.find(x=>x[0]===name);
-  openSheet(`<div class="sheet-h"><h2>${f[0]}</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="card"><div class="muted" style="margin-bottom:10px">기준 ${f[1]} · ${f[2]} kcal</div><label class="lbl">수량 (배수)</label>
-  <div class="chips" id="qtyChips" style="margin-bottom:10px">${[.5,1,1.5,2,3].map(q=>`<button class="chip ${q===1?'on':''}" onclick="setQty(${q})">${q}</button>`).join('')}</div>
-  <input class="inp" id="qty" inputmode="decimal" value="1"></div>
-  <button class="btn" data-n="${esc(f[0])}" onclick="addFood(this.dataset.n)">추가</button>`);
-}
 function setQty(q){$('qty').value=q;$('qtyChips').querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',+c.textContent===q));}
 function addFood(name){
   const f=FOOD_DB.find(x=>x[0]===name),q=num($('qty').value)||1;
@@ -2016,7 +1998,6 @@ function recRoutines(){
 }
 function openPlan(first){
   const pl=dietPlan(),e=latestComp(),sd=ibStd(),tp=ibTypeOf(e,sd);if(!pl){openOnboarding();return;}
-  const rr=recRoutines();
   openSheet(`<div class="sheet-h"><h2>${first?'맞춤 제언':'목표 근거'}</h2><button class="link" onclick="closeSheet();go(curTab)">${first?'시작하기':'닫기'}</button></div>
   ${tp?`<div class="card"><div class="card-h"><div class="card-t">인바디 체형</div><span class="badge b-${{C:'bad',I:'pri',D:'good'}[tp]}">${{C:'C형 · 근육 부족형',I:'I형 · 균형형',D:'D형 · 근육형'}[tp]}</span></div><div class="muted">${{C:'근육량을 늘리고 체지방을 줄이는 것이 우선입니다.',I:'근육량을 더 늘리면 D형(근육형)이 됩니다.',D:'현재 근육량을 유지하며 체지방만 관리하면 됩니다.'}[tp]}</div></div>`:''}
   <div class="card"><div class="card-h"><div class="card-t">식단 전략</div><span class="badge b-pri">${pl.mode}</span></div>
@@ -2024,9 +2005,8 @@ function openPlan(first){
   <div class="stats"><div class="stat"><b>${fmt(pl.kcal)}</b><span>목표 kcal</span></div><div class="stat"><b>${fmt(pl.tdee)}</b><span>유지 kcal</span></div><div class="stat"><b>${pl.wk>0?'+':''}${pl.wk}</b><span>주당 예상 kg</span></div></div>
   <div class="stats" style="margin-top:8px"><div class="stat"><b>${pl.p}g</b><span>단백질</span></div><div class="stat"><b>${pl.c}g</b><span>탄수화물</span></div><div class="stat"><b>${pl.f}g</b><span>지방</span></div></div>
   <ul class="cues" style="margin-top:10px;font-size:13px;color:var(--text2)">${pl.why.map(w=>`<li>${w}</li>`).join('')}</ul></div>
-  <div class="sec">추천 루틴</div>${rr.map(i=>{const r=PRESETS[i];return`<div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div class="li-t">${esc(r.name)}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트</div></div><button class="btn ghost sm" onclick="copyPreset(${i})">내 루틴에 추가</button></div>`;}).join('')}
   <div class="row-btns" style="margin-top:4px"><button class="btn ghost" onclick="openOnboarding()">나에게 맞추기 다시 하기</button><button class="btn ghost" onclick="closeSheet();openCheck()">오늘 컨디션 체크</button></div>
-  <div class="tiny" style="margin:8px 4px">주 ${S.profile.freq}회 기준입니다. 프로필이나 인바디를 바꾸면 자동으로 다시 계산됩니다.</div>`);
+  <div class="tiny" style="margin:8px 4px">프로필이나 인바디를 바꾸면 자동으로 다시 계산됩니다. 루틴은 운동 탭 › 루틴에서 고를 수 있어요.</div>`);
 }
 
 /* ══════════════════════ 더보기 ══════════════════════ */
@@ -2069,7 +2049,7 @@ function renderMore(){
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
     ${tile(TI.timer,'타이머','openTimerTool()')}${tile(TI.pace,'페이스·랩','openPaceTool()')}${tile(I.calc,'1RM 계산','openCalc()')}${tile(TI.plate,'원판 계산','openPlateTool()')}</div>
   <div class="sec">내 운동</div>
-  <div class="list">${row('맞춤 제언','목적·체형에 맞춘 식단·루틴 · 나에게 맞추기','openPlan()')}${row('목표',(()=>{const G=goalsOf();const n=(G.weight&&G.weight.t?1:0)+G.lifts.length;return n?`${n}개 진행 중`:'체중 · 종목 목표와 필요 속도';})(),'openGoals()')}${row('복용 약물',S.meds&&S.meds.length?`${S.meds.length}개 등록 · 기기에만 저장${S.medSync?' 아님':''}`:'운동할 때 주의할 점 안내','openMeds()')}${row('기록 리마인더',S.remind&&S.remind.on?`매일 ${S.remind.time}`:'','openRemind()',`<span class="badge ${S.remind&&S.remind.on?'b-good':''}">${S.remind&&S.remind.on?'켜짐':'꺼짐'}</span>`)}${row('휴식 타이머','','openRestSet()',`<span class="tiny">${S.rest?S.rest+'초':'끔'}</span>`)}${row('음성 안내','타이머 3·2·1 카운트다운','S.voice=S.voice?0:1;saveLocal();renderMore()',`<span class="badge ${S.voice?'b-good':''}">${S.voice?'켜짐':'꺼짐'}</span>`)}</div>
+  <div class="list">${row('맞춤 제언','목적·체형에 맞춘 식단 목표 · 나에게 맞추기','openPlan()')}${row('목표',(()=>{const G=goalsOf();const n=(G.weight&&G.weight.t?1:0)+G.lifts.length;return n?`${n}개 진행 중`:'체중 · 종목 목표와 필요 속도';})(),'openGoals()')}${row('복용 약물',S.meds&&S.meds.length?`${S.meds.length}개 등록 · 기기에만 저장${S.medSync?' 아님':''}`:'운동할 때 주의할 점 안내','openMeds()')}${row('기록 리마인더',S.remind&&S.remind.on?`매일 ${S.remind.time}`:'','openRemind()',`<span class="badge ${S.remind&&S.remind.on?'b-good':''}">${S.remind&&S.remind.on?'켜짐':'꺼짐'}</span>`)}${row('휴식 타이머','','openRestSet()',`<span class="tiny">${S.rest?S.rest+'초':'끔'}</span>`)}${row('음성 안내','타이머 3·2·1 카운트다운','S.voice=S.voice?0:1;saveLocal();renderMore()',`<span class="badge ${S.voice?'b-good':''}">${S.voice?'켜짐':'꺼짐'}</span>`)}</div>
   <div class="sec">앱</div>
   <div class="list">${row('계정 · 클라우드',fb.user?`${esc(fb.user.email||'로그인됨')} · ${fb.state||'연결됨'}`:'로그인하면 여러 기기에서 같은 기록','openAccount()')}${isStandalone()?'':row('홈 화면에 설치','앱처럼 전체 화면 · 오프라인 실행','installApp()')}${row('데이터 백업 · 복원','JSON · CSV 내보내기','openData()')}${row('화면 테마','',"S.theme=S.theme==='auto'?'light':S.theme==='light'?'dark':'auto';applyTheme();saveLocal();renderMore()",`<span class="tiny">${{auto:'시스템',light:'라이트',dark:'다크'}[S.theme||'auto']}</span>`)}${row('개인정보 · 이용 안내','','openPrivacy()')}</div>
   <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">OH_UN! (오운!) v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>운동 그림: Everkinetic (CC BY-SA 4.0)<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>
@@ -2318,26 +2298,36 @@ const nnmDL=w=>w%4===0;   // 4·8·12주차 회복 주
 const nX=(s,r)=>w=>Array.from({length:nnmDL(w)?Math.max(2,Math.round(s*0.6)):s},()=>['',r]);
 const NNM_NOTE=w=>nnmDL(w)?'회복 주 · 세트 40% 줄이고 무게는 지난주의 90%':w%4===1?`블록 ${Math.ceil(w/4)} 시작 · 반복 범위 아래쪽 횟수로 시작`:'범위 위쪽 횟수를 모든 세트에서 채우면 다음 주 증량';
 const NNM_DAYS=[
- {t:'월 · 하체 (스쿼트 메인) & 복근',items:w=>[
+ {t:'하체 & 복근 (스쿼트)',items:w=>[
    {n:'스쿼트',f:nX(5,6),note:'바벨 백스쿼트 · 6~8회'},{n:'핵 스쿼트',f:nX(4,10),note:'10~12회'},{n:'레그 익스텐션',f:nX(4,15)},
    {n:'워킹 런지',f:nX(4,20),note:'덤벨 · 왕복 20걸음'},{n:'카프레이즈',f:nX(4,20),note:'스탠딩 카프 레이즈'},{n:'행잉 레그레이즈',f:nX(3,20)}]},
- {t:'화 · 가슴 & 삼두 (두께 중심)',items:w=>[
+ {t:'가슴 & 삼두',items:w=>[
    {n:'벤치프레스',f:nX(5,8),note:'바벨 · 8~10회'},{n:'인클라인 덤벨프레스',f:nX(4,10)},{n:'덤벨 플라이',f:nX(4,12),note:'12~15회 · 또는 펙덱 플라이'},
    {n:'딥스',f:nX(4,12),note:'12~15회'},{n:'클로즈그립 벤치프레스',f:nX(3,8),note:'8~10회'},{n:'원암 덤벨 오버헤드 익스텐션',f:nX(3,12)},{n:'로프 푸시다운',f:nX(3,15),note:'케이블 트라이셉스 푸쉬다운 (로프)'}]},
- {t:'수 · 등 (넓이+두께) & 이두',items:w=>[
+ {t:'등 & 이두',items:w=>[
    {n:'풀업',f:nX(5,''),note:'맨몸 · 세트마다 최대 횟수'},{n:'랫풀다운',f:nX(4,10),note:'와이드 또는 맥그립 · 10~12회'},{n:'바벨로우',f:nX(4,8),note:'8~10회'},
    {n:'해머 DY 로우',f:nX(4,10),note:'원암 교대 · 10~12회'},{n:'케이블 하이로우',f:nX(4,12),note:'12~15회'},{n:'덤벨 로우',f:nX(4,10),note:'원암 · 10~12회'},
    {n:'바벨컬',f:nX(3,10),note:'10~12회'},{n:'해머컬',f:nX(3,12),note:'덤벨'}]},
- {t:'목 · 하체 (데드리프트 메인) & 후면·복근',items:w=>[
+ {t:'하체 & 후면 (데드리프트)',items:w=>[
    {n:'데드리프트',f:nX(5,6),note:'바벨 · 6~8회'},{n:'레그프레스',f:nX(4,15)},{n:'시티드 레그컬',f:nX(4,15)},
    {n:'카프레이즈',f:nX(4,20),note:'스탠딩 카프 레이즈'},{n:'행잉 레그레이즈',f:nX(3,20)}]},
- {t:'금 · 어깨 3D & 팔 슈퍼세트',items:w=>[
+ {t:'어깨 & 팔',items:w=>[
    {n:'스미스 밀리터리 프레스',f:nX(5,8),note:'8~10회'},{n:'덤벨 숄더프레스',f:nX(4,10),note:'10~12회'},{n:'사이드 레터럴 레이즈',f:nX(4,15),note:'덤벨 · 15~20회'},
    {n:'리어 델트 플라이',f:nX(4,20)},
    {n:'라잉 트라이셉스 익스텐션',f:nX(3,10),ss:'A',note:'슈퍼세트 A1 · 각 10~12회'},{n:'덤벨 컬',f:nX(3,10),ss:'A',note:'슈퍼세트 A2'},
    {n:'트라이셉스 푸시다운',f:nX(3,15),ss:'B',note:'슈퍼세트 B1 · 케이블 푸쉬다운'},{n:'케이블 해머컬',f:nX(3,15),ss:'B',note:'슈퍼세트 B2 · 로프'},
    {n:'원암 케이블 푸시다운',f:nX(3,15),ss:'C',note:'슈퍼세트 C1'},{n:'스파이더 컬',f:nX(3,15),ss:'C',note:'슈퍼세트 C2'}]},
 ];
+
+/* ── 남니콜먼 스트렝스 (A/B 교대) ── */
+function nsKg(k,w,d){if(typeof S==='undefined'||!S)return'';const r=rmOf(k);if(!r)return'';const n=(w-1)*3+d,cnt=k==='squat'?n:(k==='bench'||k==='row')?Math.ceil(n/2):Math.floor(n/2),inc=(k==='squat'||k==='dead')?5:2.5;
+  const s0=r*0.857*0.8,cap=r*0.857*1.08;return RD(Math.min(s0+cnt*inc,cap));}
+const NS_A=(w,d)=>[{n:'스쿼트',f:w=>Array(5).fill([nsKg('squat',w,d),5]),note:'바벨 백스쿼트'},{n:'벤치프레스',f:w=>Array(5).fill([nsKg('bench',w,d),5]),note:'바벨'},{n:'바벨로우',f:w=>Array(5).fill([nsKg('row',w,d),5])},
+  {n:'인클라인 덤벨프레스',s:4,r:10},{n:'해머 DY 로우',s:4,r:12,note:'또는 케이블 하이로우'},{n:'사이드 레터럴 레이즈',s:4,r:15,note:'덤벨 · 15~20회'},
+  {n:'트라이셉스 푸시다운',s:3,r:15,note:'케이블 트라이셉스 푸쉬다운'},{n:'원암 덤벨 오버헤드 익스텐션',s:3,r:12},{n:'행잉 레그레이즈',s:3,r:20}];
+const NS_B=(w,d)=>[{n:'스쿼트',f:w=>Array(5).fill([nsKg('squat',w,d),5]),note:'바벨 백스쿼트 · 힘들면 A 무게의 80%'},{n:'오버헤드프레스',f:w=>Array(5).fill([nsKg('ohp',w,d),5])},{n:'데드리프트',f:w=>[[nsKg('dead',w,d),5]],note:'바벨 · 1~3세트'},
+  {n:'풀업',f:w=>Array(4).fill(['','']),note:'맨몸 · 세트마다 최대 횟수'},{n:'랫풀다운',s:4,r:10,note:'10~12회'},{n:'리어 델트 플라이',s:4,r:20},{n:'바벨컬',s:3,r:10,note:'10~12회'},{n:'해머컬',s:3,r:12,note:'덤벨'},{n:'카프레이즈',s:4,r:20,note:'스탠딩 카프 레이즈'}];
+const NS_DAYS=[0,1,2].map(d=>({t:w=>`Workout ${SL_ORDER(w)[d]}`,items:w=>SL_ORDER(w)[d]==='A'?NS_A(w,d):NS_B(w,d)}));
 
 /* ── 공개 프로그램 ── */
 const t5=(k,w)=>rmOf(k)*0.857*Math.pow(1.025,w-4);   // Madcow: 4주차 = 현재 5RM
@@ -2363,6 +2353,11 @@ const PROGRAMS=[
   rules:['반복 범위(예: 6~8회)의 위쪽 횟수를 모든 세트에서 채우면 다음 세션에 증량 (하체 +5kg, 상체 +2.5kg, 덤벨은 한 단계)','범위 아래쪽 횟수도 못 채우면 무게 유지','4·8·12주차는 회복 주: 세트 40% 감소, 무게 90%','풀업은 세트마다 최대 횟수를 기록하고, 모든 세트 12회를 넘기면 중량 풀업','워킹 런지는 왕복 20걸음이 1세트','덤벨 플라이는 펙덱 플라이로 바꿔도 됩니다'],
   weekNote:NNM_NOTE,mine:1,
   src:[['원본: 사용자 업로드 텍스트 (2026.11 개정)',''],['진행 규칙·회복 주는 오운! 제언','']]},
+ {id:'nns',name:'남니콜먼 스트렝스',sub:'A/B 교대 · 5×5 메인 리프트 + 보조 볼륨',lvl:'중급',freq:'주 3회',weeks:12,sched:[1,3,5],keys:['squat','bench','row','ohp','dead'],days:NS_DAYS,mine:1,
+  about:'Workout A(스쿼트·벤치·로우 + 가슴·등·어깨·삼두 보조)와 B(스쿼트·OHP·데드 + 등·후면·이두·종아리 보조)를 번갈아 한다. 홀수 주 A-B-A, 짝수 주 B-A-B.',
+  rules:['5×5를 모두 성공하면 다음 세션 상체 +2.5kg, 하체 +5kg','같은 무게에서 2번 연속 실패하면 10% 내려서 다시 올리기','B의 스쿼트는 컨디션에 따라 A 무게의 80%로 해도 됩니다','데드리프트는 1~3세트 (무거우면 1세트)','주 4회라면 A-B-A-B (예: 월·화·목·금). 루틴 목록의 [남니콜먼 스트렝스] Workout A·B를 요일에 맞춰 쓰세요','메인 리프트 휴식 3~5분, 보조 60~90초'],
+  weekNote:w=>w%2?'A-B-A 주':'B-A-B 주',
+  src:[['원본: 사용자 업로드 텍스트',''],['시작 무게(5RM의 80%)·증량 상한은 오운! 제언','']]},
  {id:'madcow',name:'매드카우 5×5',sub:'주 단위 선형 증량 · 근력+근비대',lvl:'중급',freq:'주 3회',weeks:8,sched:[1,3,5],keys:['squat','bench','row','ohp','dead'],
   days:[
    {t:'월 · 헤비 (5×5 램프)',items:w=>[{n:'스쿼트',f:w=>rampS(t5('squat',w),[.5,.625,.75,.875,1],5)},{n:'벤치프레스',f:w=>rampS(t5('bench',w),[.5,.625,.75,.875,1],5)},{n:'바벨로우',f:w=>rampS(t5('row',w),[.5,.625,.75,.875,1],5)},{n:'백 익스텐션',s:2,r:10},{n:'크런치',s:4,r:12}]},
@@ -2423,7 +2418,8 @@ const PROGRAMS=[
   src:[['Lift Vault · Smolov Jr','https://liftvault.com/programs/lift-specific/smolov/'],['Liftosaur · Smolov Jr','https://www.liftosaur.com/programs/smolov-jr']]},
 ];
 // 남니콜먼 근비대 요일 루틴을 추천 루틴 목록에도 추가 (1주차 기준)
-NNM_DAYS.forEach((d,i)=>PRESETS.push({id:'nnm'+i,cat:'nnm',name:'남니콜먼 근비대 · '+d.t,days:[[1,2,3,4,5][i]],items:d.items(1).map(it=>{const ss=itemSets(it,1);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||'',...(it.ss?{ss:it.ss}:{})};})}));
+[['A',NS_A,[1,5]],['B',NS_B,[3]]].forEach(([k,f,days])=>PRESETS.push({id:'nns'+k,cat:'nns',name:'[남니콜먼 스트렝스] Workout '+k,days,items:f(1,0).map(it=>{const ss=itemSets(it,1);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||''};})}));
+NNM_DAYS.forEach((d,i)=>PRESETS.push({id:'nnm'+i,cat:'nnm',name:'[남니콜먼 근비대] '+d.t,days:[[1,2,3,4,5][i]],items:d.items(1).map(it=>{const ss=itemSets(it,1);return{name:it.n,sets:ss.length,reps:ss[0].r,w:ss[0].w||'',...(it.ss?{ss:it.ss}:{})};})}));
 /* ── 하이록스 (HYROX) ── */
 // 공식 무게 (썰매 무게 포함): [남, 여]. 여자 Pro = 남자 Open
 const HXW={push:{o:[152,102],p:[202,152]},pull:{o:[103,78],p:[153,103]},farm:{o:[24,16],p:[32,24]},bag:{o:[20,10],p:[30,20]},wb:{o:[6,4],p:[9,6]}};
@@ -2489,7 +2485,7 @@ function missingRM(p){return p.keys.filter(k=>!rmOf(k));}
 
 function progListHTML(){
   return`<div class="chips" style="margin:0 0 10px">${Object.entries(PROG_LV).map(([k,l])=>`<button class="chip ${progLv===k?'on':''}" onclick="progLv='${k}';openRoutineSheet('prog')">${l}</button>`).join('')}</div>`+
-  (()=>{const L=PROGRAMS.filter(p=>p.mine||progLv==='all'||lvKey(p)===progLv),hide=progLv==='all'&&!window._progAdv,adv=L.filter(p=>!p.mine&&lvKey(p)==='adv'&&!(S.prog&&S.prog.id===p.id));
+  (()=>{const L=PROGRAMS.filter(p=>(!p.id.startsWith('hx')||(S.prog&&S.prog.id===p.id))&&(p.mine||progLv==='all'||lvKey(p)===progLv)),hide=progLv==='all'&&!window._progAdv,adv=L.filter(p=>!p.mine&&lvKey(p)==='adv'&&!(S.prog&&S.prog.id===p.id));
    const shown=hide?L.filter(p=>!adv.includes(p)):L;return shown.map(progCard).join('')+(hide&&adv.length?`<button class="btn ghost" onclick="window._progAdv=1;openRoutineSheet('prog')">상급 프로그램 ${adv.length}개 더 보기</button><div class="tiny" style="text-align:center;margin:6px 0">고중량 경험이 1년 이상일 때 권장</div>`:'');})();
 }
 function progCard(p){return`<button class="card" style="display:block;width:100%;text-align:left;margin-bottom:8px" onclick="openProgram('${p.id}')">
@@ -2793,7 +2789,7 @@ function kdbRender(){
     const ids=kdbSearch(q);
     el.innerHTML=ids.length?`<div class="tiny" style="margin:10px 2px 6px">식약처 식품영양성분 DB</div><div class="list" style="background:var(--card2);margin:0;max-height:420px;overflow-y:auto">${ids.map(i=>{const x=kdbParse(KDB.rows[i]);
       return`<button class="li" style="border-color:var(--line)" onclick="kdbPick(${i})"><div class="li-main"><div class="li-t" style="white-space:normal">${esc(x.name)}</div><div class="li-s">${x.src?esc(x.src)+' · ':''}${x.t==='D'?'음식':x.t==='R'?'원재료':'가공식품'}${x.size?' · '+esc(x.size):''} · 단 ${x.p} · 탄 ${x.c} · 지 ${x.f}</div></div><div class="li-v">${Math.round(x.k)}<span class="tiny"> /100${x.ml?'ml':'g'}</span></div></button>`;}).join('')}</div>`
-      :(KDB.rows.length?'<div class="tiny" style="margin-top:8px">식약처 DB에도 없어요. 다른 이름이나 온라인 검색, 직접 입력을 이용하세요.</div>':'');
+      :(KDB.rows.length?'<div class="tiny" style="margin-top:8px">식약처 DB에도 없어요. 다른 이름으로 찾거나 직접 입력을 이용하세요.</div>':'');
   },180);
 }
 function kdbPick(i){
@@ -2901,7 +2897,7 @@ function openPrivacy(){
   ${sec('어떤 정보를 다루나요','프로필(이름, 성별, 나이, 키, 체중, 1RM), 운동·러닝·인바디·식단 기록, 로그인 시 이메일 주소. 광고, 행동 분석 도구, 제3자 제공은 없습니다.')}
   ${sec('클라우드 저장과 국외 보관 (로그인한 경우만)','받는 곳: Google LLC (Firebase) · 보관 국가: 싱가포르 데이터센터 · 항목: 이메일, 위의 기록 전체 · 목적: 기기 간 백업·동기화 · 보유 기간: 계정을 삭제할 때까지 · 거부: 로그인하지 않으면 보내지 않으며 앱은 그대로 쓸 수 있습니다. 운동·체중·인바디·식단 기록은 건강 관련 정보라 로그인 전에 따로 동의를 받습니다.')}
   ${sec('이용 대상','만 14세 이상만 이용할 수 있습니다.')}
-  ${sec('외부로 보내는 것','음식 온라인 검색 시 검색어가 Open Food Facts로 전송됩니다. 식약처 음식 DB와 운동 그림은 앱 안의 파일이라 검색 내용이 밖으로 나가지 않습니다.')}
+  ${sec('외부로 보내는 것','음식 검색은 앱 안의 식약처 DB 파일에서만 찾기 때문에 검색어가 밖으로 나가지 않습니다. 로그인한 경우의 클라우드 저장 외에는 기록을 외부로 보내지 않습니다.')}
   ${sec('카메라 · 사진','오운완 공유 카드에 사진을 넣을 때와 인바디 결과지를 사진으로 입력할 때만 사용합니다. 사진은 기기 안에서 카드 합성·글자 인식에만 쓰이고 서버에 올라가지 않습니다. 기록 › 인바디의 바디 사진은 이 기기 안(IndexedDB)에만 보관되며 클라우드 동기화와 백업 파일에 포함되지 않습니다. 인식 엔진(Tesseract.js)은 이 앱 서버에서 처음 한 번 내려받습니다.')}
   ${sec('복용 약물 (민감정보)','더보기 › 복용 약물에 등록한 약은 동의한 경우에만, 이 기기에만 저장됩니다. 클라우드 동기화는 같은 화면에서 따로 켤 때만 포함되며 기본은 꺼짐입니다. 같은 화면의 \'약물 정보 모두 지우기\'로 언제든 삭제할 수 있습니다. 약물·영양제 안내는 정보 목적이며 의사·약사의 지시가 우선합니다.')}
   ${sec('백업 파일 주의','JSON·CSV 백업 파일에는 건강 기록이 그대로 들어 있습니다. 다른 사람에게 보내거나 공용 PC에 남기지 마세요.')}
@@ -2910,7 +2906,7 @@ function openPrivacy(){
   ${sec('삭제','더보기 › 데이터 백업 · 복원 › 모든 데이터 삭제로 기기 기록을 지웁니다. 클라우드 기록과 계정은 더보기 › 계정 · 클라우드 › 클라우드 데이터와 계정 삭제로 지웁니다.')}
   ${sec('건강 관련 안내','운동·식단 제안은 일반적인 정보이며 의학적 진단이나 전문 트레이닝을 대신하지 않습니다. 통증이나 지병이 있으면 전문가와 상의하세요.')}
   ${sec('문의 · 운영자','만든 사람: <a href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener" style="color:var(--pri);font-weight:700">@proteinvillain</a> (Instagram)<br>개인정보 보호 담당도 만든 사람이 직접 맡습니다. 개인정보 열람·정정·삭제 요청이나 오류 제보는 인스타그램 DM으로 보내 주세요. 앱 안에서 직접 삭제하는 방법은 위 \'삭제\' 항목을 참고하세요.')}
-  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털), Open Food Facts (ODbL) · 글자 인식: Tesseract.js·tessdata (Apache 2.0) · 로그인·저장: Firebase (Google)<br>5/3/1, Madcow, HYROX 등은 각 권리자의 프로그램·상표 이름으로, 설명 목적으로만 쓰며 공식 제휴 앱이 아닙니다.')}`);
+  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털) · 글자 인식: Tesseract.js·tessdata (Apache 2.0) · 로그인·저장: Firebase (Google)<br>5/3/1, Madcow, HYROX 등은 각 권리자의 프로그램·상표 이름으로, 설명 목적으로만 쓰며 공식 제휴 앱이 아닙니다.')}`);
 }
 async function deleteCloud(){
   if(!fb.user)return;
@@ -2985,11 +2981,19 @@ function renderDiet(){
   h+=`<div class="tiny" style="text-align:center;margin-bottom:8px">음식 수치는 대략값입니다. 포장 영양정보가 있으면 직접 입력이 가장 정확합니다.</div>`;
   $('v-diet').innerHTML=h;
 }
+function pickFood(name){
+  const f=FOOD_DB.find(x=>x[0]===name);
+  openSheet(`<div class="sheet-h"><h2>${f[0]}</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="card"><div class="muted" style="margin-bottom:10px">기준 ${f[1]} · ${f[2]} kcal</div><label class="lbl">수량 (배수)</label>
+  <div class="chips" id="qtyChips" style="margin-bottom:10px">${[.5,1,1.5,2,3].map(q=>`<button class="chip ${q===1?'on':''}" onclick="setQty(${q})">${q}</button>`).join('')}</div>
+  <input class="inp" id="qty" inputmode="decimal" value="1"></div>
+  <button class="btn" data-n="${esc(f[0])}" onclick="addFood(this.dataset.n)">추가</button>`);
+}
 function openFoodAdd(meal){
   dietMeal=meal;const ms=S.meals||[],fq=freqFoods(12);
   openSheet(`<div class="sheet-h"><h2>${MEAL_L[meal]} 추가</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <input class="inp" id="foodQ" placeholder="검색: 닭가슴살, 신라면, 김치찌개, 도미노..." oninput="foodSearch()" autocomplete="off">
-  <div style="display:flex;gap:16px;margin:10px 2px"><button class="link" onclick="openManualFood()">직접 입력</button><button class="link" onclick="offSearch()">온라인 검색</button></div>
+  <div style="display:flex;gap:16px;margin:10px 2px"><button class="link" onclick="openManualFood()">직접 입력</button></div>
   <div id="foodRes"></div><div class="tiny" id="kdbSt" style="margin:8px 2px 0"></div><div id="kdbRes"></div>
   <div id="foodQuick">${ms.length?`<div class="sec" style="margin-top:14px">저장한 끼니</div><div class="chips">${ms.map(m=>`<button class="chip" style="background:var(--pri-soft);color:var(--pri)" onclick="addMeal('${m.id}')">${esc(m.name)} <span style="opacity:.7">${fmt(m.items.reduce((a,x)=>a+x.kcal,0))}</span></button>`).join('')}</div>`:''}
   ${fq.length?`<div class="sec" style="margin-top:14px">자주 먹은 음식</div><div class="list">${fq.map(f=>`<button class="li" data-n="${esc(f.name)}" onclick="quickAddFood(this.dataset.n)"><div class="li-main"><div class="li-t">${esc(f.name)}</div><div class="li-s">탄 ${r1(f.c)} · 단 ${r1(f.p)} · 지 ${r1(f.f)} · ${f.cnt}회</div></div><div class="li-v">${fmt(f.kcal)}</div></button>`).join('')}</div>`:''}
@@ -3155,56 +3159,101 @@ const WODS=[
  {id:'tabata',name:'타바타 기본',grp:'basic',type:'tabata',desc:'20초 운동 / 10초 휴식 × 8 · 에어 스쿼트, 푸시업, 싯업, 풀업',mv:[['에어 스쿼트',[8]],['푸시업',[8]],['싯업',[8]],['풀업',[8]]]},
  {id:'emom12',name:'EMOM 12 기본',grp:'basic',type:'emom',dur:12,desc:'12분 · 홀수 분 버피 10, 짝수 분 케틀벨 스윙 15',mv:[['버피',[10]],['케틀벨 스윙',[15],[24,16]]]},
 ];
-const WOD_GRP={girls:'벤치마크 (Girls)',hero:'히어로 WOD',basic:'기본 형식',mine:'내 WOD'};
-const WOD_T={time:'For Time',amrap:'AMRAP',emom:'EMOM',tabata:'Tabata'};
+const WOD_GRP={mine:'내 WOD',girls:'벤치마크 (Girls)',hero:'히어로 WOD',hyrox:'하이록스',basic:'기본 형식'};
+/* 하이록스 WOD: 무게 [남,여] = 레이스 공식 무게 */
+const HXS=(pro)=>{const k=pro?'p':'o',W=x=>HXW[x][k];return[['인터벌 런',[1000],null,'m'],['스키에르그',[1000],null,'m'],['인터벌 런',[1000],null,'m'],['슬레드 푸시',[50],W('push'),'m'],['인터벌 런',[1000],null,'m'],['슬레드 풀',[50],W('pull'),'m'],
+  ['인터벌 런',[1000],null,'m'],['버피 브로드 점프',[80],null,'m'],['인터벌 런',[1000],null,'m'],['로잉 머신',[1000],null,'m'],['인터벌 런',[1000],null,'m'],['파머스 워크',[200],W('farm'),'m'],
+  ['인터벌 런',[1000],null,'m'],['샌드백 런지',[100],W('bag'),'m'],['인터벌 런',[1000],null,'m'],['월볼',[pro?100:100],W('wb')]];};
+WODS.push(
+ {id:'hx_sim_o',name:'레이스 시뮬레이션 Open',grp:'hyrox',type:'time',cap:120,desc:'1km 런 + 스테이션 × 8 · Open 무게',mv:HXS(0)},
+ {id:'hx_sim_p',name:'레이스 시뮬레이션 Pro',grp:'hyrox',type:'time',cap:120,desc:'1km 런 + 스테이션 × 8 · Pro 무게',mv:HXS(1)},
+ {id:'hx_half',name:'하프 시뮬레이션',grp:'hyrox',type:'time',cap:60,desc:'앞쪽 4구간 · 레이스 강도로 페이스 점검',mv:HXS(0).slice(0,8)},
+ {id:'hx_brick',name:'컴프로마이즈드 런',grp:'hyrox',type:'time',cap:45,rounds:4,desc:'4라운드 · 1km 런 직후 월볼·런지로 다리 피로 속 달리기 연습',mv:[['인터벌 런',[1000],null,'m'],['월볼',[25],HXW.wb.o],['샌드백 런지',[25],HXW.bag.o,'m']]},
+ {id:'hx_emom',name:'스테이션 EMOM 24',grp:'hyrox',type:'emom',dur:24,int:60,desc:'24분 EMOM · 4개 스테이션 순환',mv:[['스키에르그',[15],null,'cal'],['버피 브로드 점프',[10]],['로잉 머신',[15],null,'cal'],['월볼',[20],HXW.wb.o]]},
+ {id:'hx_engine',name:'엔진 인터벌',grp:'hyrox',type:'tabata',work:240,rest:90,tr:4,desc:'4분 운동 · 90초 휴식 × 4 · 레이스 페이스 런',mv:[['인터벌 런',[800],null,'m']]},
+ {id:'death_bur',name:'Death by 버피',grp:'basic',type:'death',dur:20,inc:1,desc:'1분째 1회, 2분째 2회… 그 분 안에 못 끝낼 때까지',mv:[['버피',[1]]]},
+ {id:'death_pu',name:'Death by 풀업',grp:'basic',type:'death',dur:20,inc:1,desc:'매 분 1회씩 늘리기',mv:[['풀업',[1]]]});
+const WOD_T={time:'For Time',amrap:'AMRAP',emom:'EMOM',tabata:'인터벌',death:'Death by'};
 const allWods=()=>WODS.concat((S.myWods||[]).map(w=>({...w,grp:'mine'})));
 const wodById=id=>allWods().find(w=>w.id===id);
 const wkg=w=>w?w[S.profile.gender==='female'?1:0]:0;
 function wodBest(id){const L=(S.wods||[]).filter(r=>r.wid===id);if(!L.length)return null;const w=wodById(id);
+  if(w&&w.type==='death')return L.reduce((b,r)=>(r.rounds||0)>(b.rounds||0)?r:b);
   return w&&w.type==='amrap'?L.reduce((b,r)=>((r.rounds||0)*1000+(r.reps||0))>((b.rounds||0)*1000+(b.reps||0))?r:b):L.filter(r=>r.time).reduce((b,r)=>!b||r.time<b.time?r:b,null);}
-const wodRes=r=>r.type==='amrap'?`${r.rounds}라운드 + ${r.reps}회`:r.time?fmtT(r.time):'완료';
+const wodRes=r=>r.type==='amrap'?`${r.rounds}라운드 + ${r.reps}회`:r.type==='death'?`${r.rounds||0}분`:r.time?fmtT(r.time):'완료';
+function wodList(L){return`<div class="list">${L.map(w=>{const b=wodBest(w.id);return`<button class="li" onclick="openWod('${w.id}')"><div class="li-main"><div class="li-t">${esc(w.name)} <span class="badge" style="padding:1px 7px;font-size:10.5px">${WOD_T[w.type]}${w.type==='amrap'||w.type==='emom'?' '+w.dur+'분':''}</span></div><div class="li-s" style="white-space:normal">${esc(w.desc||'')}</div></div>${b?`<div class="li-v" style="font-size:13px">${wodRes(b)}<div class="tiny">최고</div></div>`:''}</button>`;}).join('')}</div>`;}
 function renderWodTab(){
   const el=$('logWod');if(!el)return;const rec=(S.wods||[]).slice(-6).reverse();
   el.innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:10px">바로 시작</div>
   <div class="g2">${Object.entries(WOD_T).map(([k,l])=>`<button class="btn sub" onclick="openWodSetup('${k}')">${l}</button>`).join('')}</div>
-  <div class="tiny" style="margin-top:8px">For Time 기록 측정 · AMRAP 정해진 시간 최대 라운드 · EMOM 매 분 시작 · Tabata 20초/10초</div></div>
+  <div class="tiny" style="margin-top:8px;line-height:1.6">For Time 최대한 빨리 끝내기 · AMRAP 정해진 시간 동안 최대 라운드 · EMOM 매 분(또는 N분) 시작 · 인터벌 운동/휴식 반복 · Death by 매 분 1회씩 늘리기</div></div>
   ${Object.entries(WOD_GRP).map(([g,gl])=>{const L=allWods().filter(w=>w.grp===g);if(!L.length)return'';
-    return`<div class="sec">${gl}</div><div class="list">${L.map(w=>{const b=wodBest(w.id);return`<button class="li" onclick="openWod('${w.id}')"><div class="li-main"><div class="li-t">${esc(w.name)} <span class="badge" style="padding:1px 7px;font-size:10.5px">${WOD_T[w.type]}${w.type==='amrap'||w.type==='emom'?' '+w.dur+'분':''}</span></div><div class="li-s" style="white-space:normal">${esc(w.desc||'')}</div></div>${b?`<div class="li-v" style="font-size:13px">${wodRes(b)}<div class="tiny">최고</div></div>`:''}</button>`;}).join('')}</div>`;}).join('')}
+    if(g==='hyrox')return`<div class="sec">${gl}</div><div class="list" style="margin-bottom:8px">${PROGRAMS.filter(p=>p.id.startsWith('hx')).map(p=>`<button class="li" onclick="openProgram('${p.id}')"><div class="li-main"><div class="li-t">${esc(p.name)} 12주 프로그램${S.prog&&S.prog.id===p.id?' <span class="badge b-good">진행 중</span>':''}</div><div class="li-s">${esc(p.sub)}</div></div><span class="chev">›</span></button>`).join('')}</div>`+wodList(L);
+    return`<div class="sec">${gl}</div>`+wodList(L);
+}).join('')}
   ${rec.length?`<div class="sec">최근 기록</div><div class="list">${rec.map(r=>`<div class="li"><div class="li-main"><div class="li-t">${esc(r.name)} ${r.rx?'<span class="badge b-good" style="padding:1px 7px;font-size:10.5px">Rx</span>':'<span class="badge" style="padding:1px 7px;font-size:10.5px">Scaled</span>'}</div><div class="li-s">${md(r.date)} · ${WOD_T[r.type]}</div></div><div class="li-v">${wodRes(r)}</div></div>`).join('')}</div>`:''}`;
 }
-function wodMvTxt(w){return w.mv.map(([n,r,kg,u])=>`${n} ${r.join('-')}${u||(exInfo(n).t===2?'m':'')}${kg?` (${wkg(kg)}kg)`:''}`);}
+function wodMvTxt(w){if(w.type==='death')return w.mv.map(([n])=>`${n} · 1분째 ${w.inc||1}회, 매 분 +${w.inc||1}회`);return w.mv.map(([n,r,kg,u])=>`${n} ${r.join('-')}${u==='cal'?'cal':u==='s'?'초':u||(exInfo(n).t===2?'m':'회')}${kg?` (${wkg(kg)}kg)`:''}`);}
 function openWod(id){
   const w=wodById(id);if(!w)return;const b=wodBest(id),L=(S.wods||[]).filter(r=>r.wid===id).slice(-5).reverse();
   openSheet(`<div class="sheet-h"><h2>${esc(w.name)}</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="card"><div class="badge b-pri" style="margin-bottom:8px">${WOD_T[w.type]}${w.type==='amrap'||w.type==='emom'?` ${w.dur}분`:w.cap?` · 제한 ${w.cap}분`:''}${w.rounds?` · ${w.rounds}라운드`:''}</div>
+  <div class="card"><div class="badge b-pri" style="margin-bottom:8px">${WOD_T[w.type]}${w.type==='amrap'||w.type==='emom'||w.type==='death'?` ${w.dur}분`:w.cap?` · 제한 ${w.cap}분`:''}${w.type==='emom'&&w.int&&w.int!==60?` · ${w.int/60}분마다`:''}${w.type==='tabata'?` · ${w.work}초/${w.rest}초 × ${w.tr}`:w.rounds>1?` · ${w.rounds}라운드`:''}</div>
   <ol class="cues">${wodMvTxt(w).map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
   <div class="tiny" style="margin-top:6px">${esc(w.desc||'')} · 무게는 프로필 성별 기준 Rx</div></div>
   ${b?`<div class="card"><div class="card-h"><div class="card-t">내 최고 기록</div><b>${wodRes(b)}</b></div>${L.map(r=>`<div style="display:flex;justify-content:space-between;padding:4px 0" class="tiny"><span>${md(r.date)} ${r.rx?'Rx':'Scaled'}</span><span>${wodRes(r)}</span></div>`).join('')}</div>`:''}
   <button class="btn" onclick="startWod('${id}')">시작</button>
-  ${w.grp==='mine'?`<button class="btn danger" style="margin-top:8px" onclick="delMyWod('${id}')">이 WOD 삭제</button>`:''}`);
+  ${w.grp==='mine'?`<div class="row-btns" style="margin-top:8px"><button class="btn ghost" onclick="openWodSetup('${w.type}','${id}')">수정</button><button class="btn danger" onclick="delMyWod('${id}')">삭제</button></div>`:`<button class="btn ghost" style="margin-top:8px" onclick="openWodSetup('${w.type}','','${id}')">이 WOD를 바탕으로 내 WOD 만들기</button>`}`);
 }
-function openWodSetup(type){
-  openSheet(`<div class="sheet-h"><h2>${WOD_T[type]} 만들기</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="card"><div class="field"><label class="lbl">이름</label><input class="inp" id="wsN" placeholder="예: 화요일 WOD" value="${WOD_T[type]} ${md(today())}"></div>
-  <div class="g2">${type==='time'?`<div class="field"><label class="lbl">라운드</label><input class="inp" id="wsR" inputmode="numeric" value="1"></div><div class="field"><label class="lbl">제한 시간(분)</label><input class="inp" id="wsD" inputmode="numeric" value="20"></div>`
-    :type==='tabata'?`<div class="field"><label class="lbl">운동 / 휴식(초)</label><input class="inp" id="wsW" inputmode="numeric" value="20"></div><div class="field"><label class="lbl">휴식(초)</label><input class="inp" id="wsRe" inputmode="numeric" value="10"></div><div class="field"><label class="lbl">라운드(종목당)</label><input class="inp" id="wsR" inputmode="numeric" value="8"></div>`
-    :`<div class="field"><label class="lbl">시간(분)</label><input class="inp" id="wsD" inputmode="numeric" value="${type==='amrap'?15:12}"></div>${type==='emom'?`<div class="field"><label class="lbl">간격(초)</label><input class="inp" id="wsI" inputmode="numeric" value="60"></div>`:''}`}</div></div>
-  <div class="card"><div class="card-h"><div class="card-t">동작</div><button class="link" onclick="wsAdd()">+ 동작</button></div><div id="wsMv"></div>
-  <div class="tiny" style="margin-top:6px">${type==='emom'?'동작이 여러 개면 분마다 번갈아 나옵니다':'반복은 21-15-9처럼 하이픈으로 나눠 적을 수 있어요'}</div></div>
+/* WOD 직접 만들기: 동작은 분류별로 골라 담고, 단위(회·m·cal·초)·무게·반복(21-15-9)을 정함 */
+const WOD_CAT=[['역도',['스러스터','파워 클린','스쿼트 클린','행 파워 클린','클린 앤 저크','파워 스내치','스쿼트 스내치','오버헤드 스쿼트','푸시 프레스','푸시 저크','데드리프트','프론트 스쿼트','스쿼트','벤치프레스','스모 데드리프트 하이풀']],
+ ['체조',['풀업','체스트 투 바 풀업','토즈 투 바','바 머슬업','링 머슬업','링 딥','핸드스탠드 푸시업','핸드스탠드 워크','푸시업','버피','에어 스쿼트','싯업','박스 점프','피스톨 스쿼트','로프 클라임','더블 언더','런지','행잉 레그레이즈','플랭크']],
+ ['케틀벨·덤벨',['케틀벨 스윙','케틀벨 스내치','덤벨 스내치','데빌 프레스','고블릿 스쿼트','덤벨 스러스터','터키시 겟업','월볼','샌드백 캐리']],
+ ['유산소',['인터벌 런','로잉 머신','스키에르그','어설트 바이크','줄넘기','배틀 로프']],
+ ['하이록스',['스키에르그','슬레드 푸시','슬레드 풀','버피 브로드 점프','로잉 머신','파머스 워크','샌드백 런지','월볼']]];
+function wsDefault(n){const i=exInfo(n)||{};if(/런$|이지런|템포런|롱런/.test(n))return['400','','m'];if(/로잉|스키에르그/.test(n))return['500','','m'];if(/바이크/.test(n))return['15','','cal'];
+  if(/슬레드|파머스|캐리|런지|워크|브로드/.test(n)&&!/^런지$/.test(n))return['50','','m'];if(/플랭크|배틀 로프/.test(n))return['30','','s'];if(/더블 언더|줄넘기/.test(n))return['50','',''];return['10','',''];}
+let _wsCat=0,_wsEdit=null;
+function openWodSetup(type,editId,fromId){
+  const src=editId?wodById(editId):fromId?wodById(fromId):null;_wsEdit=editId||null;
+  window._ws=src?src.mv.map(([n,r,kg,u])=>[n,r.join('-'),kg?String(wkg(kg)):'',u||(exInfo(n).t===2?'m':'')]):[];
+  const v=(k,d)=>src&&src[k]!=null?src[k]:d;
+  openSheet(`<div class="sheet-h"><h2>${editId?'WOD 수정':WOD_T[type]+' 만들기'}</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="seg" style="margin-bottom:10px">${Object.entries(WOD_T).map(([k,l])=>`<button class="${k===type?'on':''}" onclick="wsKeep();openWodSetup('${k}'${editId?`,'${editId}'`:''})">${l}</button>`).join('')}</div>
+  <div class="card"><div class="field"><label class="lbl">이름</label><input class="inp" id="wsN" placeholder="예: 화요일 WOD" value="${esc(src&&!fromId?src.name:(fromId?src.name+' (내 버전)':WOD_T[type]+' '+md(today())))}"></div>
+  <div class="g2">${type==='time'?`<div class="field"><label class="lbl">라운드</label><input class="inp" id="wsR" inputmode="numeric" value="${v('rounds',1)}"></div><div class="field"><label class="lbl">제한 시간(분, 0=없음)</label><input class="inp" id="wsD" inputmode="numeric" value="${v('cap',20)}"></div>`
+    :type==='tabata'?`<div class="field"><label class="lbl">운동(초)</label><input class="inp" id="wsW" inputmode="numeric" value="${v('work',20)}"></div><div class="field"><label class="lbl">휴식(초)</label><input class="inp" id="wsRe" inputmode="numeric" value="${v('rest',10)}"></div><div class="field"><label class="lbl">라운드(동작당)</label><input class="inp" id="wsR" inputmode="numeric" value="${v('tr',8)}"></div>`
+    :type==='death'?`<div class="field"><label class="lbl">최대 시간(분)</label><input class="inp" id="wsD" inputmode="numeric" value="${v('dur',20)}"></div><div class="field"><label class="lbl">매 분 늘리는 횟수</label><input class="inp" id="wsInc" inputmode="numeric" value="${v('inc',1)}"></div>`
+    :`<div class="field"><label class="lbl">시간(분)</label><input class="inp" id="wsD" inputmode="numeric" value="${v('dur',type==='amrap'?15:12)}"></div>${type==='emom'?`<div class="field"><label class="lbl">간격</label><select class="inp" id="wsI">${[[60,'매 1분 (EMOM)'],[90,'90초마다'],[120,'2분마다 (E2MOM)'],[180,'3분마다 (E3MOM)']].map(([x,l])=>`<option value="${x}" ${v('int',60)==x?'selected':''}>${l}</option>`).join('')}</select></div><label class="tiny" style="display:flex;gap:6px;align-items:center;grid-column:1/-1"><input type="checkbox" id="wsSame" ${v('same',0)?'checked':''} style="accent-color:var(--pri)">모든 동작을 매 구간마다 (끄면 구간마다 번갈아)</label>`:''}`}</div></div>
+  <div class="card"><div class="card-h"><div class="card-t">동작 <span class="tiny" id="wsCnt"></span></div><button class="link" onclick="wsAdd()">+ 직접 입력</button></div><div id="wsMv"></div>
+  <div class="tiny" style="margin:6px 0 10px">반복은 21-15-9처럼 하이픈으로 나눠 적으면 라운드마다 바뀌어요${type==='death'?' · Death by는 반복 수를 적지 않아도 돼요':''}</div>
+  <div class="chips scroll" style="margin-bottom:8px">${WOD_CAT.map(([c],i)=>`<button class="chip ${_wsCat===i?'on':''}" onclick="_wsCat=${i};wsPal()">${c}</button>`).join('')}</div><div id="wsPal" class="chips"></div></div>
   <datalist id="wsDL">${exLib().map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist>
   <div class="row-btns"><button class="btn ghost" onclick="wsSave('${type}',0)">저장만</button><button class="btn" onclick="wsSave('${type}',1)">저장하고 시작</button></div>`);
-  window._ws=[['', '10','']];wsRender();
+  wsRender();wsPal();
 }
-function wsRender(){$('wsMv').innerHTML=window._ws.map((m,i)=>`<div style="display:grid;grid-template-columns:1fr 70px 62px 26px;gap:6px;margin-bottom:6px"><input class="inp" list="wsDL" placeholder="동작" value="${esc(m[0])}" oninput="_ws[${i}][0]=this.value"><input class="inp" placeholder="반복" value="${esc(m[1])}" oninput="_ws[${i}][1]=this.value"><input class="inp" inputmode="decimal" placeholder="kg" value="${esc(m[2])}" oninput="_ws[${i}][2]=this.value"><button class="x" style="position:static" onclick="_ws.splice(${i},1);wsRender()">×</button></div>`).join('');}
-function wsAdd(){window._ws.push(['','10','']);wsRender();}
+function wsKeep(){/* 형식을 바꿔도 담은 동작 유지 */window._wsKeep=window._ws;}
+function wsPal(){const el=$('wsPal');if(!el)return;const names=WOD_CAT[_wsCat][1].filter(n=>exInfo(n)&&exLib().some(x=>x.name===n));
+  el.innerHTML=names.map(n=>`<button class="chip" onclick="wsPick(this.dataset.n)" data-n="${esc(n)}">+ ${esc(n)}</button>`).join('');
+  document.querySelectorAll('#sheet .chips.scroll .chip').forEach((c,i)=>c.classList.toggle('on',i===_wsCat));}
+function wsPick(n){const [r,kg,u]=wsDefault(n);window._ws.push([n,r,kg,u]);wsRender();toast(n+' 추가');}
+function wsRender(){if(window._wsKeep&&!window._ws.length){window._ws=window._wsKeep;}window._wsKeep=null;
+  const U=[['','회'],['m','m'],['cal','cal'],['s','초']];
+  $('wsMv').innerHTML=window._ws.map((m,i)=>`<div class="ws-row"><span class="ro-n">${i+1}</span><input class="inp" list="wsDL" placeholder="동작" value="${esc(m[0])}" oninput="_ws[${i}][0]=this.value">
+   <input class="inp" placeholder="반복" value="${esc(m[1])}" oninput="_ws[${i}][1]=this.value"><select class="inp" onchange="_ws[${i}][3]=this.value">${U.map(([k,l])=>`<option value="${k}" ${(m[3]||'')===k?'selected':''}>${l}</option>`).join('')}</select>
+   <input class="inp" inputmode="decimal" placeholder="kg" value="${esc(m[2])}" oninput="_ws[${i}][2]=this.value">
+   <div class="ws-act">${i>0?`<button class="x" style="position:static" onclick="_ws.splice(${i-1},0,_ws.splice(${i},1)[0]);wsRender()" aria-label="위로">↑</button>`:''}<button class="x" style="position:static" onclick="_ws.splice(${i},1);wsRender()" aria-label="삭제">×</button></div></div>`).join('')||'<div class="tiny" style="padding:8px 0">아래에서 동작을 골라 담으세요</div>';
+  const c=$('wsCnt');if(c)c.textContent=window._ws.length?window._ws.length+'개':'';}
+function wsAdd(){window._ws.push(['','10','','']);wsRender();}
 function wsSave(type,go){
-  const mv=window._ws.filter(m=>m[0].trim()).map(m=>{const r=String(m[1]).split(/[-,\s]+/).map(x=>parseInt(x)).filter(x=>x>0);const kg=num(m[2]);return[m[0].trim(),r.length?r:[1],kg?[kg,kg]:null];});
+  const mv=window._ws.filter(m=>m[0].trim()).map(m=>{const r=String(m[1]).split(/[-,\s]+/).map(x=>parseInt(x)).filter(x=>x>0);const kg=num(m[2]);const o=[m[0].trim(),r.length?r:[1],kg?[kg,kg]:null];if(m[3])o[3]=m[3];return o;});
   if(!mv.length){toast('동작을 하나 이상 넣어 주세요');return;}
-  const w={id:uid('w'),name:$('wsN').value.trim()||WOD_T[type],type,mv,desc:''};
+  const w={id:_wsEdit||uid('w'),name:$('wsN').value.trim()||WOD_T[type],type,mv,desc:''};
   if(type==='time'){w.rounds=Math.max(1,parseInt($('wsR').value)||1);w.cap=num($('wsD').value)||0;}
   else if(type==='tabata'){w.work=num($('wsW').value)||20;w.rest=num($('wsRe').value)||10;w.tr=num($('wsR').value)||8;}
-  else{w.dur=num($('wsD').value)||12;if(type==='emom')w.int=num($('wsI').value)||60;}
-  w.desc=wodMvTxt(w).join(', ');S.myWods=S.myWods||[];S.myWods.push(w);save();renderWodTab();if(go)startWod(w.id);else{closeSheet();toast('저장했습니다');}
+  else if(type==='death'){w.dur=num($('wsD').value)||20;w.inc=Math.max(1,parseInt($('wsInc').value)||1);}
+  else{w.dur=num($('wsD').value)||12;if(type==='emom'){w.int=num($('wsI').value)||60;w.same=$('wsSame').checked?1:0;}}
+  w.desc=wodMvTxt(w).join(', ');S.myWods=S.myWods||[];const i=S.myWods.findIndex(x=>x.id===w.id);if(i>=0)S.myWods[i]=w;else S.myWods.push(w);_wsEdit=null;
+  save();renderWodTab();if(go)startWod(w.id);else{closeSheet();toast('저장했습니다');}
 }
 function delMyWod(id){confirmSheet('이 WOD를 삭제할까요? 기록은 남습니다.',()=>{S.myWods=(S.myWods||[]).filter(w=>w.id!==id);save();closeSheet();renderWodTab();},'삭제');}
 
@@ -3224,7 +3273,8 @@ function tmPause(){if(tm.state!=='run')return;tm.acc=tmEl();tm.state='pause';tmR
 function tmResume(){tm.state='run';tm.t0=Date.now();tmLoop();tmRender();}
 function tmLap(){const e=tmEl();tm.laps.push(e);tm.round++;beep(1);tmRender();}
 function tmPhase(e){ // 현재 단계 계산
-  if(tm.kind==='emom'){const i=tm.int||60,k=Math.floor(e/i);return{label:`${k+1} / ${Math.round(tm.dur/i)} 분`,left:i-(e%i),step:tm.steps[k%tm.steps.length],k,total:tm.dur};}
+  if(tm.kind==='emom'){const i=tm.int||60,k=Math.floor(e/i);return{label:`${k+1} / ${Math.round(tm.dur/i)} ${i===60?'분':'구간'}`,left:i-(e%i),step:tm.steps[k%tm.steps.length],k,total:tm.dur};}
+  if(tm.kind==='death'){const k=Math.floor(e/60),n=(k+1)*(tm.inc||1);return{label:`${k+1}분째 · ${n}회`,left:60-(e%60),step:tm.steps.map(x=>`${x} ${n}회`).join(' + '),k,total:tm.dur};}
   if(tm.kind==='tabata'){const w=tm.work||20,r=tm.rest||10,cyc=w+r,k=Math.floor(e/cyc),inW=(e%cyc)<w,n=tm.steps.length*(tm.rounds||8);
     return{label:`${Math.min(k+1,n)} / ${n} 라운드`,left:inW?w-(e%cyc):cyc-(e%cyc),work:inW,step:tm.steps[Math.floor(k/(tm.rounds||8))%tm.steps.length],k,total:n*cyc-r};}
   if(tm.kind==='amrap'||tm.kind==='countdown')return{left:tm.dur-e,total:tm.dur};
@@ -3250,7 +3300,7 @@ function tmTick(){const el=$('tmBig');if(!el||!tm)return;
 const mmssc=s=>{const m=Math.floor(s/60),x=s-m*60;return`${m}:${String(Math.floor(x)).padStart(2,'0')}.${Math.floor((x%1)*10)}`;};
 function tmRender(){
   const ov=$('tmOv');if(!ov||!tm)return;const run=tm.state==='run',done=tm.state==='done',canRound=tm.kind==='amrap'||(tm.kind==='time'&&(tm.rounds||1)>1)||tm.kind==='stopwatch';
-  ov.innerHTML=`<div class="wm-top"><button class="link" onclick="${run?'tmPause();':''}confirmSheet('타이머를 끝낼까요?',()=>{closeSheet();tmClose();},'끝내기')">닫기</button><div style="text-align:center"><b>${esc(tm.title)}</b>${(()=>{const sub=tm.kind==='stopwatch'?'스톱워치':tm.kind==='countdown'?'타이머':WOD_T[tm.kind]||'';return sub&&sub!==tm.title?`<div class="tiny">${sub}</div>`:''})()}</div>
+  ov.innerHTML=`<div class="wm-top"><button class="link" onclick="${run?'tmPause();':''}confirmSheet('타이머를 끝낼까요?',()=>{closeSheet();tmClose();},'끝내기')">닫기</button><div style="text-align:center"><b>${esc(tm.title)}</b>${(()=>{const sub=tm.kind==='stopwatch'?'스톱워치':tm.kind==='countdown'?'타이머':WOD_T[tm.kind]||'';return sub&&!String(tm.title||'').includes(sub)?`<div class="tiny">${sub}</div>`:''})()}</div>
   <button class="link" onclick="S.voice=S.voice?0:1;saveLocal();tmRender()">${S.voice?'음성 켬':'음성 끔'}</button></div>
   <div class="wm-body" style="text-align:center;padding-top:6vh">
   <div id="tmStep" style="font-size:22px;font-weight:800;min-height:30px;margin-bottom:6px">${tm.state==='pre'?'준비':tm.steps&&tm.kind!=='emom'&&tm.kind!=='tabata'?'':''}</div>
@@ -3265,18 +3315,19 @@ function tmRender(){
     :done?(tm.wid?`<button class="btn" onclick="wodFinish()">기록 저장</button>`:`<button class="btn" onclick="tmClose()">닫기</button>`)
     :`${canRound&&run?`<button class="btn sub" style="flex:1" onclick="tmLap()">${tm.kind==='stopwatch'?'랩':'라운드 +1'}</button>`:''}
       ${run?`<button class="btn ghost" style="flex:1 0 30%" onclick="tmPause()">일시정지</button>`:`<button class="btn ghost" style="flex:1 0 30%" onclick="tmResume()">계속</button>`}
-      ${tm.kind==='time'||tm.kind==='stopwatch'?`<button class="btn" style="flex:1" onclick="tm.acc=tmEl();tm.state='done';beep(2);say('완료');tmRender()">${tm.kind==='time'?'완료':'정지'}</button>`:''}`}</div>`;
+      ${tm.kind==='time'||tm.kind==='stopwatch'||tm.kind==='death'?`<button class="btn" style="flex:1" onclick="tm.acc=tmEl();tm.state='done';beep(2);say('${tm.kind==='death'?'수고했어요':'완료'}');tmRender()">${tm.kind==='time'?'완료':tm.kind==='death'?'못 끝냄 · 종료':'정지'}</button>`:''}`}</div>`;
   tmTick();if(tm.state==='pre'||tm.state==='run')tmLoop();
 }
 function startWod(id){
   const w=wodById(id);if(!w)return;closeSheet();
   const steps=wodMvTxt(w);
-  tmOpen({kind:w.type,title:w.name,wid:w.id,steps:w.type==='emom'&&w.same?[steps.join(' · ')]:steps,dur:(w.dur||0)*60,cap:(w.cap||0)*60,int:w.int||60,work:w.work||20,rest:w.rest||10,rounds:w.type==='tabata'?(w.tr||8):(w.rounds||1)});
+  tmOpen({kind:w.type,title:w.name,wid:w.id,inc:w.inc||1,steps:w.type==='death'?w.mv.map(m=>m[0]):w.type==='emom'&&w.same?[steps.join(' · ')]:steps,dur:(w.dur||0)*60,cap:(w.cap||0)*60,int:w.int||60,work:w.work||20,rest:w.rest||10,rounds:w.type==='tabata'?(w.tr||8):(w.rounds||1)});
 }
 function wodFinish(){
   const w=wodById(tm.wid),e=Math.round(tmEl()),rounds=tm.round||1;
   openSheet(`<div class="sheet-h"><h2>${esc(w.name)} 기록</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <div class="card">${w.type==='amrap'?`<div class="g2"><div class="field"><label class="lbl">완료 라운드</label><input class="inp" id="wfR" inputmode="numeric" value="${Math.max(0,rounds-1)}"></div><div class="field"><label class="lbl">추가 반복</label><input class="inp" id="wfP" inputmode="numeric" value="0"></div></div>`
+    :w.type==='death'?`<div class="field"><label class="lbl">끝까지 해낸 분</label><input class="inp" id="wfR" inputmode="numeric" value="${Math.max(0,Math.floor(e/60))}"></div><div class="tiny">그 분 안에 정해진 횟수를 못 끝낸 분은 빼고 적어요</div>`
     :w.type==='time'?`<div class="field"><label class="lbl">기록</label><input class="inp" id="wfT" value="${mmss(e)}" placeholder="분:초"></div><div class="tiny">제한 시간 안에 못 끝냈다면 기록 대신 메모에 남은 반복을 적으세요</div>`
     :`<div class="muted">${WOD_T[w.type]} ${mmss(e)} 완료</div>`}
   <label style="display:flex;gap:8px;align-items:center;margin-top:10px"><input type="checkbox" id="wfRx" checked style="width:20px;height:20px;accent-color:var(--pri)">Rx (정해진 무게·동작 그대로)</label>
@@ -3286,12 +3337,13 @@ function wodFinish(){
 function wodSave(){
   const w=wodById(tm.wid),r={id:uid('wr'),date:today(),wid:w.id,name:w.name,type:w.type,rx:$('wfRx').checked,memo:$('wfM').value.trim()};
   if(w.type==='amrap'){r.rounds=parseInt($('wfR').value)||0;r.reps=parseInt($('wfP').value)||0;}
+  else if(w.type==='death'){r.rounds=parseInt($('wfR').value)||0;}
   else if(w.type==='time'){const m=$('wfT').value.trim().split(':');r.time=m.length>1?(parseInt(m[0])||0)*60+(parseInt(m[1])||0):parseInt(m[0])||0;}
   else r.time=Math.round(tmEl());
   const prev=wodBest(w.id);S.wods=S.wods||[];S.wods.push(r);
   // 운동 기록(오운완 달력·공유 카드)에도 남김
-  const mult=w.type==='amrap'?Math.max(1,r.rounds):w.type==='emom'?Math.max(1,Math.round(w.dur*60/(w.int||60)/w.mv.length)):w.type==='tabata'?1:(w.rounds||1);
-  const exs=w.mv.filter(([n])=>exInfo(n).eq!=='run').map(([n,reps,kg])=>({name:n,sets:[{w:kg&&r.rx?wkg(kg):0,r:reps.reduce((a,b)=>a+b,0)*mult}]}));if(!exs.length)exs.push({name:'버피',sets:[{w:0,r:1}]});
+  const mult=w.type==='death'?1:w.type==='amrap'?Math.max(1,r.rounds):w.type==='emom'?Math.max(1,Math.round(w.dur*60/(w.int||60)/w.mv.length)):w.type==='tabata'?1:(w.rounds||1);
+  const exs=w.mv.filter(([n,,,u])=>exInfo(n).eq!=='run'&&u!=='m'&&u!=='cal').map(([n,reps,kg])=>({name:n,sets:[{w:kg&&r.rx?wkg(kg):0,r:w.type==='death'?(r.rounds||0)*((r.rounds||0)+1)/2*(w.inc||1):reps.reduce((a,b)=>a+b,0)*mult}]}));if(!exs.length)exs.push({name:'버피',sets:[{w:0,r:1}]});
   const log=finalizeLog({id:uid('l'),date:today(),memo:r.memo,ts:Date.now(),exs,title:`WOD ${w.name} · ${wodRes(r)}${r.rx?' Rx':''}`});
   S.logs.push(log);S.logs.sort((a,b)=>a.date.localeCompare(b.date)||(a.ts||0)-(b.ts||0));save();tmClose();
   const isPR=prev&&(w.type==='amrap'?(r.rounds*1000+r.reps)>(prev.rounds*1000+prev.reps):r.time&&r.time<prev.time);
@@ -3309,9 +3361,11 @@ function openTimerTool(mode){if(mode)_ttMode=mode;const m=_ttMode;
   :m==='int'?`<div class="chips" style="margin-bottom:10px"><button class="chip" onclick="$('itW').value=20;$('itR').value=10;$('itN').value=8">타바타 20/10×8</button><button class="chip" onclick="$('itW').value=40;$('itR').value=20;$('itN').value=10">40/20×10</button><button class="chip" onclick="$('itW').value=60;$('itR').value=30;$('itN').value=6">60/30×6</button></div>
   <div class="g2"><div class="field"><label class="lbl">운동(초)</label><input class="inp" id="itW" inputmode="numeric" value="20"></div><div class="field"><label class="lbl">휴식(초)</label><input class="inp" id="itR" inputmode="numeric" value="10"></div><div class="field"><label class="lbl">라운드</label><input class="inp" id="itN" inputmode="numeric" value="8"></div></div>
   <button class="btn" onclick="closeSheet();tmOpen({kind:'tabata',title:'인터벌',work:+$('itW').value||20,rest:+$('itR').value||10,rounds:+$('itN').value||8,steps:['운동']})">시작</button>`
-  :`<div class="muted" style="margin:4px 2px 12px">For Time · AMRAP · EMOM · Tabata 타이머와 기록은 운동 탭의 WOD에 있어요.</div><button class="btn" onclick="closeSheet();go('log');document.querySelector('#logSeg [data-k=wod]').click()">WOD 열기</button>`;
+  :m==='emom'?`<div class="g2"><div class="field"><label class="lbl">전체(분)</label><input class="inp" id="emD" inputmode="numeric" value="12"></div><div class="field"><label class="lbl">간격</label><select class="inp" id="emI"><option value="60">매 1분</option><option value="90">90초</option><option value="120">2분</option><option value="180">3분</option></select></div></div>
+  <button class="btn" onclick="const d=(+$('emD').value||12)*60,i=+$('emI').value||60;closeSheet();tmOpen({kind:'emom',title:'EMOM',dur:d,int:i,steps:['운동']})">시작</button>`
+  :`<div class="muted" style="margin:4px 2px 12px">For Time · AMRAP · EMOM · 인터벌 · Death by 타이머와 기록, 직접 만든 WOD는 운동 탭의 WOD에 있어요.</div><button class="btn" onclick="closeSheet();go('log');document.querySelector('#logSeg [data-k=wod]').click()">WOD 열기</button>`;
   openSheet(`<div class="sheet-h"><h2>타이머</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="seg" style="margin-bottom:12px">${[['cd','카운트다운'],['sw','스톱워치'],['int','인터벌'],['wod','WOD']].map(([k,l])=>`<button class="${m===k?'on':''}" onclick="openTimerTool('${k}')">${l}</button>`).join('')}</div>
+  <div class="seg" style="margin-bottom:12px">${[['cd','카운트다운'],['sw','스톱워치'],['int','인터벌'],['emom','EMOM'],['wod','WOD']].map(([k,l])=>`<button class="${m===k?'on':''}" onclick="openTimerTool('${k}')">${l}</button>`).join('')}</div>
   <div class="card">${body}</div>`);
 }
 function openIntervalTool(){openTimerTool('int');}
@@ -3337,11 +3391,12 @@ let installEvt=null;
 const LOGO_MARK='<path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>';
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(curTab==='home')renderHome();if(curTab==='more')renderMore();});
-window.addEventListener('appinstalled',()=>{installEvt=null;toast('홈 화면에 설치되었습니다');});
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;renderInstallBar();if(curTab==='more')renderMore();});
+window.addEventListener('appinstalled',()=>{installEvt=null;renderInstallBar();toast('홈 화면에 설치되었습니다');});
 const inAppBrowser=()=>{const u=navigator.userAgent;return /KAKAOTALK|Instagram|FBAN|FBAV|NAVER|Line\/|DaumApps|everytimeApp|; wv\)/i.test(u)?(/KAKAOTALK/i.test(u)?'카카오톡':/Instagram/i.test(u)?'인스타그램':/NAVER/i.test(u)?'네이버 앱':'앱 내부'):'';};
 async function installApp(){
-  if(installEvt&&!inAppBrowser()){installEvt.prompt();try{const c=await installEvt.userChoice;if(c&&c.outcome==='accepted'){installEvt=null;renderMore();return;}}catch(e){}installEvt=null;}
+  if(installEvt&&!inAppBrowser()){installEvt.prompt();try{const c=await installEvt.userChoice;if(c&&c.outcome==='accepted'){installEvt=null;renderInstallBar();if(curTab==='more')renderMore();return;}}catch(e){}installEvt=null;renderInstallBar();return;}
+  if(isIOS()&&!inAppBrowser()){openIosGuide();return;}
   const ib=inAppBrowser();
   openSheet(`<div class="sheet-h"><h2>홈 화면에 설치</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   ${isStandalone()?'<div class="card muted">이미 앱으로 실행 중입니다.</div>':''}
@@ -3351,12 +3406,28 @@ async function installApp(){
   <div class="card"><div class="card-t" style="margin-bottom:6px">아이폰 (사파리)</div><ol class="cues"><li>사파리로 이 페이지 열기</li><li>아래쪽 공유 버튼 누르기</li><li>"홈 화면에 추가" 선택</li></ol></div>
   <div class="card"><div class="row-b" style="margin-bottom:6px"><div class="card-t">설치 진단</div><button class="btn ghost sm" onclick="runInstallCheck()">검사</button></div><div id="instChk" class="tiny">설치가 안 되면 "검사"를 눌러 빠진 파일이 있는지 확인하세요.</div></div>`);
 }
-/* 아이폰에서 홈 화면 설치 전에만 보이는 안내 (사파리는 7일 동안 안 열면 저장 데이터를 지울 수 있음) */
-function iosInstallHTML(){const ib=inAppBrowser();
-  return`<div class="ios-ins"><div class="ios-ins-h"><b>아이폰은 홈 화면에 추가해 주세요</b><button class="link" style="font-size:12px" onclick="S.iosHide=today();saveLocal();renderHome()">7일 동안 숨기기</button></div>
-  <div class="tiny" style="line-height:1.6;margin:4px 0 10px">사파리에서 그냥 열어 쓰면, 사파리를 쓰는 동안 7일 넘게 이 앱을 열지 않을 때 기록이 지워질 수 있어요. 홈 화면에 추가한 앱은 이 규칙이 적용되지 않아요.${fb.user?'':' 로그인해 두면 클라우드에도 함께 보관돼요.'}</div>
-  ${ib?`<div class="tiny" style="margin-bottom:8px"><b>${ib}</b> 안에서는 추가할 수 없어요. 오른쪽 아래·위 메뉴에서 "Safari로 열기"를 먼저 눌러 주세요.</div>`:''}
-  <ol class="ios-steps"><li><span>1</span>아래 가운데 <b>공유 버튼</b> <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> 누르기</li><li><span>2</span>목록을 내려 <b>홈 화면에 추가</b> 누르기</li><li><span>3</span>오른쪽 위 <b>추가</b> 누르고, 홈 화면의 OH_UN! 아이콘으로 열기</li></ol></div>`;}
+/* 하단 설치 바: 안드로이드는 원클릭 설치, 아이폰은 홈 화면 추가 안내 모달 */
+/* 앱 내부 브라우저에서 외부 브라우저로 바로 열기 (카카오톡은 전용 주소, 안드로이드는 크롬 인텐트) */
+function openExternal(){const u=location.href.split('#')[0],ua=navigator.userAgent;
+  if(/KAKAOTALK/i.test(ua)){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(u);return;}
+  if(/android/i.test(ua)){location.href='intent://'+u.replace(/^https?:\/\//,'')+'#Intent;scheme=https;package=com.android.chrome;end';return;}
+  installApp();}
+function renderInstallBar(){const el=$('insBar');if(!el)return;
+  const hide=isStandalone()||(S.insHide&&S.insHide>daysAgo(7))||document.body.classList.contains('resting');
+  const ib=inAppBrowser(),ios=isIOS();let msg='',btn='';
+  if(!hide){if(ib){msg=`${ib}에서는 설치할 수 없어요`;btn=`<button class="btn sm" onclick="openExternal()">${ios?'Safari로 열기':'Chrome으로 열기'}</button>`;}
+    else if(installEvt){msg='OH_UN! 앱으로 설치하기';btn=`<button class="btn sm" onclick="installApp()">설치</button>`;}
+    else if(ios){msg='홈 화면에 추가하면 앱으로 설치돼요';btn=`<button class="btn sm" onclick="openIosGuide()">방법 보기</button>`;}}
+  const on=!hide&&!!msg;el.classList.toggle('on',on);document.body.classList.toggle('insbar-on',on);
+  el.innerHTML=on?`<img src="icons/icon-192.png" alt="" class="ins-ic"><div class="ins-m"><b>${msg}</b><span>${installEvt&&!ib?'전체 화면 · 오프라인 · 기록 보관이 더 안전해요':ios&&!ib?'사파리에만 두면 7일 안 쓰면 기록이 지워질 수 있어요':'메뉴에서 외부 브라우저로 열어 주세요'}</span></div>${btn}<button class="ins-x" onclick="S.insHide=today();saveLocal();renderInstallBar()" aria-label="7일 동안 숨기기">×</button>`:'';}
+function openIosGuide(){const ib=inAppBrowser();
+  openSheet(`<div class="sheet-h"><h2>홈 화면에 추가</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="muted" style="margin:-4px 2px 12px;line-height:1.6">아이폰은 보안 정책상 설치 팝업을 띄울 수 없어서, 사파리 메뉴에서 직접 추가해야 해요. 한 번만 하면 홈 화면 아이콘으로 앱처럼 열려요.</div>
+  ${ib?`<div class="note n-warn" style="margin:0 0 12px"><b>${ib} 안에서는 추가할 수 없어요</b>화면 오른쪽 아래(또는 위) 메뉴에서 "Safari로 열기"를 누른 뒤 다시 해 주세요.<div style="margin-top:8px"><button class="btn ghost sm" onclick="copyLink()">주소 복사</button></div></div>`:''}
+  <div class="card"><ol class="ios-steps"><li><span>1</span><div>화면 아래 <b>공유 버튼</b> <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> 누르기<div class="tiny">안 보이면 오른쪽 아래 <b>···</b> 메뉴를 누른 뒤 "공유"</div></div></li>
+  <li><span>2</span><div>목록을 위로 밀어 <b>홈 화면에 추가</b> 누르기</div></li><li><span>3</span><div>오른쪽 위 <b>추가</b> 누르기</div></li><li><span>4</span><div>홈 화면의 <b>OH_UN!</b> 아이콘으로 열기<div class="tiny">사파리 탭이 아니라 아이콘으로 열어야 앱으로 실행돼요</div></div></li></ol></div>
+  <div class="tiny" style="text-align:center;margin:4px 0 8px">아이폰용 크롬에서도 공유 버튼 › 홈 화면에 추가로 할 수 있어요 (iOS 16.4 이상)</div>
+  <div class="ios-arrow" aria-hidden="true">↓</div>`);}
 function copyLink(){const u=location.href.split('#')[0];(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast('주소를 복사했습니다'),()=>toast(u));}
 async function runInstallCheck(){
   const out=$('instChk');out.textContent='검사 중...';const rows=[];
@@ -3373,7 +3444,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='7.0';
+const APP_VER='7.2';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
@@ -3390,7 +3461,7 @@ bindSeg('logSeg',k=>{$('logWeight').style.display=k==='weight'?'':'none';$('logR
 bindSeg('histSeg',k=>{histK=k;renderHist();});
 setTimeout(()=>{$('splash').classList.add('off');setTimeout(()=>$('splash').remove(),450);},700);
 go('home');
-initPWA();scheduleRemind();
+initPWA();scheduleRemind();setTimeout(renderInstallBar,800);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&curTab==='home')renderHome();});
 if(S.cloud)fbInit();
 if(!S.profile.weight&&!S.onb)setTimeout(()=>(!S.welcomed&&!S.logs.length)?openWelcome():openOnboarding(),400);
