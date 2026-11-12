@@ -2,7 +2,7 @@
 // - index.html: 항상 네트워크 우선 → index.html만 다시 올리면 바로 반영 (버전 수정 불필요)
 // - 운동 애니메이션·아이콘: 처음 설치 때 저장해 오프라인에서도 표시
 // - ANIM_VER는 ek.pack.gz·data 내용이 바뀔 때만 올리면 됨
-const ANIM_VER='media-v3';
+const ANIM_VER='media-v4';
 const SHELL='shell-v3';
 const ANIM=['./ek.pack.gz'];
 // 파일 하나가 빠져도 설치가 멈추지 않도록 하나씩 저장
