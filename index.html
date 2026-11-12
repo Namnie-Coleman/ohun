@@ -311,6 +311,12 @@ table.t tr:last-child td{border-bottom:none;}
 .cc-tabs{margin:10px 0 8px}.cc-body{background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:12px;min-height:70px}
 .cc-sl{display:flex;align-items:center;gap:10px;padding:3px 0}.cc-sl .tiny:first-child{width:42px}.cc-sl input{flex:1;accent-color:var(--pri)}.cc-sl .tiny:last-child{width:38px;text-align:right}
 .card-h>.btn,.card-h>button.btn{flex:none;white-space:nowrap}.card-h>.card-t{min-width:0}
+.wm-links{display:flex;justify-content:center;gap:18px;margin:-2px 0 10px;font-size:13px}.wm-links .link{font-size:13px}
+.bp-strip{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}.bp-th{flex:none;width:84px;border:0;padding:0;background:none;cursor:pointer;color:var(--text2);font:inherit;font-size:11px}.bp-th img{width:84px;height:112px;object-fit:cover;border-radius:10px;display:block;background:var(--card2)}.bp-th span{display:block;margin-top:3px}
+.bp-cmp{display:grid;grid-template-columns:1fr 1fr;gap:6px}.bp-cmp figure{margin:0}.bp-cmp img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:12px;background:var(--card2);display:block}.bp-cmp figcaption{text-align:center;font-size:12px;color:var(--text2);margin-top:4px}
+.fg-row{padding:10px 0!important;border-top:1px solid var(--line);gap:10px}.fg-row:disabled{opacity:1;cursor:default}
+.ios-ins{background:var(--pri-soft);border-radius:16px;padding:14px;margin:0 0 12px}.ios-ins-h{display:flex;justify-content:space-between;align-items:center;gap:8px}.ios-ins-h b{font-size:15px}
+.ios-steps{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px}.ios-steps li{display:flex;align-items:center;gap:8px}.ios-steps li>span{width:22px;height:22px;border-radius:50%;background:var(--pri);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
 </style>
 </head>
 <body>
@@ -416,7 +422,7 @@ table.t tr:last-child td{border-bottom:none;}
    20. 첫 설정 · 맞춤 제언
    21. 더보기
    22. 프로그램 (요일·주차 플랜)
-   23. v6: 자동 조정 · RIR · 공유 카드 · 주간 리포트 · 슈퍼세트 · 바코드 · 휴식 알림
+   23. v6: 자동 조정 · RIR · 공유 카드 · 주간 리포트 · 슈퍼세트 · 휴식 알림
    24. 식약처 식품영양성분 DB (공공데이터포털 · 정적 파일)
    25. v6.3: 초성·영어 검색 · 빠른 음식 · 끼니 템플릿 · CSV · 공개판 안내 · 카메라 공유 카드
    26. 식단 v2: 끼니별 (아침·점심·저녁·간식)
@@ -570,7 +576,7 @@ function bindSeg(id,fn){$(id).querySelectorAll('button').forEach(b=>b.onclick=()
 
 /* ══════════════════════ 시트 ══════════════════════ */
 function openSheet(html){clearTimeout(closeSheet._t);navPush();$('sheet').innerHTML='<div class="grab"></div>'+html;$('dim').classList.add('on');$('sheet').classList.add('on');$('sheet').scrollTop=0;}
-function closeSheet(){if(typeof stopScan==='function')stopScan();if(typeof stopCam==='function')stopCam();$('dim').classList.remove('on');$('sheet').classList.remove('on');navPop();clearTimeout(closeSheet._t);closeSheet._t=setTimeout(()=>{if(!$('sheet').classList.contains('on'))$('sheet').innerHTML='';},300);}
+function closeSheet(){if(typeof stopCam==='function')stopCam();$('dim').classList.remove('on');$('sheet').classList.remove('on');navPop();clearTimeout(closeSheet._t);closeSheet._t=setTimeout(()=>{if(!$('sheet').classList.contains('on'))$('sheet').innerHTML='';},300);}
 function confirmSheet(msg,ok,okLabel='확인',danger=true){
   openSheet(`<div style="font-size:17px;font-weight:700;margin:6px 0 18px;text-align:center">${esc(msg)}</div><div class="row-btns"><button class="btn ghost" onclick="closeSheet()">취소</button><button class="btn ${danger?'danger':''}" id="cfOk">${okLabel}</button></div>`);
   $('cfOk').onclick=()=>{closeSheet();ok();};
@@ -613,9 +619,10 @@ function renderHome(){
   const wkVol=wk.reduce((s,l)=>s+l.vol,0),wkRun=S.runs.filter(r=>r.date>=daysAgo(6)).reduce((s,r)=>s+r.km,0);
   const ft=foodTotals(today()),tg=dietTarget();
   let h='';
-  if(!p.weight)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>시작하기</b>운동 목적과 인바디를 알려주시면 식단 목표와 추천 루틴을 맞춰 드려요.<div style="margin-top:10px"><button class="btn sm" onclick="openOnboarding()">1분 설정</button></div></div>`;
+  if(!p.weight&&!firstGuideHTML())h+=`<div class="note n-pri" style="margin:0 0 12px"><b>시작하기</b>운동 목적과 인바디를 알려주시면 식단 목표와 추천 루틴을 맞춰 드려요.<div style="margin-top:10px"><button class="btn sm" onclick="openOnboarding()">1분 설정</button></div></div>`;
   {const dw=new Date().getDay(),lw=weekStats(-1);if([0,1,2].includes(dw)&&lw.n&&S.repSeen!==lw.a)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>지난 주 리포트</b>${lw.days}일 운동 · 볼륨 ${fmt(lw.vol)}kg${lw.km?` · 러닝 ${lw.km}km`:''}<div style="margin-top:10px;display:flex;gap:8px"><button class="btn sm" onclick="S.repSeen='${lw.a}';save();openWeekReport(-1);renderHome()">리포트 보기</button><button class="btn ghost sm" onclick="S.repSeen='${lw.a}';save();renderHome()">닫기</button></div></div>`;}
   if(S.remind&&S.remind.on){const [hh,mm]=(S.remind.time||'21:00').split(':').map(Number),nw=new Date();if(nw.getHours()*60+nw.getMinutes()>=hh*60+mm){const m=remindMissing();if(m.length)h+=`<button class="card row-card" style="background:var(--warn-soft)" onclick="go('${m[0]==='식단'?'diet':'log'}')"><div class="li-main"><div class="li-t">오늘 ${m.join('·')} 기록이 비어 있어요</div><div class="li-s">눌러서 바로 기록하기</div></div><span class="chev">›</span></button>`;}}
+  h+=firstGuideHTML();
   if(S.prog)h+=progHomeHTML();
   // 컨디션
   if(c){
@@ -638,7 +645,7 @@ function renderHome(){
    ${tr>=0&&!draft.exs.length?`<button class="btn" style="margin-bottom:10px" onclick="startRoutine('mine',${tr})">${DAYS[new Date().getDay()]}요일 · ${esc(S.routines[tr].name)} 시작</button>`:(!draft.exs.length&&S.routines.some(r=>(r.days||[]).length)?(()=>{for(let k=1;k<=7;k++){const wd=(new Date().getDay()+k)%7,i=S.routines.findIndex(r=>(r.days||[]).includes(wd));if(i>=0)return`<div class="muted" style="margin-bottom:10px">오늘은 지정된 루틴이 없는 날입니다 · 다음: ${DAYS[wd]}요일 ${esc(S.routines[i].name)}</div>`;}return'';})():'')}
    ${draft.exs.length?`<div class="muted" style="margin-bottom:10px">${esc(draft.routine||'진행 중인 운동')} · ${draft.exs.length}종목 · ${td}/${tt}세트 완료</div><button class="btn" onclick="openWM()">${td?'운동 모드 이어하기':'운동 모드로 시작'}</button>`
    :S.prog?`<div class="tiny">프로그램 진행 중 · 위 카드에서 오늘 운동을 시작하세요. 다른 운동은 루틴 관리에서 고를 수 있어요.</div>`:`<div class="tiny" style="margin-bottom:8px">${S.routines.length?'내 루틴':'맞춤 추천 루틴'} · 누르면 바로 운동 모드로 시작합니다</div><div class="list" style="background:var(--card2);margin:0">${rs.map(([src,i,r])=>`<button class="li" style="border-color:var(--line)" onclick="startRoutine('${src}',${i})"><div class="li-main"><div class="li-t">${esc(r.name)}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트${(r.days||[]).length?' · '+r.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS[d]).join(''):''}</div></div><span class="badge b-pri">시작</span></button>`).join('')}</div>`}</div>`;}
-  if(!isStandalone()&&!S.hideInstall)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>앱처럼 쓰기</b>홈 화면에 설치하면 전체 화면·오프라인으로 실행되고 데이터도 더 안전합니다.<div style="margin-top:10px;display:flex;gap:8px"><button class="btn sm" onclick="installApp()">설치 방법</button><button class="btn ghost sm" onclick="S.hideInstall=1;save();renderHome()">닫기</button></div></div>`;
+  if(isIOS()&&!isStandalone()&&!(S.iosHide&&S.iosHide>daysAgo(7)))h+=iosInstallHTML();
   if(S.logs.length+S.runs.length>=10&&(!S.lastBackup||S.lastBackup<daysAgo(14)))h+=`<div class="note n-warn" style="margin:0 0 12px"><b>백업한 지 오래됐어요</b>데이터는 이 기기에만 있습니다. 2주에 한 번 백업 파일을 저장해 두세요.<div style="margin-top:10px"><button class="btn sm" onclick="exportData().then(()=>renderHome())">지금 백업</button></div></div>`;
   // 최근 7일 (오운완 줄 + 숫자)
   {const done=new Set([...S.logs.map(l=>l.date),...S.runs.map(r=>r.date)]);
@@ -648,6 +655,7 @@ function renderHome(){
     <div class="wk-strip">${strip}</div>
     <div class="stats"><div class="stat"><b>${wk.length}</b><span>운동</span></div><div class="stat"><b>${wkVol>=10000?r1(wkVol/1000)+'k':fmt(wkVol)}</b><span>볼륨 kg</span></div><div class="stat"><b>${r1(wkRun)}</b><span>러닝 km</span></div></div>
     ${dl&&dl.cls!=='good'?`<div class="note n-${dl.cls}" style="margin-bottom:0"><b>${dl.l}</b>${dl.d}</div>`:''}</div>`;}
+  h+=goalsCardHTML();
   // 식단
   h+=`<div class="card" onclick="go('diet')"><div class="card-h"><div class="card-t">오늘 식단</div><span class="chev">›</span></div>
     ${tg?pbar('칼로리',ft.kcal,tg.kcal,'kcal')+pbar('단백질',ft.p,tg.p,'g','var(--good)'):`<div class="muted">섭취 ${fmt(ft.kcal)} kcal · 단백질 ${r1(ft.p)} g</div>`}</div>`;
@@ -754,121 +762,7 @@ function suggestSets(name,n,reps,w){
   return Array.from({length:n||3},()=>({w:w||'',r:reps||'',done:false}));
 }
 
-/* ══════════════════════ 동작 애니메이션 (2D 운동학) ══════════════════════ */
-const BL={shin:40,thigh:42,torso:50,ua:30,fa:28};
-const vec=(a,l)=>[l*Math.cos(a*Math.PI/180),-l*Math.sin(a*Math.PI/180)];
-const padd=(p,d,s=1)=>[p[0]+d[0]*s,p[1]+d[1]*s];
-function ik2(S,T,l1,l2,bend){
-  const dx=T[0]-S[0],dy=T[1]-S[1],a=Math.atan2(dy,dx);let d=Math.hypot(dx,dy);d=Math.max(Math.abs(l1-l2)+1,Math.min(l1+l2-.01,d));
-  const al=Math.acos(Math.max(-1,Math.min(1,(l1*l1+d*d-l2*l2)/(2*l1*d))))*bend;
-  const E=[S[0]+l1*Math.cos(a+al),S[1]+l1*Math.sin(a+al)],W=[S[0]+d*Math.cos(a),S[1]+d*Math.sin(a)];return[E,W];
-}
-const ST={shin:90,thigh:90,torso:90};
-/* 패턴: A(시작)·B(끝) 자세, 라벨, 소품 */
-const PAT={
-  squat:{A:{...ST,handRel:[-9,3],eb:-1},B:{shin:58,thigh:172,torso:55,handRel:[-9,3],eb:-1},lab:['선 자세','하강'],grip:'back'},
-  fsquat:{A:{...ST,handRel:[13,0],eb:1},B:{shin:55,thigh:175,torso:70,handRel:[13,0],eb:1},lab:['선 자세','하강']},
-  hinge:{A:{shin:72,thigh:145,torso:30,handRel:[-9,57],eb:1},B:{...ST,handRel:[3,57],eb:1},lab:['바닥','락아웃']},
-  rdl:{A:{...ST,handRel:[3,57],eb:1},B:{shin:84,thigh:105,torso:22,handRel:[-14,57],eb:1},lab:['선 자세','힙 힌지']},
-  bench:{A:{hip:[125,118],thigh:146,shin:95,torso:180,handRel:[0,-56],eb:1},B:{hip:[125,118],thigh:146,shin:95,torso:180,handRel:[9,-6],eb:1},lab:['락아웃','가슴 터치'],props:'bench'},
-  incline:{A:{hip:[128,130],thigh:150,shin:95,torso:148,handRel:[5,-56],eb:1},B:{hip:[128,130],thigh:150,shin:95,torso:148,handRel:[12,-4],eb:1},lab:['락아웃','하강'],props:'incline'},
-  pushup:{A:{ankle:[40,176],shin:25,thigh:25,torso:25,hand:[160,178],eb:-1,toe:[45,180]},B:{ankle:[40,176],shin:8,thigh:8,torso:8,hand:[160,178],eb:-1,toe:[45,180]},lab:['업','다운']},
-  dips:{A:{hip:[100,92],thigh:100,shin:25,torso:94,hand:[104,100],eb:1},B:{hip:[100,120],thigh:100,shin:25,torso:94,hand:[104,100],eb:1},lab:['업','다운'],props:'dipbar'},
-  ohp:{A:{...ST,handRel:[13,-2],eb:-1},B:{...ST,handRel:[2,-56],eb:-1},lab:['랙 포지션','머리 위'],grip:'front'},
-  row:{A:{shin:78,thigh:125,torso:28,handRel:[4,57],eb:-1},B:{shin:78,thigh:125,torso:28,handRel:[-16,22],eb:-1},lab:['팔 폄','당김']},
-  seatrow:{A:{hip:[70,148],thigh:180,shin:105,torso:72,handRel:[54,4],eb:-1},B:{hip:[70,148],thigh:180,shin:105,torso:95,handRel:[14,24],eb:-1},lab:['이완','당김'],props:'seat',anchor:[196,140]},
-  vpull:{A:{hip:[100,124],thigh:80,shin:20,torso:92,hand:[104,14],eb:1},B:{hip:[100,86],thigh:80,shin:20,torso:92,hand:[104,14],eb:1},lab:['매달림','당김'],props:'bar'},
-  pulldown:{A:{hip:[96,150],thigh:180,shin:95,torso:94,hand:[104,46],eb:1},B:{hip:[96,150],thigh:180,shin:95,torso:100,hand:[104,92],eb:1},lab:['이완','당김'],props:'seat',anchor:[104,6]},
-  curl:{A:{...ST,ua:-92,fa:-88},B:{...ST,ua:-92,fa:75},lab:['이완','수축']},
-  pushdown:{A:{...ST,torso:82,ua:-95,fa:40},B:{...ST,torso:82,ua:-95,fa:-88},lab:['굽힘','폄'],anchor:[128,8]},
-  ohext:{A:{...ST,ua:100,fa:235},B:{...ST,ua:100,fa:96},lab:['스트레치','폄']},
-  fraise:{A:{...ST,ua:-88,fa:-85},B:{...ST,ua:5,fa:8},lab:['내림','어깨 높이']},
-  pullover:{A:{...ST,torso:76,ua:115,fa:118},B:{...ST,torso:76,ua:-70,fa:-68},lab:['머리 위','허벅지'],anchor:[172,8]},
-  facepull:{A:{...ST,handRel:[55,-4],eb:-1},B:{...ST,handRel:[12,-16],eb:-1},lab:['이완','얼굴로'],anchor:[198,36]},
-  uprow:{A:{...ST,handRel:[4,56],eb:-1},B:{...ST,handRel:[10,8],eb:-1},lab:['내림','가슴 높이']},
-  shrug:{A:{...ST,handRel:[3,57],eb:1,lift:0},B:{...ST,handRel:[3,57],eb:1,lift:8},lab:['내림','으쓱']},
-  lunge:{A:{ankle:[130,180],shin:84,thigh:112,torso:88,foot2:[62,177],kb2:-1,handRel:[0,56],eb:1},B:{ankle:[130,180],shin:80,thigh:176,torso:88,foot2:[62,177],kb2:-1,handRel:[0,56],eb:1},lab:['업','다운']},
-  legpress:{A:{hip:[70,142],torso:140,foot:[112,108],kb:1,handRel:[34,40],eb:1},B:{hip:[70,142],torso:140,foot:[136,86],kb:1,handRel:[34,40],eb:1},lab:['굽힘','폄'],props:'legpress'},
-  legext:{A:{hip:[86,138],thigh:180,shin:95,torso:100,handRel:[22,40],eb:1},B:{hip:[86,138],thigh:180,shin:172,torso:100,handRel:[22,40],eb:1},lab:['굽힘','폄'],props:'seat'},
-  legcurl:{A:{hip:[86,138],thigh:180,shin:172,torso:100,handRel:[22,40],eb:1},B:{hip:[86,138],thigh:180,shin:78,torso:100,handRel:[22,40],eb:1},lab:['폄','굽힘'],props:'seat'},
-  calf:{A:{...ST,ankle:[100,180],toe:[114,180],handRel:[0,56],eb:1},B:{...ST,ankle:[100,166],toe:[114,180],handRel:[0,56],eb:1},lab:['내림','올림']},
-  hipthrust:{A:{hip:[112,166],torso:158,foot:[150,178],kb:1,handRel:[46,9],eb:1},B:{hip:[112,140],torso:180,foot:[150,178],kb:1,handRel:[50,-8],eb:1},lab:['내림','정점'],props:'hipbench'},
-  plank:{A:{ankle:[22,176],shin:11,thigh:11,torso:11,ua:-90,fa:0,toe:[26,180]},B:{ankle:[22,176],shin:12,thigh:12,torso:12,ua:-90,fa:0,toe:[26,180]},lab:['유지','유지'],slow:2},
-  crunch:{A:{hip:[112,172],torso:178,foot:[150,178],kb:1,handRel:[-8,-6],eb:1},B:{hip:[112,172],torso:145,foot:[150,178],kb:1,handRel:[-8,-6],eb:1},lab:['누움','말아 올림']},
-  hlr:{A:{hip:[100,114],thigh:88,shin:40,torso:92,hand:[102,6],eb:1},B:{hip:[100,114],thigh:178,shin:178,torso:92,hand:[102,6],eb:1},lab:['매달림','다리 올림'],props:'highbar'},
-  carry:{A:{hip:[100,99],torso:90,thigh:102,shin:96,thigh2:78,shin2:84,handRel:[0,57],eb:1},B:{hip:[100,99],torso:90,thigh:78,shin:84,thigh2:102,shin2:96,handRel:[0,57],eb:1},lab:['걷기','걷기']},
-  swing:{A:{shin:78,thigh:130,torso:35,ua:-115,fa:-115},B:{...ST,ua:2,fa:2},lab:['힙 힌지','앞으로 차기']},
-  raise:{front:1,A:{arm:8},B:{arm:86},lab:['내림','어깨 높이']},
-  fly:{front:1,A:{fly:0},B:{fly:72},lab:['벌림','모음']},
-  revfly:{front:1,A:{fly:72},B:{fly:0},lab:['모음','벌림']}
-};
-function lerpPose(A,B,p){const o={};for(const k in A){const a=A[k],b=B[k];if(Array.isArray(a))o[k]=[a[0]+(b[0]-a[0])*p,a[1]+(b[1]-a[1])*p];else if(typeof a==='number'&&typeof b==='number'&&!/^(eb|kb|kb2)$/.test(k))o[k]=a+(b-a)*p;else o[k]=a;}return o;}
-function solvePose(P){
-  let A,K,H;
-  if(P.hip){H=P.hip;if(P.foot){[K,A]=ik2(H,P.foot,BL.thigh,BL.shin,P.kb||1);}else{K=padd(H,vec(P.thigh,BL.thigh),-1);A=padd(K,vec(P.shin,BL.shin),-1);}}
-  else{A=P.ankle||[100,180];K=padd(A,vec(P.shin,BL.shin));H=padd(K,vec(P.thigh,BL.thigh));}
-  const S=padd(H,vec(P.torso,BL.torso));if(P.lift)S[1]-=P.lift;
-  const N=padd(S,vec(P.torso,12));
-  let E,W;if(P.hand||P.handRel){const T=P.hand||[S[0]+P.handRel[0],S[1]+P.handRel[1]];[E,W]=ik2(S,T,BL.ua,BL.fa,P.eb||1);}else{E=padd(S,vec(P.ua,BL.ua));W=padd(E,vec(P.fa,BL.fa));}
-  let K2=K,A2=A;if(P.foot2)[K2,A2]=ik2(H,P.foot2,BL.thigh,BL.shin,P.kb2||1);else if(P.thigh2!=null){K2=padd(H,vec(P.thigh2,BL.thigh),-1);A2=padd(K2,vec(P.shin2,BL.shin),-1);}
-  return{A,K,H,S,N,E,W,K2,A2,toe:P.toe};
-}
-const ln=(a,b,w,c,o=1)=>`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" opacity="${o}"/>`;
-function propSVG(k){
-  const c='var(--line)';
-  return{bench:`<rect x="52" y="124" width="92" height="7" rx="3" fill="${c}"/><rect x="62" y="131" width="5" height="49" fill="${c}"/><rect x="128" y="131" width="5" height="49" fill="${c}"/>`,
-    incline:`${ln([130,138],[80,108],7,c)}${ln([130,138],[156,138],7,c)}${ln([140,140],[140,180],5,c)}${ln([92,118],[92,180],5,c)}`,
-    dipbar:`${ln([84,102],[126,102],5,c)}${ln([120,102],[120,180],5,c)}`,
-    bar:`${ln([58,14],[150,14],4,c)}${ln([62,14],[62,180],4,c)}${ln([146,14],[146,180],4,c)}`,
-    highbar:`${ln([58,6],[150,6],4,c)}${ln([62,6],[62,180],4,c)}${ln([146,6],[146,180],4,c)}`,
-    seat:`<rect x="52" y="150" width="62" height="7" rx="3" fill="${c}"/>${ln([82,157],[82,180],5,c)}`,
-    legpress:`<path d="M30 112 L70 150 L100 150" fill="none" stroke="${c}" stroke-width="7" stroke-linecap="round"/>${ln([70,150],[70,180],5,c)}`,
-    hipbench:`<rect x="36" y="146" width="40" height="34" rx="4" fill="${c}"/>`}[k]||'';
-}
-function figureSVG(pat,eq,p){
-  const D=PAT[pat];const col='var(--text2)',far='var(--text3)',pri='var(--pri)';
-  if(D.front)return frontFigure(D,eq,p);
-  const P=lerpPose(D.A,D.B,p),j=solvePose(P);
-  let g=`<line x1="0" y1="180.5" x2="200" y2="180.5" stroke="var(--line)" stroke-width="2"/>`+propSVG(D.props);
-  if(D.anchor&&(eq==='cb'||eq==='mc'))g+=ln(j.W,D.anchor,1.5,far);
-  const toe2=[j.A2[0]+12,j.A2[1]+2],toe=j.toe||[j.A[0]+13,j.A[1]+2];
-  g+=ln(j.H,j.K2,8,far,.55)+ln(j.K2,j.A2,7,far,.55)+ln(j.A2,toe2,5,far,.55);
-  g+=ln(j.H,j.K,9,col)+ln(j.K,j.A,8,col)+ln(j.A,toe,6,col);
-  g+=ln(j.H,j.S,13,col);
-  g+=`<circle cx="${j.N[0].toFixed(1)}" cy="${j.N[1].toFixed(1)}" r="9" fill="${col}"/>`;
-  g+=ln(j.S,j.E,7,col)+ln(j.E,j.W,6,col);
-  g+=implement(eq,j.W,pri);
-  return g;
-}
-function implement(eq,W,c){
-  const x=W[0].toFixed(1),y=W[1].toFixed(1);
-  if(eq==='bb')return`<circle cx="${x}" cy="${y}" r="13" fill="none" stroke="${c}" stroke-width="4"/><circle cx="${x}" cy="${y}" r="2.5" fill="${c}"/>`;
-  if(eq==='db'||eq==='sm')return`<rect x="${W[0]-9}" y="${W[1]-4}" width="18" height="8" rx="3" fill="${c}"/>`;
-  if(eq==='kb')return`<circle cx="${x}" cy="${W[1]+7}" r="7" fill="${c}"/>`;
-  if(eq==='cb'||eq==='mc')return`<circle cx="${x}" cy="${y}" r="4" fill="${c}"/>`;
-  return'';
-}
-function frontFigure(D,eq,p){
-  const P=lerpPose(D.A,D.B,p),col='var(--text2)',pri='var(--pri)';
-  let g=`<line x1="0" y1="180.5" x2="200" y2="180.5" stroke="var(--line)" stroke-width="2"/><circle cx="100" cy="38" r="10" fill="${col}"/>`;
-  g+=`<path d="M78 56 L122 56 L114 112 L86 112 Z" fill="${col}"/>`+ln([92,112],[88,178],9,col)+ln([108,112],[112,178],9,col);
-  [[78,-1],[122,1]].forEach(([sx,s])=>{let W;
-    if(P.arm!=null){const a=P.arm*Math.PI/180;const E=[sx+s*28*Math.sin(a),58+28*Math.cos(a)];W=[sx+s*56*Math.sin(a),58+56*Math.cos(a)-(P.arm>60?4:0)];g+=ln([sx,58],E,7,col)+ln(E,W,6,col);}
-    else{const f=Math.cos(P.fly*Math.PI/180);const E=[sx+s*28*f,60];W=[sx+s*54*f+(f<.5?-s*4:0),62];g+=ln([sx,58],E,7,col)+ln(E,W,6,col);}
-    g+=implement(eq==='bb'?'db':eq,W,pri);});
-  return g;
-}
-const ease=t=>.5-.5*Math.cos(t*Math.PI*2);
 let animRaf=0;
-function runAnim(svgId,name){
-  cancelAnimationFrame(animRaf);const info=exInfo(name),pat=PAT[info.pat]?info.pat:null;
-  const el=$(svgId);if(!el)return;
-  if(!pat){el.innerHTML=`<text x="100" y="100" text-anchor="middle" fill="var(--text3)" font-size="11">이 종목은 근육 지도로 안내합니다</text>`;return;}
-  const per=(PAT[pat].slow||1)*2600,t0=performance.now(),lab=$(svgId+'L');
-  const fr=now=>{const el2=$(svgId);if(!el2)return;const t=((now-t0)%per)/per,p=ease(t);el2.innerHTML=figureSVG(pat,info.eq,p);
-    if(lab)lab.textContent=t<.5?`${PAT[pat].lab[0]} → ${PAT[pat].lab[1]}`:`${PAT[pat].lab[1]} → ${PAT[pat].lab[0]}`;animRaf=requestAnimationFrame(fr);};
-  animRaf=requestAnimationFrame(fr);
-}
 
 /* 동작 그림: Everkinetic (https://github.com/everkinetic/data) · CC BY-SA 4.0
    준비 자세(relaxation)와 수축 자세(tension) 두 장을 번갈아 보여 줌. ek.pack.gz 한 파일(약 1.8MB, 오프라인 캐시) */
@@ -885,13 +779,12 @@ function loadEk(){
   return ekP;
 }
 function showAnim(idp,name){
-  const ph=$(idp+'Ph'),fig=$(idp+'Fig'),tg=$(idp+'Tg'),lab=$(idp+'FigL');if(!ph)return;
-  const id=EKV[name];
-  const useSvg=()=>{ph.style.display='none';fig.style.display='';runAnim(idp+'Fig',name);if(tg)tg.textContent=id?'그림으로 보기':'';if(lab)lab.textContent='';};
-  if(!id||S.view==='svg'){useSvg();return;}
-  cancelAnimationFrame(animRaf);fig.style.display='none';ph.style.display='';ph.classList.add('ek');if(tg)tg.textContent='도식으로 보기';if(lab)lab.textContent=EK_CREDIT;
+  const ph=$(idp+'Ph'),lab=$(idp+'FigL');if(!ph)return;const id=EKV[name];
+  const none=()=>{ph.innerHTML='<div class="tiny" style="padding:40px 0;text-align:center">그림을 불러오지 못했어요 · 근육 탭을 확인하세요</div>';if(lab)lab.textContent='';};
+  if(!id){none();return;}
+  ph.classList.add('ek');if(lab)lab.textContent=EK_CREDIT;
   const tok=ph.dataset.tok=String(Math.random());ph.innerHTML='';
-  loadEk().then(ok=>{if(ph.dataset.tok!==tok)return;if(!ok||!ekURL[id+'r']){useSvg();return;}
+  loadEk().then(ok=>{if(ph.dataset.tok!==tok)return;if(!ok||!ekURL[id+'r']){none();return;}
     ph.innerHTML=`<img class="r" src="${ekURL[id+'r']}" alt="준비 자세"><img class="t" src="${ekURL[id+'t']}" alt="수축 자세">`;});
 }
 
@@ -932,10 +825,10 @@ function exHistHTML(name){
 }
 function guideHTML(name,idp){
   const ek=!!EKV[name];
-  return`<div class="seg" id="${idp}Seg" style="margin-bottom:10px"><button class="${ek?'on':''}" data-k="anim">${ek?'동작':'도식'}</button><button class="${ek?'':'on'}" data-k="mus">근육</button><button data-k="his">내 기록</button></div>
-  <div class="gbox"><div id="${idp}Anim" style="${ek?'':'display:none'}"><div class="ph" id="${idp}Ph" style="display:none"></div><svg viewBox="0 0 200 186" id="${idp}Fig"></svg>
-  <div style="display:flex;justify-content:space-between;align-items:center;min-height:22px;padding:0 4px"><span class="tiny" id="${idp}FigL"></span>${EKV[name]?`<button class="link" style="font-size:12px" id="${idp}Tg" data-n="${esc(name)}" onclick="S.view=S.view==='svg'?'gif':'svg';save();showAnim('${idp}',this.dataset.n)"></button>`:''}</div></div>
-  <div id="${idp}Mus" style="${ek?'display:none':''}">${muscleSVG(name)}${musLegend(name)}${ek?'':'<div class="tiny" style="text-align:center;margin-top:6px">이 종목은 동작 그림이 없어 근육 지도를 먼저 보여 줘요 · 간단한 움직임은 도식 탭</div>'}</div>
+  return`<div class="seg" id="${idp}Seg" style="margin-bottom:10px">${ek?'<button class="on" data-k="anim">동작</button>':''}<button class="${ek?'':'on'}" data-k="mus">근육</button><button data-k="his">내 기록</button></div>
+  <div class="gbox"><div id="${idp}Anim" style="${ek?'':'display:none'}"><div class="ph" id="${idp}Ph"></div>
+  <div style="min-height:22px;padding:0 4px"><span class="tiny" id="${idp}FigL"></span></div></div>
+  <div id="${idp}Mus" style="${ek?'display:none':''}">${muscleSVG(name)}${musLegend(name)}</div>
   <div id="${idp}His" style="display:none"></div></div>`;
 }
 function bindGuide(idp,name){
@@ -1001,6 +894,7 @@ function wmRender(){
       <div ${info.eq==='run'||(info.t===2&&['mc','bw'].includes(info.eq))?'style="grid-column:1/-1"':''}><div class="lbl" style="text-align:center">${info.eq==='run'?'시간(초) · '+fmtT(s.r):unit}</div><div class="step"><button onclick="wmAdj('r',${info.t?(info.eq==='run'?-60:info.t===2?-10:-5):-1})">−</button><input class="inp" id="wmR" inputmode="numeric" value="${s.r}" onchange="wmSetVal('r',this.value)"><button onclick="wmAdj('r',${info.t?(info.eq==='run'?60:info.t===2?10:5):1})">+</button></div></div></div>
       ${info.eq==='bb'?`<div class="tiny" id="wmPl" style="text-align:center;margin-top:8px">${plates(num(s.w))}</div>`:''}${e.up&&si===0?`<div class="tiny" style="text-align:center;margin-top:6px;color:var(--good)">지난번 목표 달성 · +${e.up}kg 증량 제안</div>`:''}`):''}
     </div>
+    ${si>=0&&wm.phase!=='work'?`<div class="wm-links">${si===0&&!e.sets.some(x=>x.done)&&num(s.w)>0&&['bb','db','mc','cb','sm'].includes(info.eq)?`<button class="link" onclick="openWarmup(${wm.ei})">워밍업 보기</button>`:''}<button class="link" onclick="openAlts(${wm.ei})">기구 사용 중? 대체 종목</button></div>`:''}
     ${si>=0?(wm.phase==='work'?`<button class="btn ghost" onclick="wm.phase='set';wmComplete()">지금 완료</button>`:info.t===1?`<button class="btn" onclick="wmStartWork()">${fmtT(s.r||30)} 시작</button>`:`<button class="btn" onclick="wmComplete()">세트 완료</button>`):`<button class="btn sub" onclick="wmJump(1)">다음 종목</button>`}`;
   }
   $('wm').innerHTML=`<div class="wm-top"><button class="link" onclick="confirmSheet('운동 모드를 닫을까요? 입력은 유지됩니다.',closeWM,'닫기',false)">닫기</button><div style="text-align:center"><b id="wmClock">0:00</b><div class="tiny">${done}/${total} 세트</div></div><button class="link" onclick="closeWM()">목록</button></div>
@@ -1084,10 +978,144 @@ function exMenu(ei){
   <div class="list">${n>1?`<button class="li" onclick="openReorder(${ei})"><div class="li-main"><div class="li-t">순서 바꾸기</div><div class="li-s">끌어서 원하는 위치로 옮기기</div></div></button>`:''}
   ${lastOf(e.name)?`<button class="li" onclick="fillLast(${ei})"><div class="li-main"><div class="li-t">지난 기록으로 채우기</div><div class="li-s">${setsTxt(lastOf(e.name).sets)}</div></div></button>`:''}
   <button class="li" onclick="openGuide(draft.exs[${ei}].name)"><div class="li-main li-t">동작 · 근육 보기</div></button>
+  <button class="li" onclick="openAlts(${ei})"><div class="li-main"><div class="li-t">대체 종목</div><div class="li-s">기구가 사용 중일 때 같은 근육을 쓰는 종목으로</div></div></button>
+  ${['bb','db','mc','cb','sm'].includes(exInfo(e.name).eq)?`<button class="li" onclick="openWarmup(${ei})"><div class="li-main"><div class="li-t">워밍업 세트 보기</div><div class="li-s">작업 세트 무게 기준 단계별 무게</div></div></button>`:''}
   <button class="li" onclick="replaceEx(${ei})"><div class="li-main li-t">다른 종목으로 바꾸기</div></button>
   ${e.ss?`<button class="li" onclick="unlinkSS(${ei})"><div class="li-main"><div class="li-t">슈퍼세트 ${e.ss} 해제</div></div></button>`:ei<n-1?`<button class="li" onclick="linkSS(${ei})"><div class="li-main"><div class="li-t">다음 종목과 슈퍼세트로 묶기</div><div class="li-s">${esc(draft.exs[ei+1].name)}와 번갈아 하고, 한 바퀴 끝나면 휴식</div></div></button>`:''}</div>
   <button class="btn danger" onclick="draft.exs.splice(${ei},1);saveDraft();renderExList();closeSheet()">종목 삭제</button>`);
 }
+/* ═══ v7.0 추가 기능: 대체 종목 · 워밍업 · 다른 앱 가져오기 · 바디 사진 · 목표 · 첫 실행 가이드 ═══ */
+/* 대체 종목: 같은 동작 패턴 > 같은 주동근 > 같은 부위, 다른 장비 우선(기구가 사용 중일 때) */
+function altsFor(name,n=8){const a=exInfo(name);if(!a)return[];
+  const CF=/클린|스내치|저크|스러스터|에어 스쿼트|피스톨|오버헤드 스쿼트|버피|월볼|머슬업|핸드스탠드|슬레드|샌드백|스키에르그|로프 클라임|데빌|토투바|더블 언더|싯업|박스 점프|타이어|아틀라스|요크|케그|로그|액슬|서커스/;
+  return exLib().filter(x=>x.name!==name&&x.eq!=='run'&&!CF.test(x.name)&&(x.eq!=='bw'||a.eq==='bw'||a.pat==='vpull'||a.pat==='dips')).map(x=>{const b=exInfo(x.name);let sc=0;
+    if(a.pat!=='none'&&b.pat===a.pat)sc+=4;const ov=b.prim.filter(m=>a.prim.includes(m)).length;sc+=ov*2;if(b.part===a.part)sc+=1;if(b.eq!==a.eq)sc+=.5;if(a.eq==='mc'&&b.eq==='mc')sc+=1;if(b.eq==='bw'&&a.eq!=='bw')sc-=1;if(!ov&&b.pat!==a.pat)sc=0;
+    return{x,sc};}).filter(o=>o.sc>=3).sort((p,q)=>q.sc-p.sc).slice(0,n).map(o=>o.x);}
+function openAlts(ei){const e=draft.exs[ei];if(!e)return;const L=altsFor(e.name),done=e.sets.some(s=>s.done);
+  openSheet(`<div class="sheet-h"><h2>대체 종목</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="muted" style="margin:-4px 2px 10px">${esc(e.name)} 대신 같은 근육을 쓰는 종목이에요.${done?' 이미 끝낸 세트는 남겨 두고, 남은 세트만 새 종목으로 옮겨요.':''}</div>
+  <div class="list">${L.map(x=>`<button class="li" onclick="swapEx(${ei},this.dataset.n)" data-n="${esc(x.name)}"><div class="li-main"><div class="li-t">${esc(x.name)}</div><div class="li-s">${EQ_L[x.eq]||''} · ${PART_L[x.part]||''}${lastOf(x.name)?' · 지난 '+setsTxt(lastOf(x.name).sets):''}</div></div><span class="chev">›</span></button>`).join('')||'<div class="empty">비슷한 종목이 없어요</div>'}</div>`);}
+function swapEx(ei,name){const e=draft.exs[ei],last=lastOf(name);const left=e.sets.filter(s=>!s.done);
+  const mk=s=>({w:last?last.sets[0].w:'',r:s.r,done:false});
+  if(e.sets.some(s=>s.done)){if(left.length){e.sets=e.sets.filter(s=>s.done);draft.exs.splice(ei+1,0,{id:uid('e'),name,sets:left.map(mk)});}else draft.exs.splice(ei+1,0,{id:uid('e'),name,sets:[mk({r:e.sets[0].r})]});if(wm.open)wm.ei=ei+1;}
+  else{e.name=name;e.sets=e.sets.map(mk);delete e.up;}
+  saveDraft();renderExList();closeSheet();if(wm.open)wmRender();toast(`${name}(으)로 바꿨어요`);}
+/* 워밍업: 첫 작업 세트 무게 기준 */
+function warmups(w,eq){if(!(w>0))return[];const bar=eq==='bb'?20:0,rd=x=>eq==='db'?Math.max(1,Math.round(x)):Math.max(bar,Math.round(x/2.5)*2.5);
+  const out=[];if(eq==='bb'&&w>=40)out.push([bar,10]);[[.4,5],[.6,3],[.8,2]].forEach(([p,r])=>{const k=rd(w*p);if(k<w&&k>(out.at(-1)?.[0]||0))out.push([k,r]);});if(w>=100&&eq==='bb'){const k=rd(w*.9);if(k<w&&k>out.at(-1)[0])out.push([k,1]);}return out;}
+function openWarmup(ei){const e=draft.exs[ei];if(!e)return;const info=exInfo(e.name),w=num((e.sets.find(s=>!s.done)||e.sets[0]||{}).w),W=warmups(w,info.eq);
+  openSheet(`<div class="sheet-h"><h2>워밍업 세트</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="muted" style="margin:-4px 2px 10px">${esc(e.name)} 작업 세트 ${w||'-'}kg 기준이에요. 세트 사이 30~60초만 쉬고, 기록(볼륨)에는 들어가지 않아요.</div>
+  ${W.length?`<div class="list">${W.map(([k,r],i)=>`<div class="li"><span class="ro-n">${i+1}</span><div class="li-main"><div class="li-t">${k}kg × ${r}회</div>${info.eq==='bb'?`<div class="li-s">${plates(k)}</div>`:''}</div></div>`).join('')}</div>`:'<div class="card empty">작업 세트 무게를 먼저 입력하세요</div>'}`);}
+/* 다른 앱 기록 가져오기 (Strong · Hevy CSV) */
+const IMP_MAP={'squat':'스쿼트','back squat':'스쿼트','front squat':'프론트 스쿼트','bench press':'벤치프레스','incline bench press':'인클라인 벤치프레스','decline bench press':'디클라인 벤치프레스','deadlift':'데드리프트','sumo deadlift':'스모 데드리프트','romanian deadlift':'RDL',
+ 'overhead press':'오버헤드프레스','shoulder press':'덤벨 숄더프레스','military press':'오버헤드프레스','bent over row':'바벨로우','pendlay row':'펜들레이 로우','pull up':'풀업','chin up':'친업','lat pulldown':'랫풀다운','seated row':'시티드 로우','seated cable row':'시티드 로우','t bar row':'T바 로우',
+ 'bicep curl':'덤벨 컬','biceps curl':'덤벨 컬','hammer curl':'해머컬','preacher curl':'프리처 컬','ez bar curl':'EZ바 컬','triceps pushdown':'트라이셉스 푸시다운','triceps rope pushdown':'로프 푸시다운','skullcrusher':'라잉 트라이셉스 익스텐션','triceps extension':'오버헤드 트라이셉스 익스텐션',
+ 'lateral raise':'사이드 레터럴 레이즈','front raise':'프론트 레이즈','reverse fly':'리어 델트 플라이','face pull':'페이스풀','shrug':'바벨 슈러그','leg press':'레그프레스','leg extension':'레그 익스텐션','lying leg curl':'라잉 레그컬','seated leg curl':'시티드 레그컬','leg curl':'레그컬',
+ 'standing calf raise':'카프레이즈','calf raise':'카프레이즈','seated calf raise':'시티드 카프레이즈','hip thrust':'힙 쓰러스트','glute bridge':'글루트 브릿지','lunge':'런지','walking lunge':'워킹 런지','bulgarian split squat':'불가리안 스플릿 스쿼트','hack squat':'핵 스쿼트','goblet squat':'고블릿 스쿼트',
+ 'chest fly':'덤벨 플라이','cable crossover':'케이블 크로스오버','chest dip':'딥스','triceps dip':'트라이셉스 딥스','dip':'딥스','push up':'푸시업','plank':'플랭크','crunch':'크런치','hanging leg raise':'행잉 레그레이즈','cable crunch':'케이블 크런치','ab wheel':'앱 롤아웃','russian twist':'러시안 트위스트',
+ 'farmers walk':'파머스 워크','kettlebell swing':'케틀벨 스윙','good morning':'굿모닝','back extension':'백 익스텐션','chest press':'체스트 프레스 머신','pec deck':'펙덱 플라이','rear delt reverse fly':'리버스 펙덱','arnold press':'아놀드 프레스','upright row':'업라이트 로우','incline dumbbell press':'인클라인 덤벨프레스','dumbbell row':'덤벨 로우','one arm dumbbell row':'덤벨 로우'};
+function impName(raw){const s=String(raw||'').trim();if(!s)return'';const m=s.match(/^(.*?)\s*\(([^)]*)\)\s*$/),base=(m?m[1]:s).split(' - ')[0].toLowerCase().replace(/[-_]/g,' ').replace(/\s+/g,' ').trim(),eq=(m?m[2]:'').toLowerCase();
+  const eqk=/barbell/.test(eq)?'bb':/dumbbell/.test(eq)?'db':/cable/.test(eq)?'cb':/machine|smith/.test(eq)?'mc':'';
+  let hit=IMP_MAP[base];
+  const VAR={db:{'벤치프레스':'덤벨 벤치프레스','인클라인 벤치프레스':'인클라인 덤벨프레스','디클라인 벤치프레스':'디클라인 덤벨프레스','오버헤드프레스':'덤벨 숄더프레스','바벨로우':'덤벨 로우','RDL':'덤벨 RDL','바벨 슈러그':'덤벨 슈러그','스쿼트':'고블릿 스쿼트','런지':'런지','바벨컬':'덤벨 컬'},
+    mc:{'벤치프레스':/smith/.test(eq)?'스미스 벤치프레스':'체스트 프레스 머신','인클라인 벤치프레스':/smith/.test(eq)?'스미스 인클라인 벤치프레스':'인클라인 체스트 프레스 머신','스쿼트':/smith/.test(eq)?'스미스 스쿼트':'핵 스쿼트','오버헤드프레스':/smith/.test(eq)?'스미스 밀리터리 프레스':'머신 숄더프레스','덤벨 숄더프레스':/smith/.test(eq)?'스미스 밀리터리 프레스':'머신 숄더프레스','시티드 로우':'머신 로우','바벨로우':/smith/.test(eq)?'스미스 로우':'머신 로우','랫풀다운':'머신 랫풀다운','사이드 레터럴 레이즈':'머신 레터럴 레이즈','덤벨 컬':'머신 컬','프리처 컬':'프리처 컬 머신','바벨 슈러그':/smith/.test(eq)?'스미스 슈러그':'바벨 슈러그','리어 델트 플라이':'리버스 펙덱','덤벨 플라이':'펙덱 플라이','힙 쓰러스트':'힙 쓰러스트 머신','오버헤드 트라이셉스 익스텐션':'트라이셉스 익스텐션 머신'},
+    cb:{'덤벨 컬':'케이블컬','사이드 레터럴 레이즈':'케이블 레터럴 레이즈','덤벨 플라이':'케이블 플라이','해머컬':'케이블 해머컬','오버헤드 트라이셉스 익스텐션':'케이블 오버헤드 익스텐션','바벨 슈러그':'케이블 슈러그','프론트 레이즈':'케이블 프론트 레이즈','리어 델트 플라이':'케이블 리어 델트 플라이'}};
+  if(hit&&VAR[eqk]&&VAR[eqk][hit])hit=VAR[eqk][hit];
+  if(!hit){const w=new Set(base.split(' '));let best=null,bs=0;for(const x of exLib()){const en=(EX_EN[x.name]||'').toLowerCase().split(/\s+/);if(!en.length)continue;const ov=en.filter(t=>w.has(t)).length,sc=ov/Math.max(w.size,1);if(sc>bs&&ov>=2||(sc>bs&&w.size===1&&ov===1)){bs=sc;best=x.name;}}if(bs>=.66)hit=best;}
+  return hit||s;}
+function csvRows(t){const rows=[];let row=[],f='',q=false;const d=(t.split('\n')[0].match(/;/g)||[]).length>(t.split('\n')[0].match(/,/g)||[]).length?';':',';
+  for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}else if(c==='"')q=true;else if(c===d){row.push(f);f='';}else if(c==='\n'||c==='\r'){if(c==='\r'&&t[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f='';}else f+=c;}
+  if(f||row.length){row.push(f);rows.push(row);}return rows.filter(r=>r.some(x=>x.trim()));}
+function parseOtherCSV(text,unit){const R=csvRows(text.replace(/^﻿/,''));if(R.length<2)return null;const H=R[0].map(h=>h.trim().toLowerCase()),ix=k=>H.indexOf(k);
+  let kind=null;if(ix('exercise_title')>=0&&ix('start_time')>=0)kind='hevy';else if(ix('exercise name')>=0&&ix('date')>=0)kind='strong';if(!kind)return null;
+  const lb=unit==='lb'?0.45359237:1,logs={},names={};
+  for(const r of R.slice(1)){let date,title,ex,w,reps,st,secs,key;
+    if(kind==='hevy'){const t=r[ix('start_time')]||'';const dt=new Date(t);date=isNaN(dt)?(t.match(/\d{4}-\d\d-\d\d/)||[])[0]:ymdL(dt);
+      const m=t.match(/(\d{1,2}) (\w{3}) (\d{4})/);if(!date&&m){const d2=new Date(`${m[2]} ${m[1]}, ${m[3]}`);if(!isNaN(d2))date=ymdL(d2);}
+      title=r[ix('title')];ex=r[ix('exercise_title')];st=(r[ix('set_type')]||'').toLowerCase();secs=+r[ix('duration_seconds')]||0;
+      w=ix('weight_kg')>=0?+r[ix('weight_kg')]||0:(+r[ix('weight_lbs')]||0)*0.45359237;reps=+r[ix('reps')]||0;key=t+title;}
+    else{const t=r[ix('date')]||'';date=(t.match(/\d{4}-\d\d-\d\d/)||[])[0];title=r[ix('workout name')];ex=r[ix('exercise name')];st=(r[ix('set order')]||'').toLowerCase()==='w'?'warmup':'';
+      w=(+r[ix('weight')]||0)*lb;reps=+r[ix('reps')]||0;secs=+r[ix('seconds')]||0;key=t+title;}
+    if(!date||!ex||st==='warmup')continue;const nm=impName(ex);names[ex]=nm;if(!reps&&secs)reps=Math.round(secs);if(!reps)continue;
+    const L=logs[key]=logs[key]||{date,title:title||'가져온 운동',exs:{}};(L.exs[nm]=L.exs[nm]||[]).push({w:Math.round(w*4)/4,r:Math.round(reps)});}
+  const out=Object.values(logs).map(l=>finalizeLog({id:uid('l'),date:l.date,title:l.title,imp:kind,ts:Date.now(),exs:Object.entries(l.exs).map(([name,sets])=>({name,sets}))}));
+  out.forEach(l=>{const pc={};l.exs.forEach(e=>{const p=partOf(e.name);if(p)pc[p]=(pc[p]||0)+e.sets.length;});l.part=Object.keys(pc).sort((a,b)=>pc[b]-pc[a])[0]||'fullbody';l.parts=Object.keys(pc);});
+  return{kind,logs:out.filter(l=>l.sets),names};}
+let _imp=null;
+function openImportOther(){openSheet(`<div class="sheet-h"><h2>다른 앱 기록 가져오기</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="card"><div class="muted" style="line-height:1.6">Strong 또는 Hevy에서 내보낸 CSV 파일을 고르세요.<br><span class="tiny">Strong: 설정 › 데이터 내보내기 · Hevy: 프로필 › 설정 › 데이터 내보내기</span></div>
+  <div class="field" style="margin-top:10px"><label class="lbl">Strong 무게 단위</label><select class="inp" id="impU"><option value="kg">kg</option><option value="lb">lb</option></select></div>
+  <button class="btn" onclick="$('impCsv').click()">CSV 파일 고르기</button><input type="file" id="impCsv" accept=".csv,text/csv" hidden onchange="impPicked(this.files[0]);this.value=''"></div><div id="impOut"></div>`);}
+async function impPicked(f){if(!f)return;const t=await f.text(),r=parseOtherCSV(t,$('impU').value);
+  if(!r||!r.logs.length){$('impOut').innerHTML='<div class="card"><div class="card-t">읽을 수 있는 기록이 없어요</div><div class="muted">Strong 또는 Hevy에서 내보낸 원본 CSV인지 확인하세요.</div></div>';return;}
+  const have=new Set(S.logs.map(l=>l.date+'|'+(l.title||''))),fresh=r.logs.filter(l=>!have.has(l.date+'|'+l.title));_imp=fresh;
+  const N=Object.entries(r.names),mapped=N.filter(([a,b])=>a!==b),unm=N.filter(([a,b])=>a===b),ds=r.logs.map(l=>l.date).sort();
+  $('impOut').innerHTML=`<div class="card"><div class="card-t" style="margin-bottom:8px">${r.kind==='hevy'?'Hevy':'Strong'} 기록 확인</div>
+  <div class="stats"><div class="stat"><b>${fresh.length}</b><span>새 운동</span></div><div class="stat"><b>${N.length}</b><span>종목</span></div><div class="stat"><b>${r.logs.length-fresh.length}</b><span>이미 있음</span></div></div>
+  <div class="tiny" style="margin:8px 0">${ds[0]} ~ ${ds.at(-1)} · 워밍업 세트는 제외 · 종목 ${mapped.length}개를 앱 종목으로 연결</div>
+  ${unm.length?`<details class="fold"><summary>연결 못 한 종목 ${unm.length}개 <span class="tiny">원래 이름으로 저장</span></summary><div class="tiny" style="line-height:1.7">${unm.map(([a])=>esc(a)).join(' · ')}</div></details>`:''}
+  <details class="fold"><summary>연결된 종목 보기</summary><div class="tiny" style="line-height:1.7">${mapped.map(([a,b])=>`${esc(a)} → <b>${esc(b)}</b>`).join('<br>')}</div></details>
+  <button class="btn" style="margin-top:12px" ${fresh.length?'':'disabled'} onclick="impDo()">${fresh.length}개 운동 가져오기</button></div>`;}
+function impDo(){if(!_imp||!_imp.length)return;S.logs.push(..._imp);S.logs.sort((a,b)=>a.date.localeCompare(b.date)||(a.ts||0)-(b.ts||0));const n=_imp.length;_imp=null;save();closeSheet();toast(`운동 ${n}개를 가져왔어요`);if(curTab==='hist')renderHist();}
+/* 바디 사진: IndexedDB에만 저장 (동기화·백업 제외) */
+const PDB={db:null};
+function pdb(){return PDB.db||(PDB.db=new Promise((ok,no)=>{const q=indexedDB.open('ohun-photos',1);q.onupgradeneeded=()=>q.result.createObjectStore('p',{keyPath:'id'});q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error);}));}
+async function pdbAll(){const db=await pdb();return new Promise(ok=>{const r=db.transaction('p').objectStore('p').getAll();r.onsuccess=()=>ok(r.result.sort((a,b)=>a.date.localeCompare(b.date)||a.ts-b.ts));r.onerror=()=>ok([]);});}
+async function pdbPut(o){const db=await pdb();return new Promise(ok=>{const t=db.transaction('p','readwrite');t.objectStore('p').put(o);t.oncomplete=ok;});}
+async function pdbDel(id){const db=await pdb();return new Promise(ok=>{const t=db.transaction('p','readwrite');t.objectStore('p').delete(id);t.oncomplete=ok;});}
+const _purl={};const purl=p=>_purl[p.id]||(_purl[p.id]=URL.createObjectURL(p.blob));
+async function bodyPhotoCard(){const el=$('bpCard');if(!el)return;let P=[];try{P=await pdbAll();}catch(e){el.innerHTML='';return;}
+  el.innerHTML=`<div class="card"><div class="card-h"><div class="card-t">바디 사진 <span class="tiny">${P.length}장</span></div><button class="btn sub sm" style="width:auto;padding:0 12px;height:34px" onclick="$('bpFile').click()">사진 추가</button><input type="file" id="bpFile" accept="image/*" hidden onchange="bpAdd(this.files[0]);this.value=''"></div>
+  ${P.length?`<div class="bp-strip">${[...P].reverse().map(p=>`<button class="bp-th" onclick="bpView('${p.id}')"><img src="${purl(p)}" alt="${p.date}"><span>${md(p.date)}</span></button>`).join('')}</div>
+  ${P.length>1?`<button class="btn ghost" style="margin-top:10px" onclick="bpCompare()">전후 비교</button>`:''}`:'<div class="muted">같은 자세·조명으로 2~4주마다 찍으면 변화를 비교하기 좋아요.</div>'}
+  <div class="tiny" style="margin-top:8px">사진은 이 기기에만 저장돼요. 클라우드 동기화와 백업 파일에 포함되지 않아요.</div></div>`;}
+async function bpAdd(f){if(!f)return;const url=URL.createObjectURL(f),im=await loadImg(url);URL.revokeObjectURL(url);
+  const sc=Math.min(1,1280/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  const blob=await new Promise(ok=>c.toBlob(ok,'image/jpeg',.85));const d=($('bwDate')&&$('bwDate').value)||today();
+  await pdbPut({id:uid('p'),date:d<=today()?d:today(),ts:Date.now(),blob});try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}toast('바디 사진을 저장했어요');bodyPhotoCard();}
+async function bpView(id){const P=await pdbAll(),p=P.find(x=>x.id===id);if(!p)return;const bw=S.bw.find(x=>x.date===p.date);
+  openSheet(`<div class="sheet-h"><h2>${md(p.date)} 바디 사진</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <img src="${purl(p)}" style="width:100%;max-height:62vh;object-fit:contain;border-radius:14px;background:var(--card2)">${bw?`<div class="tiny" style="text-align:center;margin-top:6px">그날 체중 ${bw.weight}kg${bw.fat?` · 체지방률 ${r1(bw.fat/bw.weight*100)}%`:''}</div>`:''}
+  <button class="btn danger" style="margin-top:12px" onclick="confirmSheet('이 사진을 지울까요?',async()=>{await pdbDel('${id}');closeSheet();bodyPhotoCard();},'삭제')">사진 삭제</button>`);}
+let _bpA=null,_bpB=null;
+async function bpCompare(){const P=await pdbAll();if(P.length<2)return;if(!P.find(p=>p.id===_bpA))_bpA=P[0].id;if(!P.find(p=>p.id===_bpB)||_bpB===_bpA)_bpB=P.at(-1).id;
+  const a=P.find(p=>p.id===_bpA),b=P.find(p=>p.id===_bpB),wa=S.bw.find(x=>x.date===a.date),wb=S.bw.find(x=>x.date===b.date),days=Math.round((new Date(b.date+'T12:00')-new Date(a.date+'T12:00'))/864e5);
+  const sel=(k,v)=>`<select class="inp" onchange="${k}=this.value;bpCompare()">${P.map(p=>`<option value="${p.id}" ${p.id===v?'selected':''}>${p.date}</option>`).join('')}</select>`;
+  openSheet(`<div class="sheet-h"><h2>전후 비교</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="g2" style="margin-bottom:8px">${sel('_bpA',_bpA)}${sel('_bpB',_bpB)}</div>
+  <div class="bp-cmp"><figure><img src="${purl(a)}"><figcaption>${md(a.date)}${wa?' · '+wa.weight+'kg':''}</figcaption></figure><figure><img src="${purl(b)}"><figcaption>${md(b.date)}${wb?' · '+wb.weight+'kg':''}</figcaption></figure></div>
+  <div class="tiny" style="text-align:center;margin-top:8px">${Math.abs(days)}일 간격${wa&&wb?` · 체중 ${r1(wb.weight-wa.weight)>0?'+':''}${r1(wb.weight-wa.weight)}kg`:''}</div>`);}
+/* 목표 */
+function goalsOf(){S.goals=S.goals||{};S.goals.lifts=S.goals.lifts||[];return S.goals;}
+function curBw(){return S.bw.length?S.bw.at(-1).weight:S.profile.weight||0;}
+function curRM(n){const H=exRMHist(n);return H.length?Math.max(...H.slice(-6).map(x=>x.rm)):0;}
+function goalLine(cur,t,start,date){const done=t&&((start>=t&&cur<=t)||(start<=t&&cur>=t));const tot=Math.abs(t-start)||1,pct=Math.max(0,Math.min(100,Math.round(Math.abs(cur-start)/tot*100*(Math.sign(t-start)===Math.sign(cur-start)?1:0))));
+  const wk=date?Math.max(0,(new Date(date+'T12:00')-new Date(today()+'T12:00'))/864e5/7):0,need=wk>0?r1((t-cur)/wk):null;
+  return{done,pct,txt:done?'목표 달성':`남은 ${r1(Math.abs(t-cur))}kg${need!=null&&!done?` · 주당 ${need>0?'+':''}${need}kg 필요`:''}${date?` · ${md(date)}까지`:''}`};}
+function goalsCardHTML(){const G=goalsOf(),rows=[];
+  if(G.weight&&G.weight.t){const c=curBw(),g=goalLine(c,G.weight.t,G.weight.s||c,G.weight.date);rows.push(['체중',`${c} → ${G.weight.t}kg`,g]);}
+  G.lifts.forEach(l=>{const c=curRM(l.n),g=goalLine(c,l.t,l.s||c,l.date);rows.push([l.n,`추정 1RM ${c||'-'} → ${l.t}kg`,g]);});
+  if(!rows.length)return'';
+  return`<div class="card" onclick="openGoals()" style="cursor:pointer"><div class="card-h"><div class="card-t">목표</div><span class="chev">›</span></div>${rows.map(([n,v,g])=>`<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:14px"><b>${esc(n)}</b><span class="tiny">${v}</span></div><div class="pb-bar" style="margin:5px 0 3px"><div class="pb-fill" style="width:${g.done?100:g.pct}%;${g.done?'background:var(--good)':''}"></div></div><div class="tiny">${g.txt}</div></div>`).join('')}</div>`;}
+function openGoals(){const G=goalsOf(),cand=[...new Set(S.logs.flatMap(l=>l.exs.map(e=>e.name)))].filter(n=>exRMHist(n).length);
+  const opts=v=>['',...new Set([...BIG5.map(b=>b[1]),...cand])].map(n=>`<option ${n===v?'selected':''}>${esc(n)}</option>`).join('');
+  openSheet(`<div class="sheet-h"><h2>목표</h2><button class="link" onclick="saveGoals()">저장</button></div>
+  <div class="card"><div class="card-t" style="margin-bottom:8px">체중 <span class="tiny">지금 ${curBw()||'-'}kg</span></div><div class="g2">
+   <div class="field"><label class="lbl">목표 체중</label><div class="unit-wrap"><input class="inp" id="gW" inputmode="decimal" value="${G.weight?.t||''}" placeholder="선택"><span class="u">kg</span></div></div>
+   <div class="field"><label class="lbl">목표 날짜</label><input class="inp" type="date" id="gWD" value="${G.weight?.date||''}"></div></div></div>
+  <div class="card"><div class="card-t" style="margin-bottom:8px">종목 (추정 1RM)</div>${[0,1,2].map(i=>{const l=G.lifts[i]||{};return`<div class="g3" style="display:grid;grid-template-columns:1.4fr 1fr 1.2fr;gap:6px;margin-bottom:6px">
+   <select class="inp" id="gN${i}">${opts(l.n||'')}</select><input class="inp" id="gT${i}" inputmode="decimal" placeholder="kg" value="${l.t||''}"><input class="inp" type="date" id="gD${i}" value="${l.date||''}"></div>`;}).join('')}
+   <div class="tiny">추정 1RM은 12회 이하 세트로 계산해요. 날짜를 넣으면 주당 필요한 변화량을 알려 줘요.</div></div>
+  ${G.weight||G.lifts.length?`<button class="btn ghost" onclick="S.goals={lifts:[]};save();closeSheet();if(curTab==='home')renderHome()">목표 모두 지우기</button>`:''}`);}
+function saveGoals(){const G={lifts:[]},old=goalsOf();const w=num($('gW').value);if(w>20&&w<300)G.weight={t:w,date:$('gWD').value||'',s:old.weight&&old.weight.t===w?old.weight.s:curBw()};
+  [0,1,2].forEach(i=>{const n=$('gN'+i).value,t=num($('gT'+i).value);if(n&&t>0){const o=old.lifts.find(x=>x.n===n);G.lifts.push({n,t,date:$('gD'+i).value||'',s:o&&o.t===t?o.s:curRM(n)});}});
+  S.goals=G;save();closeSheet();toast('목표를 저장했어요');if(curTab==='home')renderHome();if(curTab==='hist')renderHist();}
+/* 첫 실행 가이드 */
+function firstGuideHTML(){if(S.guideDone||S.logs.length>2)return'';const st=[[!!S.profile.weight,'나에게 맞추기 (1분)','운동 목적·체중으로 식단 목표와 추천 루틴 계산','openOnboarding()'],[!!(S.routines.length||S.prog),'루틴 고르기','추천 루틴이나 프로그램 하나 고르기',"openRoutineSheet()"],[S.logs.length>0,'첫 운동 기록','세트를 체크하고 저장하면 끝',"go('log')"]];
+  const n=st.filter(x=>x[0]).length;if(n===3){S.guideDone=1;saveLocal();return'';}
+  return`<div class="card"><div class="card-h"><div class="card-t">시작하기 <span class="tiny">${n}/3</span></div><button class="link" style="font-size:12px" onclick="S.guideDone=1;saveLocal();renderHome()">숨기기</button></div>
+  ${st.map(([ok,t,d,fn],i)=>`<button class="li fg-row" ${ok?'disabled':''} onclick="${fn}"><span class="ro-n" style="${ok?'background:var(--good);color:#fff':''}">${ok?'✓':i+1}</span><div class="li-main"><div class="li-t" style="${ok?'text-decoration:line-through;color:var(--text3)':''}">${t}</div><div class="li-s">${d}</div></div>${ok?'':'<span class="chev">›</span>'}</button>`).join('')}</div>`;}
 /* ═══ 종목 순서 바꾸기: 손잡이를 바로 끌거나, 줄을 꾹 눌러 끌기 ═══ */
 let _ro=null;
 function openReorder(sel){
@@ -1446,7 +1474,7 @@ function hwEx(){
     <div class="stats"><div class="stat"><b>${best.rm}</b><span>최고 kg</span></div><div class="stat"><b>${last.rm}</b><span>최근 kg</span></div><div class="stat"><b style="color:var(--${tr==null?'text':tr>=0?'good':'bad'})">${tr==null?'-':(tr>0?'+':'')+tr}</b><span>4주 변화</span></div></div>
     <div class="tiny" style="margin-top:8px">최고 기록 ${md(best.date)} ${best.w}kg × ${best.r}회 · 첫 기록 대비 ${r1(last.rm-first.rm)>=0?'+':''}${r1(last.rm-first.rm)}kg · Epley 공식</div></div>
   <div class="list">${[...H].reverse().slice(0,12).map(x=>`<div class="li"><div class="li-main"><div class="li-t">${md(x.date)}</div><div class="li-s">${x.w}kg × ${x.r}회</div></div><div class="li-v">${x.rm}<span class="tiny"> kg</span></div></div>`).join('')}</div>`;
-  chart($('chEx'),h12.map(x=>md(x.date)),[{name:'1RM',data:h12.map(x=>x.rm),color:'var(--pri)'}],{fmt:v=>v+' kg',h:150});
+  const gl=goalsOf().lifts.find(x=>x.n===histEx);chart($('chEx'),h12.map(x=>md(x.date)),[{name:'1RM',data:h12.map(x=>x.rm),color:'var(--pri)'},...(gl?[{name:'목표',data:h12.map(()=>gl.t),color:'var(--good)'}]:[])],{fmt:v=>v+' kg',h:150});
 }
 /* 정체 감지: 최근 3주 이상 추정 1RM이 최고치 2.5% 안에서 머문 주요 종목 */
 function plateaus(){
@@ -1752,9 +1780,11 @@ function histBody(){
     <button class="btn" onclick="saveBw()">기록</button></div>
   ${B.length?`<div class="card"><div class="card-h"><div class="card-t">체중 추이</div><span class="card-s">kg</span></div><div id="chBw"></div>${bwSummary()}</div>
   ${B.some(e=>e.muscle||e.fat)?`<div class="card"><div class="card-h"><div class="card-t">골격근 · 체지방</div><span class="card-s">kg</span></div><div id="chComp"></div></div>`:''}
+  <div id="bpCard"></div>
   <div class="sec">기록 목록</div><div class="list">${[...B].reverse().slice(0,40).map((e,i,a)=>{const pv=a[i+1],d=pv?r1(e.weight-pv.weight):null;return`<div class="li"><div class="li-main"><div class="li-t">${e.weight} kg ${d?`<span class="tiny" style="color:${d>0?'var(--bad)':'var(--good)'}">${d>0?'+':''}${d}</span>`:''}</div><div class="li-s">${e.date}${e.muscle?' · 근육 '+e.muscle:''}${e.fat?' · 지방 '+e.fat+' ('+r1(e.fat/e.weight*100)+'%)':''}${e.vf?' · 내장 '+e.vf:''}${e.score?' · '+e.score+'점':''}${ibCount(e)>4?` · ${ibCount(e)}항목`:''}</div></div>${ibCount(e)>2?`<button class="link" style="font-size:12px;margin-right:6px" onclick="openBwDetail('${e.date}')">상세</button>`:''}<button class="link" style="font-size:12px;margin-right:4px" onclick="bwFill('${e.date}');$('bwCard').scrollIntoView({behavior:'smooth'})">수정</button><button class="x" onclick="delBw('${e.date}')">×</button></div>`;}).join('')}</div>`:''}`;
+  bodyPhotoCard();
   if(B.length){const b=B.slice(-30),lb=b.map(e=>md(e.date));
-    chart($('chBw'),lb,[{name:'체중',data:b.map(e=>e.weight),color:'var(--s1)'}],{fmt:v=>v+' kg'});
+    const gw=goalsOf().weight;chart($('chBw'),lb,[{name:'체중',data:b.map(e=>e.weight),color:'var(--s1)'},...(gw&&gw.t?[{name:'목표',data:b.map(()=>gw.t),color:'var(--good)'}]:[])],{fmt:v=>v+' kg'});
     if($('chComp'))chart($('chComp'),lb,[{name:'골격근',data:b.map(e=>e.muscle||null),color:'var(--s1)'},{name:'체지방',data:b.map(e=>e.fat||null),color:'var(--s2)'}],{fmt:v=>v+' kg'});}
 }
 function bwSummary(){
@@ -1995,7 +2025,7 @@ function openPlan(first){
   <div class="stats" style="margin-top:8px"><div class="stat"><b>${pl.p}g</b><span>단백질</span></div><div class="stat"><b>${pl.c}g</b><span>탄수화물</span></div><div class="stat"><b>${pl.f}g</b><span>지방</span></div></div>
   <ul class="cues" style="margin-top:10px;font-size:13px;color:var(--text2)">${pl.why.map(w=>`<li>${w}</li>`).join('')}</ul></div>
   <div class="sec">추천 루틴</div>${rr.map(i=>{const r=PRESETS[i];return`<div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:10px"><div style="flex:1;min-width:0"><div class="li-t">${esc(r.name)}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트</div></div><button class="btn ghost sm" onclick="copyPreset(${i})">내 루틴에 추가</button></div>`;}).join('')}
-  <button class="btn ghost" style="margin-top:4px" onclick="openOnboarding()">나에게 맞추기 다시 하기</button>
+  <div class="row-btns" style="margin-top:4px"><button class="btn ghost" onclick="openOnboarding()">나에게 맞추기 다시 하기</button><button class="btn ghost" onclick="closeSheet();openCheck()">오늘 컨디션 체크</button></div>
   <div class="tiny" style="margin:8px 4px">주 ${S.profile.freq}회 기준입니다. 프로필이나 인바디를 바꾸면 자동으로 다시 계산됩니다.</div>`);
 }
 
@@ -2036,15 +2066,14 @@ function renderMore(){
     <div style="width:44px;height:44px;border-radius:50%;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex:none">${esc((p.name||'나').slice(0,1))}</div>
     <div style="flex:1;min-width:0"><div class="li-t">${esc(p.name||'프로필')}</div><div class="li-s">${p.weight?`${p.height}cm · ${p.weight}kg · ${GOAL_L[p.goal]}`:'신체 정보와 1RM 입력'}</div></div><span class="chev">›</span></button>
   <div class="sec">도구</div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
-    ${tile(TI.timer,'타이머','openTimerTool()')}${tile(TI.watch,'스톱워치',"tmOpen({kind:'stopwatch',title:'스톱워치'})")}${tile(TI.intv,'인터벌','openIntervalTool()')}
-    ${tile(TI.pace,'페이스·랩','openPaceTool()')}${tile(I.calc,'1RM 계산','openCalc()')}${tile(TI.plate,'원판 계산','openPlateTool()')}</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">
+    ${tile(TI.timer,'타이머','openTimerTool()')}${tile(TI.pace,'페이스·랩','openPaceTool()')}${tile(I.calc,'1RM 계산','openCalc()')}${tile(TI.plate,'원판 계산','openPlateTool()')}</div>
   <div class="sec">내 운동</div>
-  <div class="list">${row('맞춤 제언','운동 목적 · 인바디 기반 식단과 추천 루틴','openPlan()')}${row('복용 약물',S.meds&&S.meds.length?`${S.meds.length}개 등록 · 기기에만 저장${S.medSync?' 아님':''}`:'운동할 때 주의할 점 안내','openMeds()')}${row('기록 리마인더',S.remind&&S.remind.on?`매일 ${S.remind.time}`:'','openRemind()',`<span class="badge ${S.remind&&S.remind.on?'b-good':''}">${S.remind&&S.remind.on?'켜짐':'꺼짐'}</span>`)}${row('휴식 타이머','','openRestSet()',`<span class="tiny">${S.rest?S.rest+'초':'끔'}</span>`)}${row('음성 안내','타이머 3·2·1 카운트다운','S.voice=S.voice?0:1;saveLocal();renderMore()',`<span class="badge ${S.voice?'b-good':''}">${S.voice?'켜짐':'꺼짐'}</span>`)}${row('나에게 맞추기','처음 설정 다시 하기','openOnboarding()')}</div>
+  <div class="list">${row('맞춤 제언','목적·체형에 맞춘 식단·루틴 · 나에게 맞추기','openPlan()')}${row('목표',(()=>{const G=goalsOf();const n=(G.weight&&G.weight.t?1:0)+G.lifts.length;return n?`${n}개 진행 중`:'체중 · 종목 목표와 필요 속도';})(),'openGoals()')}${row('복용 약물',S.meds&&S.meds.length?`${S.meds.length}개 등록 · 기기에만 저장${S.medSync?' 아님':''}`:'운동할 때 주의할 점 안내','openMeds()')}${row('기록 리마인더',S.remind&&S.remind.on?`매일 ${S.remind.time}`:'','openRemind()',`<span class="badge ${S.remind&&S.remind.on?'b-good':''}">${S.remind&&S.remind.on?'켜짐':'꺼짐'}</span>`)}${row('휴식 타이머','','openRestSet()',`<span class="tiny">${S.rest?S.rest+'초':'끔'}</span>`)}${row('음성 안내','타이머 3·2·1 카운트다운','S.voice=S.voice?0:1;saveLocal();renderMore()',`<span class="badge ${S.voice?'b-good':''}">${S.voice?'켜짐':'꺼짐'}</span>`)}</div>
   <div class="sec">앱</div>
   <div class="list">${row('계정 · 클라우드',fb.user?`${esc(fb.user.email||'로그인됨')} · ${fb.state||'연결됨'}`:'로그인하면 여러 기기에서 같은 기록','openAccount()')}${isStandalone()?'':row('홈 화면에 설치','앱처럼 전체 화면 · 오프라인 실행','installApp()')}${row('데이터 백업 · 복원','JSON · CSV 내보내기','openData()')}${row('화면 테마','',"S.theme=S.theme==='auto'?'light':S.theme==='light'?'dark':'auto';applyTheme();saveLocal();renderMore()",`<span class="tiny">${{auto:'시스템',light:'라이트',dark:'다크'}[S.theme||'auto']}</span>`)}${row('개인정보 · 이용 안내','','openPrivacy()')}</div>
   <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">OH_UN! (오운!) v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>운동 그림: Everkinetic (CC BY-SA 4.0)<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>
-  <a class="credit" href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener">만든 사람 <b>@proteinvillain</b> · Instagram</a>`;
+  <a class="credit" href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener">만든 사람 <b>@proteinvillain</b> · Instagram</a><div class="tiny" style="text-align:center;color:var(--text3)">비상업 개인 프로젝트 · 광고·결제 없음</div>`;
 }
 function openProfile(){
   const p=S.profile,o=(m,v)=>Object.entries(m).map(([k,l])=>`<option value="${k}" ${String(v)===k?'selected':''}>${l}</option>`).join('');
@@ -2096,7 +2125,8 @@ function openData(){
   <div class="tiny" id="stInfo" style="margin:-4px 2px 12px;line-height:1.6">저장 상태 확인 중...</div>
   <button class="btn" style="margin-bottom:8px" onclick="exportData()">백업 파일 저장</button>
   <button class="btn ghost" style="margin-bottom:8px" onclick="$('impFile').click()">백업 파일 가져오기</button>
-  <button class="btn ghost" onclick="openCSV()">CSV로 내보내기 (엑셀)</button>
+  <button class="btn ghost" style="margin-bottom:8px" onclick="openCSV()">CSV로 내보내기 (엑셀)</button>
+  <button class="btn ghost" onclick="openImportOther()">다른 앱 기록 가져오기 (Strong · Hevy)</button>
   ${hasOld()?`<button class="btn ghost" style="margin-top:8px" onclick="importOldLocal()">이 기기의 이전 RTS 기록 가져오기</button>`:''}
   <input type="file" id="impFile" accept=".json,application/json" style="display:none" onchange="importData(event)"></div>
   <button class="btn danger" onclick="confirmSheet('모든 데이터를 삭제할까요? 되돌릴 수 없습니다.',()=>{S=structuredClone(DEF);try{localStorage.removeItem(DKEY);}catch(e){}draft=newDraft();save();go('home');toast('초기화됨');setTimeout(openOnboarding,500);},'전체 삭제')">모든 데이터 삭제</button>`);
@@ -2441,7 +2471,7 @@ const hxBase={lvl:'중급',weeks:12,keys:['squat'],weekNote:w=>HX_NOTE[w-1],
   src:[['Red Bull · HYROX 무게 정리','https://www.redbull.com/us-en/hyrox-weights-overview'],['Fitness Volt · HYROX 스테이션','https://fitnessvolt.com/roxrace/stations/'],['Find Your Edge · 12주 초급 플랜','https://www.findyouredge.app/news/hyrox-training-plan-beginners'],['PureGym · 12주 HYROX 플랜','https://www.puregym.com/blog/Hyrox-training-plan/']]};
 PROGRAMS.push(
  {...hxBase,id:'hxo',name:'하이록스 Open',sub:'8km 러닝 + 8개 스테이션 · 첫 완주~기록 단축',freq:'주 5회',sched:[1,2,3,4,6],days:hyroxDays(0),
-  about:'1km 달리기와 스테이션 8개(스키에르그, 슬레드 푸시·풀, 버피 브로드 점프, 로잉, 파머스, 샌드백 런지, 월볼)를 번갈아 하는 경기. 베이스 4주 → 레이스 무게·브릭 4주 → 시뮬레이션·테이퍼 4주.'},
+  about:'1km 달리기와 스테이션 8개(스키에르그, 슬레드 푸시·풀, 버피 브로드 점프, 로잉, 파머스, 샌드백 런지, 월볼)를 번갈아 하는 경기. 베이스 4주 → 레이스 무게·브릭 4주 → 시뮬레이션·테이퍼 4주. HYROX는 해당 권리자의 상표이며 이 프로그램은 공식 훈련 프로그램이 아닙니다.'},
  {...hxBase,id:'hxp',name:'하이록스 Pro',sub:'Pro 무게 · 엔진 세션 추가',lvl:'상급',freq:'주 6회',sched:[1,2,3,4,5,6],days:hyroxDays(1),
   about:'Pro는 슬레드·파머스·샌드백·월볼이 더 무겁다(남 Pro 슬레드 푸시 202kg, 풀 153kg, 파머스 2×32kg, 샌드백 30kg, 월볼 9kg). Open 구조에 금요일 에르그 엔진 세션과 상체 근력을 더했다.'}
 );
@@ -2459,10 +2489,12 @@ function missingRM(p){return p.keys.filter(k=>!rmOf(k));}
 
 function progListHTML(){
   return`<div class="chips" style="margin:0 0 10px">${Object.entries(PROG_LV).map(([k,l])=>`<button class="chip ${progLv===k?'on':''}" onclick="progLv='${k}';openRoutineSheet('prog')">${l}</button>`).join('')}</div>`+
-  PROGRAMS.filter(p=>p.mine||progLv==='all'||lvKey(p)===progLv).map(p=>`<button class="card" style="display:block;width:100%;text-align:left;margin-bottom:8px" onclick="openProgram('${p.id}')">
-    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div class="li-t">${esc(p.name)}</div>${S.prog&&S.prog.id===p.id?'<span class="badge b-good">진행 중</span>':p.mine?'<span class="badge b-pri">내 플랜</span>':''}</div>
-    <div class="li-s" style="white-space:normal">${esc(p.sub)}</div><div class="tiny" style="margin-top:4px">${p.lvl} · ${p.freq} · ${p.weeks}주 · ${p.sched.map(d=>WD[d]).join('')}</div></button>`).join('');
+  (()=>{const L=PROGRAMS.filter(p=>p.mine||progLv==='all'||lvKey(p)===progLv),hide=progLv==='all'&&!window._progAdv,adv=L.filter(p=>!p.mine&&lvKey(p)==='adv'&&!(S.prog&&S.prog.id===p.id));
+   const shown=hide?L.filter(p=>!adv.includes(p)):L;return shown.map(progCard).join('')+(hide&&adv.length?`<button class="btn ghost" onclick="window._progAdv=1;openRoutineSheet('prog')">상급 프로그램 ${adv.length}개 더 보기</button><div class="tiny" style="text-align:center;margin:6px 0">고중량 경험이 1년 이상일 때 권장</div>`:'');})();
 }
+function progCard(p){return`<button class="card" style="display:block;width:100%;text-align:left;margin-bottom:8px" onclick="openProgram('${p.id}')">
+    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><div class="li-t">${esc(p.name)}</div>${S.prog&&S.prog.id===p.id?'<span class="badge b-good">진행 중</span>':p.mine?'<span class="badge b-pri">내 플랜</span>':''}</div>
+    <div class="li-s" style="white-space:normal">${esc(p.sub)}</div><div class="tiny" style="margin-top:4px">${p.lvl} · ${p.freq} · ${p.weeks}주 · ${p.sched.map(d=>WD[d]).join('')}</div></button>`;}
 let pv={id:'',tab:'day',w:1};
 function openProgram(id,tab,w){
   const p=progById(id);if(!p)return;const act=S.prog&&S.prog.id===id;
@@ -2534,7 +2566,7 @@ function progHomeHTML(){
    ${todayDone?'<div class="note n-good" style="margin:0"><b>오늘 운동 완료</b>수고했어요. 다시 하려면 전체 보기에서 시작하세요.</div>':`<button class="btn" onclick="startProgDay('${p.id}',${di},${w})">오늘 운동 시작</button>`}`:`<div class="muted">오늘은 휴식입니다. ${nx}</div>`}</div>`;
 }
 
-/* ══════════════════════ v6: 자동 조정 · RIR · 공유 카드 · 주간 리포트 · 슈퍼세트 · 바코드 · 휴식 알림 ══════════════════════ */
+/* ══════════════════════ v6: 자동 조정 · RIR · 공유 카드 · 주간 리포트 · 슈퍼세트 · 휴식 알림 ══════════════════════ */
 /* ── 프로그램 자동 조정 (실제 수행 기반) ── */
 function progAdjOf(pid,name){return((S.progAdj||{})[pid]||{})[name]||0;}
 function progItems(p,d,w){
@@ -2711,41 +2743,6 @@ async function weekCardOut(share){const cv=await makeWeekCard(_wcOff,1),blob=awa
   if(share){const f=new File([blob],name,{type:'image/jpeg'});if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'주간 오운완'});}catch(e){}return;}}
   dlBlob(blob,name);toast('이미지를 저장했습니다');}
 
-/* ── 바코드 스캔 (Open Food Facts) ── */
-let _scan={stream:null,raf:0,reader:null};
-function stopScan(){try{cancelAnimationFrame(_scan.raf);}catch(e){}try{_scan.reader&&_scan.reader.reset();}catch(e){}if(_scan.stream)_scan.stream.getTracks().forEach(t=>t.stop());_scan={stream:null,raf:0,reader:null};}
-function loadScript(src,integrity){return new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;if(integrity){s.integrity=integrity;s.crossOrigin='anonymous';}s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
-async function openBarcode(){
-  openSheet(`<div class="sheet-h"><h2>바코드 스캔</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div style="position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:3/4"><video id="bcV" playsinline muted style="width:100%;height:100%;object-fit:cover"></video>
-  <div style="position:absolute;left:10%;right:10%;top:42%;height:16%;border:3px solid rgba(255,255,255,.85);border-radius:12px"></div></div>
-  <div class="tiny" id="bcMsg" style="margin:10px 4px">제품 뒷면 바코드를 네모 안에 맞추세요.</div>
-  <div class="row-btns"><input class="inp" id="bcIn" inputmode="numeric" placeholder="또는 바코드 숫자 입력"><button class="btn sm" style="flex:0 0 auto" onclick="lookupBarcode($('bcIn').value.trim())">조회</button></div>`);
-  const v=$('bcV'),msg=t=>{const m=$('bcMsg');if(m)m.textContent=t;};
-  try{
-    if('BarcodeDetector' in window){
-      const det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
-      _scan.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});v.srcObject=_scan.stream;await v.play();
-      const loop=async()=>{if(!_scan.stream)return;try{const r=await det.detect(v);if(r.length){const c=r[0].rawValue;stopScan();lookupBarcode(c);return;}}catch(e){}_scan.raf=requestAnimationFrame(loop);};loop();
-    }else{
-      msg('스캐너 불러오는 중...');if(!window.ZXing)await loadScript('https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js','sha384-BzBxP10ZE72aitqj5UMmUsbKFliP/DZqA8Wq+BNNhlIJDGoEd1tpkMYXOg9+n6sB');
-      const rd=new ZXing.BrowserMultiFormatReader();_scan.reader=rd;msg('제품 뒷면 바코드를 네모 안에 맞추세요.');
-      rd.decodeFromConstraints({video:{facingMode:'environment'}},v,(res)=>{if(res&&_scan.reader){const c=res.getText();stopScan();lookupBarcode(c);}});
-      _scan.stream=null;
-    }
-  }catch(e){msg('카메라를 쓸 수 없습니다. 카메라 권한을 허용하거나 바코드 숫자를 직접 입력하세요.');}
-}
-async function lookupBarcode(code){
-  if(!/^\d{8,14}$/.test(code||'')){toast('바코드 숫자 8~14자리를 입력하세요');return;}
-  stopScan();const m=$('bcMsg');if(m)m.textContent=`${code} 조회 중...`;
-  try{const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=product_name,product_name_ko,brands,nutriments,serving_quantity`);const d=await r.json();
-    const p=d.product,n=p&&p.nutriments||{};
-    if(!p||!n['energy-kcal_100g']){closeSheet();toast('제품 정보를 찾지 못했어요. 포장의 영양정보로 직접 입력하세요');setTimeout(openManualFood,300);return;}
-    window._off=[{name:(p.product_name_ko||p.product_name||code).trim(),brand:(p.brands||'').split(',')[0],k:n['energy-kcal_100g'],p:n.proteins_100g||0,c:n.carbohydrates_100g||0,f:n.fat_100g||0}];
-    pickOff(0);if(p.serving_quantity&&$('offG'))$('offG').value=Math.round(p.serving_quantity);
-  }catch(e){toast('인터넷 연결을 확인하세요');}
-}
-
 /* ══════════════════════ 식약처 식품영양성분 DB (공공데이터포털 · 정적 파일) ══════════════════════ */
 // data/food-kr-1.tsv.gz: 음식(외식·프랜차이즈 포함) + 원재료  ·  data/food-kr-2.tsv.gz: 가공식품
 // 줄 형식: 이름 \t kcal \t 단백질 \t 탄수 \t 지방 \t (1=100ml 기준) \t 1회 제공량 \t 업체/브랜드 \t 분류 \t 구분(D 음식, R 원재료, P 가공)
@@ -2796,7 +2793,7 @@ function kdbRender(){
     const ids=kdbSearch(q);
     el.innerHTML=ids.length?`<div class="tiny" style="margin:10px 2px 6px">식약처 식품영양성분 DB</div><div class="list" style="background:var(--card2);margin:0;max-height:420px;overflow-y:auto">${ids.map(i=>{const x=kdbParse(KDB.rows[i]);
       return`<button class="li" style="border-color:var(--line)" onclick="kdbPick(${i})"><div class="li-main"><div class="li-t" style="white-space:normal">${esc(x.name)}</div><div class="li-s">${x.src?esc(x.src)+' · ':''}${x.t==='D'?'음식':x.t==='R'?'원재료':'가공식품'}${x.size?' · '+esc(x.size):''} · 단 ${x.p} · 탄 ${x.c} · 지 ${x.f}</div></div><div class="li-v">${Math.round(x.k)}<span class="tiny"> /100${x.ml?'ml':'g'}</span></div></button>`;}).join('')}</div>`
-      :(KDB.rows.length?'<div class="tiny" style="margin-top:8px">식약처 DB에도 없어요. 다른 이름이나 바코드 스캔, 직접 입력을 이용하세요.</div>':'');
+      :(KDB.rows.length?'<div class="tiny" style="margin-top:8px">식약처 DB에도 없어요. 다른 이름이나 온라인 검색, 직접 입력을 이용하세요.</div>':'');
   },180);
 }
 function kdbPick(i){
@@ -2899,18 +2896,21 @@ function openWelcome(){
 function openPrivacy(){
   const sec=(t,b)=>`<div class="card"><div class="card-t" style="margin-bottom:6px">${t}</div><div class="muted" style="line-height:1.65;font-size:14px">${b}</div></div>`;
   openSheet(`<div class="sheet-h"><h2>개인정보 · 이용 안내</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  ${sec('이 앱은','개인이 만든 <b>비상업 프로젝트</b>입니다. 광고, 결제, 유료 기능이 없고 이용자 정보를 팔거나 다른 곳에 제공하지 않습니다. 기록은 운동·식단 관리 기능을 제공하는 데에만 씁니다.')}
   ${sec('어디에 저장되나요','모든 기록은 이 기기의 브라우저 저장소에 저장됩니다. 로그인한 경우에만 Google Firebase 서버(본인 계정만 읽고 쓸 수 있도록 보안 규칙 적용)에 같은 내용이 동기화됩니다.')}
   ${sec('어떤 정보를 다루나요','프로필(이름, 성별, 나이, 키, 체중, 1RM), 운동·러닝·인바디·식단 기록, 로그인 시 이메일 주소. 광고, 행동 분석 도구, 제3자 제공은 없습니다.')}
   ${sec('클라우드 저장과 국외 보관 (로그인한 경우만)','받는 곳: Google LLC (Firebase) · 보관 국가: 싱가포르 데이터센터 · 항목: 이메일, 위의 기록 전체 · 목적: 기기 간 백업·동기화 · 보유 기간: 계정을 삭제할 때까지 · 거부: 로그인하지 않으면 보내지 않으며 앱은 그대로 쓸 수 있습니다. 운동·체중·인바디·식단 기록은 건강 관련 정보라 로그인 전에 따로 동의를 받습니다.')}
   ${sec('이용 대상','만 14세 이상만 이용할 수 있습니다.')}
-  ${sec('외부로 보내는 것','음식 온라인 검색과 바코드 조회 시 검색어·바코드 번호가 Open Food Facts로 전송됩니다. 아이폰 바코드 스캔 시 스캐너 프로그램을 jsDelivr에서 내려받습니다. 식약처 음식 DB와 운동 그림은 앱 안의 파일이라 검색 내용이 밖으로 나가지 않습니다.')}
-  ${sec('카메라 · 사진','오운완 공유 카드에 사진을 넣을 때와 인바디 결과지를 사진으로 입력할 때만 사용합니다. 사진은 기기 안에서 카드 합성·글자 인식에만 쓰이고 저장소나 서버에 올라가지 않습니다. 인식 엔진(Tesseract.js)은 이 앱 서버에서 처음 한 번 내려받습니다.')}
+  ${sec('외부로 보내는 것','음식 온라인 검색 시 검색어가 Open Food Facts로 전송됩니다. 식약처 음식 DB와 운동 그림은 앱 안의 파일이라 검색 내용이 밖으로 나가지 않습니다.')}
+  ${sec('카메라 · 사진','오운완 공유 카드에 사진을 넣을 때와 인바디 결과지를 사진으로 입력할 때만 사용합니다. 사진은 기기 안에서 카드 합성·글자 인식에만 쓰이고 서버에 올라가지 않습니다. 기록 › 인바디의 바디 사진은 이 기기 안(IndexedDB)에만 보관되며 클라우드 동기화와 백업 파일에 포함되지 않습니다. 인식 엔진(Tesseract.js)은 이 앱 서버에서 처음 한 번 내려받습니다.')}
   ${sec('복용 약물 (민감정보)','더보기 › 복용 약물에 등록한 약은 동의한 경우에만, 이 기기에만 저장됩니다. 클라우드 동기화는 같은 화면에서 따로 켤 때만 포함되며 기본은 꺼짐입니다. 같은 화면의 \'약물 정보 모두 지우기\'로 언제든 삭제할 수 있습니다. 약물·영양제 안내는 정보 목적이며 의사·약사의 지시가 우선합니다.')}
   ${sec('백업 파일 주의','JSON·CSV 백업 파일에는 건강 기록이 그대로 들어 있습니다. 다른 사람에게 보내거나 공용 PC에 남기지 마세요.')}
+  ${sec('보유 기간 · 파기','기기 기록은 직접 지우거나 브라우저 데이터를 삭제할 때까지 보관됩니다. 클라우드 기록은 계정을 삭제하면 바로 지워지며 따로 백업해 두지 않습니다. 1년 넘게 로그인하지 않은 계정은 정리될 수 있습니다.')}
+  ${sec('안전하게 지키는 방법','클라우드 기록은 본인 계정으로만 읽고 쓸 수 있도록 보안 규칙을 적용하고, 전송은 모두 암호화(HTTPS)됩니다. 운영자도 앱 안에서 다른 사람의 기록을 볼 수 있는 화면을 두지 않습니다.')}
   ${sec('삭제','더보기 › 데이터 백업 · 복원 › 모든 데이터 삭제로 기기 기록을 지웁니다. 클라우드 기록과 계정은 더보기 › 계정 · 클라우드 › 클라우드 데이터와 계정 삭제로 지웁니다.')}
   ${sec('건강 관련 안내','운동·식단 제안은 일반적인 정보이며 의학적 진단이나 전문 트레이닝을 대신하지 않습니다. 통증이나 지병이 있으면 전문가와 상의하세요.')}
-  ${sec('문의 · 운영자','만든 사람: <a href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener" style="color:var(--pri);font-weight:700">@proteinvillain</a> (Instagram)<br>개인정보 열람·정정·삭제 요청이나 오류 제보는 인스타그램 DM으로 보내 주세요. 앱 안에서 직접 삭제하는 방법은 위 \'삭제\' 항목을 참고하세요.')}
-  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털), Open Food Facts (ODbL) · 바코드: ZXing (Apache 2.0) · 글자 인식: Tesseract.js·tessdata (Apache 2.0) · 로그인·저장: Firebase (Google)')}`);
+  ${sec('문의 · 운영자','만든 사람: <a href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener" style="color:var(--pri);font-weight:700">@proteinvillain</a> (Instagram)<br>개인정보 보호 담당도 만든 사람이 직접 맡습니다. 개인정보 열람·정정·삭제 요청이나 오류 제보는 인스타그램 DM으로 보내 주세요. 앱 안에서 직접 삭제하는 방법은 위 \'삭제\' 항목을 참고하세요.')}
+  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털), Open Food Facts (ODbL) · 글자 인식: Tesseract.js·tessdata (Apache 2.0) · 로그인·저장: Firebase (Google)<br>5/3/1, Madcow, HYROX 등은 각 권리자의 프로그램·상표 이름으로, 설명 목적으로만 쓰며 공식 제휴 앱이 아닙니다.')}`);
 }
 async function deleteCloud(){
   if(!fb.user)return;
@@ -2989,7 +2989,7 @@ function openFoodAdd(meal){
   dietMeal=meal;const ms=S.meals||[],fq=freqFoods(12);
   openSheet(`<div class="sheet-h"><h2>${MEAL_L[meal]} 추가</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <input class="inp" id="foodQ" placeholder="검색: 닭가슴살, 신라면, 김치찌개, 도미노..." oninput="foodSearch()" autocomplete="off">
-  <div style="display:flex;gap:16px;margin:10px 2px"><button class="link" onclick="openBarcode()">바코드 스캔</button><button class="link" onclick="openManualFood()">직접 입력</button><button class="link" onclick="offSearch()">온라인 검색</button></div>
+  <div style="display:flex;gap:16px;margin:10px 2px"><button class="link" onclick="openManualFood()">직접 입력</button><button class="link" onclick="offSearch()">온라인 검색</button></div>
   <div id="foodRes"></div><div class="tiny" id="kdbSt" style="margin:8px 2px 0"></div><div id="kdbRes"></div>
   <div id="foodQuick">${ms.length?`<div class="sec" style="margin-top:14px">저장한 끼니</div><div class="chips">${ms.map(m=>`<button class="chip" style="background:var(--pri-soft);color:var(--pri)" onclick="addMeal('${m.id}')">${esc(m.name)} <span style="opacity:.7">${fmt(m.items.reduce((a,x)=>a+x.kcal,0))}</span></button>`).join('')}</div>`:''}
   ${fq.length?`<div class="sec" style="margin-top:14px">자주 먹은 음식</div><div class="list">${fq.map(f=>`<button class="li" data-n="${esc(f.name)}" onclick="quickAddFood(this.dataset.n)"><div class="li-main"><div class="li-t">${esc(f.name)}</div><div class="li-s">탄 ${r1(f.c)} · 단 ${r1(f.p)} · 지 ${r1(f.f)} · ${f.cnt}회</div></div><div class="li-v">${fmt(f.kcal)}</div></button>`).join('')}</div>`:''}
@@ -3299,18 +3299,22 @@ function wodSave(){
 }
 
 /* ── 단독 도구 ── */
-function openTimerTool(){
-  openSheet(`<div class="sheet-h"><h2>타이머</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="chips" style="margin-bottom:10px">${[30,60,90,120,180,300].map(s=>`<button class="chip" onclick="$('ttM').value=${Math.floor(s/60)};$('ttS').value=${s%60}">${s<60?s+'초':s/60+'분'}</button>`).join('')}</div>
+/* 타이머 하나로: 카운트다운 · 스톱워치 · 인터벌 · WOD */
+let _ttMode='cd';
+function openTimerTool(mode){if(mode)_ttMode=mode;const m=_ttMode;
+  const body=m==='cd'?`<div class="chips" style="margin-bottom:10px">${[30,60,90,120,180,300].map(s=>`<button class="chip" onclick="$('ttM').value=${Math.floor(s/60)};$('ttS').value=${s%60}">${s<60?s+'초':s/60+'분'}</button>`).join('')}</div>
   <div class="g2"><div class="field"><label class="lbl">분</label><input class="inp" id="ttM" inputmode="numeric" value="1"></div><div class="field"><label class="lbl">초</label><input class="inp" id="ttS" inputmode="numeric" value="0"></div></div>
-  <button class="btn" onclick="const d=(+$('ttM').value||0)*60+(+$('ttS').value||0);if(d>0){closeSheet();tmOpen({kind:'countdown',title:'타이머',dur:d})}">시작</button>`);
-}
-function openIntervalTool(){
-  openSheet(`<div class="sheet-h"><h2>인터벌 타이머</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="chips" style="margin-bottom:10px"><button class="chip" onclick="$('itW').value=20;$('itR').value=10;$('itN').value=8">타바타 20/10×8</button><button class="chip" onclick="$('itW').value=40;$('itR').value=20;$('itN').value=10">40/20×10</button><button class="chip" onclick="$('itW').value=60;$('itR').value=30;$('itN').value=6">60/30×6</button></div>
+  <button class="btn" onclick="const d=(+$('ttM').value||0)*60+(+$('ttS').value||0);if(d>0){closeSheet();tmOpen({kind:'countdown',title:'타이머',dur:d})}">시작</button>`
+  :m==='sw'?`<div class="muted" style="margin:4px 2px 12px">랩 버튼으로 구간 기록을 남길 수 있어요.</div><button class="btn" onclick="closeSheet();tmOpen({kind:'stopwatch',title:'스톱워치'})">스톱워치 시작</button>`
+  :m==='int'?`<div class="chips" style="margin-bottom:10px"><button class="chip" onclick="$('itW').value=20;$('itR').value=10;$('itN').value=8">타바타 20/10×8</button><button class="chip" onclick="$('itW').value=40;$('itR').value=20;$('itN').value=10">40/20×10</button><button class="chip" onclick="$('itW').value=60;$('itR').value=30;$('itN').value=6">60/30×6</button></div>
   <div class="g2"><div class="field"><label class="lbl">운동(초)</label><input class="inp" id="itW" inputmode="numeric" value="20"></div><div class="field"><label class="lbl">휴식(초)</label><input class="inp" id="itR" inputmode="numeric" value="10"></div><div class="field"><label class="lbl">라운드</label><input class="inp" id="itN" inputmode="numeric" value="8"></div></div>
-  <button class="btn" onclick="closeSheet();tmOpen({kind:'tabata',title:'인터벌',work:+$('itW').value||20,rest:+$('itR').value||10,rounds:+$('itN').value||8,steps:['운동']})">시작</button>`);
+  <button class="btn" onclick="closeSheet();tmOpen({kind:'tabata',title:'인터벌',work:+$('itW').value||20,rest:+$('itR').value||10,rounds:+$('itN').value||8,steps:['운동']})">시작</button>`
+  :`<div class="muted" style="margin:4px 2px 12px">For Time · AMRAP · EMOM · Tabata 타이머와 기록은 운동 탭의 WOD에 있어요.</div><button class="btn" onclick="closeSheet();go('log');document.querySelector('#logSeg [data-k=wod]').click()">WOD 열기</button>`;
+  openSheet(`<div class="sheet-h"><h2>타이머</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="seg" style="margin-bottom:12px">${[['cd','카운트다운'],['sw','스톱워치'],['int','인터벌'],['wod','WOD']].map(([k,l])=>`<button class="${m===k?'on':''}" onclick="openTimerTool('${k}')">${l}</button>`).join('')}</div>
+  <div class="card">${body}</div>`);
 }
+function openIntervalTool(){openTimerTool('int');}
 function openPaceTool(){
   openSheet(`<div class="sheet-h"><h2>페이스 · 랩 계산</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <div class="card"><div class="chips" style="margin-bottom:8px">${[[5,'5km'],[10,'10km'],[21.0975,'하프'],[42.195,'풀']].map(([d,l])=>`<button class="chip" onclick="$('pcD').value=${d};paceCalc()">${l}</button>`).join('')}</div>
@@ -3347,6 +3351,12 @@ async function installApp(){
   <div class="card"><div class="card-t" style="margin-bottom:6px">아이폰 (사파리)</div><ol class="cues"><li>사파리로 이 페이지 열기</li><li>아래쪽 공유 버튼 누르기</li><li>"홈 화면에 추가" 선택</li></ol></div>
   <div class="card"><div class="row-b" style="margin-bottom:6px"><div class="card-t">설치 진단</div><button class="btn ghost sm" onclick="runInstallCheck()">검사</button></div><div id="instChk" class="tiny">설치가 안 되면 "검사"를 눌러 빠진 파일이 있는지 확인하세요.</div></div>`);
 }
+/* 아이폰에서 홈 화면 설치 전에만 보이는 안내 (사파리는 7일 동안 안 열면 저장 데이터를 지울 수 있음) */
+function iosInstallHTML(){const ib=inAppBrowser();
+  return`<div class="ios-ins"><div class="ios-ins-h"><b>아이폰은 홈 화면에 추가해 주세요</b><button class="link" style="font-size:12px" onclick="S.iosHide=today();saveLocal();renderHome()">7일 동안 숨기기</button></div>
+  <div class="tiny" style="line-height:1.6;margin:4px 0 10px">사파리에서 그냥 열어 쓰면, 사파리를 쓰는 동안 7일 넘게 이 앱을 열지 않을 때 기록이 지워질 수 있어요. 홈 화면에 추가한 앱은 이 규칙이 적용되지 않아요.${fb.user?'':' 로그인해 두면 클라우드에도 함께 보관돼요.'}</div>
+  ${ib?`<div class="tiny" style="margin-bottom:8px"><b>${ib}</b> 안에서는 추가할 수 없어요. 오른쪽 아래·위 메뉴에서 "Safari로 열기"를 먼저 눌러 주세요.</div>`:''}
+  <ol class="ios-steps"><li><span>1</span>아래 가운데 <b>공유 버튼</b> <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> 누르기</li><li><span>2</span>목록을 내려 <b>홈 화면에 추가</b> 누르기</li><li><span>3</span>오른쪽 위 <b>추가</b> 누르고, 홈 화면의 OH_UN! 아이콘으로 열기</li></ol></div>`;}
 function copyLink(){const u=location.href.split('#')[0];(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast('주소를 복사했습니다'),()=>toast(u));}
 async function runInstallCheck(){
   const out=$('instChk');out.textContent='검사 중...';const rows=[];
@@ -3363,7 +3373,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='6.9';
+const APP_VER='7.0';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
