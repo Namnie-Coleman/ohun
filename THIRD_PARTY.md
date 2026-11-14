@@ -6,6 +6,7 @@
 | 근육 지도 경로 | react-native-body-highlighter — ELABBASSI Hicham | MIT (전문 아래) | 앱 코드 안에 포함 |
 | 식품영양성분 (`data/`) | 식품의약품안전처·농촌진흥청·해양수산부, 공공데이터포털 「전국통합식품영양성분정보 표준데이터」 | 공공데이터, 이용허락범위 제한 없음 | 필요한 항목만 골라 압축, 출처 표시 |
 | 인바디 사진 글자 인식 (`ocr/`) | Tesseract.js 7.0.0, tesseract.js-core 7.0.0 (Jerome Wu 외), 한국어 학습 데이터 tessdata 4.0.0_best_int (Google/Tesseract OCR) | Apache 2.0 | 앱 서버에 원본 그대로 두고 사용자가 사진 입력을 처음 누를 때만 내려받음. 사진은 기기 안에서만 처리 |
+| 글꼴 (`fonts/pretendard/`) | Pretendard Variable 1.3.9 (길형진) — 동적 서브셋 | SIL Open Font License 1.1 — `fonts/pretendard/LICENSE.txt` | 앱과 함께 배포 |
 | 로그인·클라우드 저장 (`vendor/firebase/`) | Firebase JS SDK 10.12.2 (Google) — app·auth·database compat 빌드 | Apache 2.0 — https://www.apache.org/licenses/LICENSE-2.0 | 앱과 함께 배포 (없으면 Google 서버에서 불러옴) |
 | 아이콘 글꼴 | Poppins (Indian Type Foundry) | SIL OFL 1.1 | 아이콘 이미지 안에만 사용 |
 

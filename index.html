@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://*.google.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firebaseapp.com; connect-src 'self' https://*.google.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firebaseapp.com wss://*.firebaseio.com wss://*.firebasedatabase.app blob: data:; frame-src https://*.google.com https://*.googleapis.com https://*.gstatic.com https://*.firebaseio.com https://*.firebasedatabase.app https://*.firebaseapp.com; img-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://*.google.com https://*.gstatic.com; font-src 'self' data: https://*.gstatic.com; worker-src 'self' blob:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<script>if(window.top!==window.self){try{window.top.location=window.self.location.href}catch(e){document.documentElement.style.display='none'}}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,6 +16,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon-64.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="fonts/pretendard/pretendard.css">
 <meta name="description" content="오운! · 오늘 운동 완료. 운동 기록, 러닝 분석, 인바디, 식단을 한 곳에서.">
 <title>오운!</title>
 <style>
@@ -29,7 +31,7 @@
   --pri-mid:#9cc3ee;--mus:#d9dce2;--mus-base:#eef0f3;
   --r:16px;--r-sm:11px;
   --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
-  --font:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Pretendard","Noto Sans KR","Segoe UI",sans-serif;
+  --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR","Segoe UI",sans-serif;
   color-scheme:light;
 }
 :root[data-theme="dark"]{
@@ -985,21 +987,23 @@ function vlZone(m,n){const [mev,lo,hi,mrv]=vlOf(m);
   if(n>mrv)return{cls:'bad',l:'과다'};if(n>hi)return{cls:'warn',l:'높음'};if(n>=lo)return{cls:'good',l:'최적'};
   if(n>=mev&&mev>0)return{cls:'good',l:'유효'};if(mev===0)return{cls:'',l:n?'보조':'-'};return{cls:'pri',l:n?'부족':'없음'};}
 function volWindow(off){const a=daysAgo(7*(off+1)),b=daysAgo(7*off);return S.logs.filter(l=>l.date>a&&l.date<=b);}
-function volData(off=0){
-  const logs=volWindow(off),mus={},days={},sess=[],pat={},reps=[0,0,0,0];let total=0;
+function volData(off=0){return volFromLogs(volWindow(off));}
+function volFromLogs(logs){
+  const mus={},ind={},days={},sess=[],pat={},reps=[0,0,0,0];let total=0;
   Object.keys(PAT_G).forEach(k=>pat[k]=0);
   logs.forEach(l=>{const sm={};l.exs.forEach(e=>{const inf=exInfo(e.name);if(inf.part==='cond'||inf.t)return;
     const n=e.sets.filter(x=>num(x.r)>0&&x.done!==false).length;if(!n)return;total+=n;
     inf.prim.forEach(m=>{mus[m]=(mus[m]||0)+n;sm[m]=(sm[m]||0)+n;(days[m]=days[m]||new Set()).add(l.date);});
-    inf.sec.forEach(m=>{mus[m]=(mus[m]||0)+n*0.5;});
+    inf.sec.forEach(m=>{ind[m]=(ind[m]||0)+n*0.5;});
     for(const [g,L] of Object.entries(PAT_G))if(L.includes(inf.pat))pat[g]+=n;
     e.sets.forEach(x=>{const r=num(x.r);if(!r||x.done===false)return;reps[r<=5?0:r<=12?1:r<=20?2:3]++;});});
     sess.push({date:l.date,sm});});
-  Object.keys(mus).forEach(k=>mus[k]=Math.round(mus[k]*2)/2);
-  return{logs,mus,days,sess,pat,reps,total};
+  Object.keys(ind).forEach(k=>ind[k]=Math.round(ind[k]*2)/2);
+  return{logs,mus,ind,days,sess,pat,reps,total};
 }
-function volDiag(off=0){
-  const d=volData(off),pv=volData(off+1),out=[];
+function volDiag(off=0){return volDiagFrom(volData(off),volData(off+1));}
+function volDiagFrom(d,pv){
+  const out=[];pv=pv||{total:0};
   if(!d.total)return{d,out,pv};
   const goal=S.profile.goal||'hypertrophy',enough=d.total>=12;
   VL_ORDER.forEach(m=>{const n=d.mus[m]||0,[mev,lo,hi,mrv]=vlOf(m);
@@ -1016,7 +1020,7 @@ function volDiag(off=0){
     if(mev>0&&n<mev)out.push({p:5,cls:'pri',t:'부족',m:`${MUS_L[m]} ${n}세트`,d:`최소 유효 볼륨(MEV ${mev}세트)보다 적어 근성장 자극이 약해요. ${mev-n<=3?'1~2세트':'1~2종목'} 추가 추천: ${MUS_EX_HINT[m]||''}.`});});
   VL_ORDER.forEach(m=>{const n=d.mus[m]||0,[mev]=vlOf(m),dd=d.days[m]?d.days[m].size:0;
     if(mev>0&&n>=mev&&dd===1)out.push({p:6,cls:'pri',t:'빈도',m:`${MUS_L[m]} 주 1회`,d:`같은 ${Math.round(n)}세트라도 주 2회로 나누면 근성장에 더 유리하다는 연구가 많아요(주 2회 이상 권장).`});});
-  const over=[];d.sess.forEach(x=>Object.entries(x.sm).forEach(([m,n])=>{if(n>10&&VL[m])over.push(`${md(x.date)} ${MUS_L[m]} ${n}세트`);}));
+  const over=[];d.sess.forEach(x=>Object.entries(x.sm).forEach(([m,n])=>{if(n>10&&VL[m])over.push(`${x.date.startsWith('2000-')?(+x.date.slice(8))+'번째 세션':md(x.date)} ${MUS_L[m]} ${n}세트`);}));
   if(over.length)out.push({p:4,cls:'warn',t:'세션 과부하',m:over.slice(0,2).join(' · '),d:'한 번에 한 근육을 10세트 넘게 하면 뒤쪽 세트는 효과가 크게 줄어요. 남는 세트는 다른 날로 옮기세요.'});
   const R=d.reps,rt=R.reduce((a,b)=>a+b,0);
   if(rt>=12){const lo=R[0]/rt,mid=(R[1]+R[2])/rt;
@@ -1027,9 +1031,9 @@ function volDiag(off=0){
   out.sort((a,b)=>a.p-b.p);return{d,out,pv};
 }
 function volBarsHTML(d){
-  return VL_ORDER.map(m=>{const n=d.mus[m]||0,[mev,lo,hi,mrv]=vlOf(m),z=vlZone(m,n),mx=Math.max(mrv,n)*1.05,P=x=>Math.min(100,x/mx*100),dd=d.days[m]?d.days[m].size:0;
-    return`<div class="pb"><div class="pb-l"><span>${MUS_L[m]} ${z.cls?`<span class="badge b-${z.cls}" style="padding:1px 7px;font-size:11px">${z.l}</span>`:`<span class="tiny">${z.l}</span>`}</span><span>${n}세트 <span class="tiny">${dd?`주 ${dd}회 · `:''}최적 ${lo}~${hi}</span></span></div>
-    <div class="pb-bar" style="position:relative"><span style="position:absolute;top:0;bottom:0;left:${P(lo)}%;width:${P(hi)-P(lo)}%;background:var(--good);opacity:.16"></span><div class="pb-fill" style="width:${P(n)}%;background:var(--${z.cls==='pri'||!z.cls?'text3':z.cls})"></div>
+  return VL_ORDER.map(m=>{const n=d.mus[m]||0,ia=(d.ind||{})[m]||0,[mev,lo,hi,mrv]=vlOf(m),z=vlZone(m,n),mx=Math.max(mrv,n+ia)*1.05,P=x=>Math.min(100,x/mx*100),dd=d.days[m]?d.days[m].size:0;
+    return`<div class="pb"><div class="pb-l"><span>${MUS_L[m]} ${z.cls?`<span class="badge b-${z.cls}" style="padding:1px 7px;font-size:11px">${z.l}</span>`:`<span class="tiny">${z.l}</span>`}</span><span>${n}세트${ia?` <span class="tiny">+간접 ${ia}</span>`:''} <span class="tiny">${dd?`· 주 ${dd}회 `:''}· 최적 ${lo}~${hi}</span></span></div>
+    <div class="pb-bar" style="position:relative"><span style="position:absolute;top:0;bottom:0;left:${P(lo)}%;width:${P(hi)-P(lo)}%;background:var(--good);opacity:.16"></span><span style="position:absolute;top:0;bottom:0;left:0;width:${P(n+ia)}%;background:var(--${z.cls==='pri'||!z.cls?'text3':z.cls});opacity:.28;border-radius:inherit"></span><div class="pb-fill" style="position:relative;width:${P(n)}%;background:var(--${z.cls==='pri'||!z.cls?'text3':z.cls})"></div>
     ${mev?`<i style="position:absolute;top:0;bottom:0;left:${P(mev)}%;width:2px;background:var(--card)"></i>`:''}<i style="position:absolute;top:-2px;bottom:-2px;left:${P(mrv)}%;width:2px;background:var(--bad);opacity:.6"></i></div></div>`;}).join('');
 }
 function volCardHTML(){
@@ -1039,34 +1043,67 @@ function volCardHTML(){
   return`<div class="card"><div class="card-h"><div class="card-t">주간 볼륨 분석</div><button class="link" onclick="openVolAnalysis(0)">자세히</button></div>
   <div class="tiny" style="margin:-4px 0 10px">최근 7일 · 근력 ${d.total}세트${ch!=null?` · 지난주 대비 ${ch>0?'+':''}${ch}%`:''}</div>
   ${top.length?top.map(x=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0"><span class="badge b-${x.cls}" style="flex:none">${x.t}</span><div style="min-width:0"><div style="font-size:13.5px;font-weight:700">${x.m}</div><div class="tiny" style="line-height:1.5">${x.d}</div></div></div>`).join('')+(out.length>3?`<button class="link" style="font-size:12.5px;margin-top:4px" onclick="openVolAnalysis(0)">진단 ${out.length-3}개 더 보기</button>`:''):`<div class="note n-good" style="margin:0"><b>균형이 잘 잡혀 있어요</b>부족하거나 과한 근육 없이 권장 범위 안이에요.</div>`}
-  <details class="fold" style="margin-top:8px"><summary>근육별 세트</summary>${volBarsHTML(d)}<div class="tiny" style="margin-top:4px">초록 띠: 최적(MAV) · 흰 선: 최소 유효(MEV) · 빨간 선: 회복 한계(MRV)</div></details></div>`;
+  <details class="fold" style="margin-top:8px"><summary>근육별 세트</summary>${volBarsHTML(d)}<div class="tiny" style="margin-top:4px">초록 띠: 최적(MAV) · 흰 선: 최소 유효(MEV) · 빨간 선: 회복 한계(MRV) · 판정은 직접 세트 기준</div></details></div>`;
 }
-function openVolAnalysis(off=0){
-  const {d,out,pv}=volDiag(off),a=daysAgo(7*(off+1)+-1+1),b=daysAgo(7*off);
-  const from=md(daysAgo(7*(off+1)-1)),to=md(b);
+function volBodyHTML(d,out,plan){
   const pr=(k,l)=>`<tr><td>${l}</td><td style="text-align:right">${d.pat[k]}세트</td></tr>`;
   const R=d.reps,rt=R.reduce((x,y)=>x+y,0)||1;
-  openSheet(`<div class="sheet-h"><h2>주간 볼륨 분석</h2><button class="link" onclick="closeSheet()">닫기</button></div>
-  <div class="card-h" style="margin:-4px 0 12px"><button class="btn ghost sm" onclick="openVolAnalysis(${off+1})">‹ 이전</button><div style="text-align:center"><b>${from} ~ ${to}</b><div class="tiny">근력 ${d.total}세트 · 운동 ${d.logs.length}회${pv.total?` · 그 전 7일 ${pv.total}세트`:''}</div></div><button class="btn ghost sm" ${off?'':'disabled'} onclick="openVolAnalysis(${Math.max(0,off-1)})">다음 ›</button></div>
-  ${!d.total?`<div class="muted" style="padding:20px 0;text-align:center">이 기간에 근력 운동 기록이 없어요.</div>`:`
-  <div class="sec">진단</div>
+  return`<div class="sec">진단</div>
   ${out.length?`<div class="card">${out.map(x=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0"><span class="badge b-${x.cls}" style="flex:none">${x.t}</span><div style="min-width:0"><div style="font-size:13.5px;font-weight:700">${x.m}</div><div class="tiny" style="line-height:1.5">${x.d}</div></div></div>`).join('')}</div>`:`<div class="note n-good"><b>균형이 잘 잡혀 있어요</b>권장 범위를 벗어난 근육이나 불균형이 없어요.</div>`}
-  <div class="sec">근육별 세트 <span class="tiny">주동근 1 · 보조근 0.5</span></div>
+  <div class="sec">근육별 ${plan?'예상 ':''}세트 <span class="tiny">진한 막대: 직접 세트 · 옅은 막대: 간접(보조근 0.5)</span></div>
   <div class="card">${volBarsHTML(d)}<div class="tiny" style="margin-top:4px">초록 띠: 최적(MAV) · 흰 선: 최소 유효(MEV) · 빨간 선: 회복 한계(MRV) · 경력 ${EXP_L[S.profile.exp]||''} 기준</div></div>
   <div class="sec">움직임 균형</div>
   <div class="card"><table class="tbl" style="width:100%">${pr('hpush','수평 밀기 (벤치·딥스·플라이)')}${pr('hpull','수평 당기기 (로우)')}${pr('vpush','수직 밀기 (오버헤드 프레스)')}${pr('vpull','수직 당기기 (풀업·랫풀다운)')}${pr('knee','무릎 우세 (스쿼트·레그프레스·런지)')}${pr('hip','고관절 우세 (힌지·힙쓰러스트·레그컬)')}${pr('rear','후면 어깨 (페이스풀·리버스 플라이)')}</table>
   <div class="tiny" style="margin-top:6px">권장: 밀기 : 당기기 = 1 : 1~1.5 · 무릎 : 고관절 = 0.5~2 : 1</div></div>
   <div class="sec">반복 범위</div>
   <div class="card">${[['1~5회',0],['6~12회',1],['13~20회',2],['21회 이상',3]].map(([l,i])=>`<div class="pb"><div class="pb-l"><span>${l}</span><span>${R[i]}세트 <span class="tiny">${Math.round(R[i]/rt*100)}%</span></span></div><div class="pb-bar"><div class="pb-fill" style="width:${R[i]/rt*100}%"></div></div></div>`).join('')}
-  <div class="tiny">목표: ${GOAL_L[S.profile.goal]||'-'} · 근비대는 6~30회 모두 효과가 비슷(실패 근처일 때), 근력은 1~5회 비중이 중요</div></div>`}
-  <details class="fold" style="margin-top:12px"><summary>분석 기준 · 근거</summary><div class="tiny" style="line-height:1.7">
-  · 세트 집계: 종목의 주동근 1세트, 보조근 0.5세트로 계산 (분할 집계, Pelland 외 2024)<br>
+  <div class="tiny">목표: ${GOAL_L[S.profile.goal]||'-'} · 근비대는 6~30회 모두 효과가 비슷(실패 근처일 때), 근력은 1~5회 비중이 중요</div></div>`;}
+const VOL_REF=`<details class="fold" style="margin-top:12px"><summary>분석 기준 · 근거</summary><div class="tiny" style="line-height:1.7">
+  · 세트 집계: 판정은 주동근으로 쓰인 직접 세트 기준. RP 볼륨 범위가 다른 운동에서 오는 간접 자극을 이미 감안한 직접 세트 수치이기 때문이에요. 보조근 자극은 0.5세트(분할 집계, Pelland 외 2024)로 따로 참고 표시<br>
   · 볼륨 범위: MEV(최소 유효)·MAV(최적)·MRV(회복 한계) 주간 세트 추정치 (Israetel·Hoffmann, RP 2019). 경력별로 초보 ×0.7, 고급 ×1.15 보정<br>
   · 빈도: 근육별 주 2회 이상이 1회보다 유리 (Schoenfeld 외 2016)<br>
   · 세션당 한 근육 10세트 초과 시 추가 효과 감소 (세션 볼륨 연구 해석)<br>
   · 반복 범위: 근비대는 저·고반복 비슷, 근력은 고중량 비중 필요 (Schoenfeld 외 2017, 2021)<br>
   · 주간 증가: 한 번에 10~20% 이내 권장<br>
-  모두 평균적인 추정치라 개인차가 커요. 회복 상태·통증·기록 변화와 함께 판단하세요.</div></details>`);
+  모두 평균적인 추정치라 개인차가 커요. 회복 상태·통증·기록 변화와 함께 판단하세요.</div></details>`;
+/* 계획(루틴·프로그램) → 가상 기록으로 바꿔 같은 분석에 넣음. 세션마다 다른 날짜를 줘서 빈도도 계산 */
+function planLogs(sessions){return sessions.map((exs,i)=>({date:'2000-01-'+String(i+1).padStart(2,'0'),exs:exs.map(e=>({name:e.name,sets:e.sets}))}));}
+function rtSessions(r,times){const exs=(r.items||[]).filter(it=>it.name).map(it=>({name:it.name,sets:Array.from({length:Math.max(0,num(it.sets)||0)},()=>({w:num(it.w)||0,r:num(String(it.reps).match(/\d+/)?.[0])||10}))}));return Array.from({length:Math.max(1,times)},()=>exs);}
+function planDiag(sessions){const d=volFromLogs(planLogs(sessions));const r=volDiagFrom(d,null);r.out=r.out.filter(x=>x.t!=='급증');return r;}
+function rtVolHTML(){
+  const f=window._rtFreq||Math.max(1,(rt.days||[]).length||1);const{d,out:o0}=planDiag(rtSessions(rt,f)),out=o0.filter(x=>x.t!=='부족'&&x.t!=='빈도');
+  if(!d.total)return'';
+  return`<div class="card" id="rtVol"><div class="card-h"><div class="card-t">주간 볼륨 미리보기</div><button class="link" onclick="openRtVolAll(true)">내 루틴 전체</button></div>
+  <div class="chips" style="margin:2px 0 8px">${[1,2,3].map(k=>`<button class="chip ${f===k?'on':''}" onclick="window._rtFreq=${k};rt.name=$('rtName').value;renderRtEditor(true)">주 ${k}회</button>`).join('')}</div>
+  <div class="tiny" style="margin:-2px 0 8px">이 루틴만 주 ${f}회 한다고 가정 · 다른 날 하는 부위는 빠져 있어요</div>
+  ${out.slice(0,3).map(x=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:4px 0"><span class="badge b-${x.cls}" style="flex:none">${x.t}</span><div style="min-width:0"><div style="font-size:13px;font-weight:700">${x.m}</div><div class="tiny" style="line-height:1.5">${x.d}</div></div></div>`).join('')||'<div class="tiny">이 루틴 범위 안에서는 과하거나 불균형한 부분이 없어요.</div>'}
+  <details class="fold" style="margin-top:6px"><summary>근육별 예상 세트</summary>${volBarsHTML(d)}</details></div>`;}
+function openRtVolAll(fromEditor){
+  if(fromEditor&&rt){rt.name=$('rtName')?$('rtName').value:rt.name;window._rtBack=1;}else window._rtBack=0;
+  const L=S.routines.filter(r=>(r.items||[]).length);
+  if(!L.length){toast('내 루틴이 없어요');return;}
+  window._rtTimes=window._rtTimes||{};
+  const times=r=>window._rtTimes[r.id]??Math.max(1,(r.days||[]).length||1);
+  const sess=L.flatMap(r=>rtSessions(r,times(r)));const{d,out}=planDiag(sess);
+  openSheet(`<div class="sheet-h"><h2>내 루틴 주간 볼륨</h2><button class="link" onclick="${fromEditor?'renderRtEditor()':'openRoutineSheet()'}">${fromEditor?'편집으로':'닫기'}</button></div>
+  <div class="muted" style="margin:-4px 2px 10px;line-height:1.6">각 루틴을 일주일에 몇 번 하는지 정하면 한 주 전체 볼륨을 미리 계산해요. 요일을 배정한 루틴은 그 횟수가 기본값이에요.</div>
+  <div class="card" style="padding:6px 12px">${L.map(r=>`<div class="li" style="padding:8px 0"><div class="li-main"><div class="li-t">${esc(r.name||'루틴')}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트</div></div>
+    <div class="step"><button onclick="window._rtTimes['${r.id}']=Math.max(0,${times(r)}-1);openRtVolAll(${!!fromEditor})">−</button><b>주 ${times(r)}회</b><button onclick="window._rtTimes['${r.id}']=Math.min(7,${times(r)}+1);openRtVolAll(${!!fromEditor})">+</button></div></div>`).join('')}</div>
+  ${d.total?volBodyHTML(d,out,1):'<div class="muted" style="padding:16px 0;text-align:center">횟수를 1회 이상으로 정해 주세요.</div>'}${VOL_REF}`);
+}
+function openProgVol(id,w){
+  const p=progById(id);if(!p)return;
+  const sess=p.days.map(dd=>progItems(p,dd,w)).filter(its=>its.length).map(its=>its.map(it=>({name:it.n,sets:itemSets(it,w).map(x=>({w:num(x.w)||0,r:num(String(x.r).match(/\d+/)?.[0])||0}))})));
+  const{d,out}=planDiag(sess);
+  openSheet(`<div class="sheet-h"><h2>${esc(p.name)} ${w}주차 볼륨</h2><button class="link" onclick="openProgram('${id}','day',${w})">돌아가기</button></div>
+  <div class="muted" style="margin:-4px 2px 10px">계획대로 ${sess.length}일 모두 했을 때 기준</div>
+  ${d.total?volBodyHTML(d,out,1):'<div class="muted" style="padding:16px 0;text-align:center">근력 운동 계획이 없는 주차예요.</div>'}${VOL_REF}`);
+}
+function openVolAnalysis(off=0){
+  const {d,out,pv}=volDiag(off),from=md(daysAgo(7*(off+1)-1)),to=md(daysAgo(7*off));
+  openSheet(`<div class="sheet-h"><h2>주간 볼륨 분석</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="card-h" style="margin:-4px 0 12px"><button class="btn ghost sm" onclick="openVolAnalysis(${off+1})">‹ 이전</button><div style="text-align:center"><b>${from} ~ ${to}</b><div class="tiny">근력 ${d.total}세트 · 운동 ${d.logs.length}회${pv.total?` · 그 전 7일 ${pv.total}세트`:''}</div></div><button class="btn ghost sm" ${off?'':'disabled'} onclick="openVolAnalysis(${Math.max(0,off-1)})">다음 ›</button></div>
+  ${!d.total?`<div class="muted" style="padding:20px 0;text-align:center">이 기간에 근력 운동 기록이 없어요.</div>`:volBodyHTML(d,out,0)}${VOL_REF}`);
 }
 
 /* ══════════════════════ 운동 기록 (진행 중 세션) ══════════════════════ */
@@ -1463,7 +1500,7 @@ const PRESETS_RAW=[
   {cat:'hybrid',name:'하이브리드 E · 롱런',exs:['롱런 1×3600']},
 ];
 const RS_CAT={all:'전체',nnm:'남니콜먼 근비대',nns:'남니콜먼 스트렝스',basic:'기본',female:'여성',hybrid:'하이브리드'};let rsCat='all';
-function parseLine(s){const m=s.match(/^(.*?)\s*(\d+)\s*[×xX*]\s*(\d+)/);if(!m)return{name:s.replace(/\(.*?\)/g,'').trim(),n:3,r:10};return{name:m[1].replace(/\(.*?\)/g,'').trim(),n:Math.min(10,+m[2]),r:+m[3]};}
+function parseLine(s){s=String(s??'');const m=s.match(/^(.*?)\s*(\d+)\s*[×xX*]\s*(\d+)/);if(!m)return{name:s.replace(/\(.*?\)/g,'').trim(),n:3,r:10};return{name:m[1].replace(/\(.*?\)/g,'').trim(),n:Math.min(10,+m[2]),r:+m[3]};}
 function normRoutine(r){if(Array.isArray(r.items))return r;return{id:r.id||uid('rt'),cat:r.cat,name:r.name||'루틴',items:(r.exs||[]).map(l=>{const t=parseLine(l);return{name:t.name,sets:t.n,reps:t.r,w:''};})};}
 const PRESETS=PRESETS_RAW.map(normRoutine);
 function rtSummary(r){const pc={};let n=0;r.items.forEach(it=>{n+=it.sets;const p=partOf(it.name);if(p)pc[p]=(pc[p]||0)+it.sets;});return{n,parts:Object.entries(pc).sort((a,b)=>b[1]-a[1]).map(([p,c])=>`${PART_L[p]} ${c}`).join(' · ')};}
@@ -1479,7 +1516,7 @@ function openRoutineSheet(view){
   openSheet(`<div class="sheet-h"><h2>루틴</h2><button class="link" onclick="closeSheet()">닫기</button></div>${seg}
   <div class="row-btns" style="margin-bottom:6px"><button class="btn" onclick="openRtEditor(-1)">+ 새 루틴 만들기</button></div>
   ${draft.exs.length?`<button class="btn ghost" style="margin-bottom:6px" onclick="routineFromDraft(draft)">지금 입력 중인 운동을 루틴으로</button>`:''}
-  <div class="sec">내 루틴</div>${S.routines.length?S.routines.map((r,i)=>card(r,'mine',i)).join(''):'<div class="card empty">추천 루틴을 복사하거나 새로 만들어 보세요</div>'}
+  <div class="sec">내 루틴 ${S.routines.length?`<button class="link" style="float:right;font-size:12.5px" onclick="openRtVolAll()">주간 볼륨 미리보기</button>`:''}</div>${S.routines.length?S.routines.map((r,i)=>card(r,'mine',i)).join(''):'<div class="card empty">추천 루틴을 복사하거나 새로 만들어 보세요</div>'}
   <div class="sec">추천 루틴</div><div class="chips" style="margin:0 0 10px">${Object.entries(RS_CAT).map(([k,l])=>`<button class="chip ${rsCat===k?'on':''}" onclick="rsCat='${k}';openRoutineSheet();setTimeout(()=>$('rsP').scrollIntoView({block:'start'}),0)">${l}</button>`).join('')}</div>
   <div id="rsP">${['nnm','nns'].includes(rsCat)?`<button class="btn sub" style="margin-bottom:8px" onclick="presetsToRoutines('${rsCat}')">요일별로 한 번에 내 루틴에 추가</button>`:''}${PRESETS.map((r,i)=>[r,i]).filter(([r])=>r.cat!=='hyrox'&&(rsCat==='all'||r.cat===rsCat)).sort((a,b)=>rsCat==='all'?0:((a[0].days||[9])[0]-tdw+7)%7-((b[0].days||[9])[0]-tdw+7)%7).map(([r,i])=>card(r,'preset',i)).join('')}</div>`);
 }
@@ -1509,7 +1546,7 @@ function routineFromDraft(d){
 
 /* 루틴 편집기 */
 let rt=null,rtIdx=-1;
-function openRtEditor(i){rtIdx=i;rt=i>=0?structuredClone(S.routines[i]):{id:uid('rt'),name:'',items:[]};renderRtEditor();}
+function openRtEditor(i){window._rtFreq=0;rtIdx=i;rt=i>=0?structuredClone(S.routines[i]):{id:uid('rt'),name:'',items:[]};renderRtEditor();}
 function renderRtEditor(keep){
   const s=rtSummary(rt),sc=$('sheet').scrollTop;
   const step=(i,k,d,v)=>`<div class="step"><button onclick="rtStep(${i},'${k}',-${d})">−</button><b>${v}</b><button onclick="rtStep(${i},'${k}',${d})">+</button></div>`;
@@ -1522,6 +1559,7 @@ function renderRtEditor(keep){
     <div class="g3" style="align-items:end"><div><div class="lbl" style="text-align:center">세트</div>${step(i,'sets',1,it.sets)}</div><div><div class="lbl" style="text-align:center">${isTimed(it.name)?'시간':'횟수'}</div>${step(i,'reps',isTimed(it.name)?(it.reps>=120?60:15):1,isTimed(it.name)?fmtT(it.reps):it.reps)}</div>
     <div><div class="lbl" style="text-align:center">목표 kg</div><input class="inp" inputmode="decimal" style="text-align:center;padding:9px 4px" placeholder="자동" value="${it.w}" oninput="rt.items[${i}].w=this.value"></div></div></div>`).join('')||'<div class="card empty">종목을 추가하세요</div>'}
   <button class="btn ghost" style="margin-bottom:12px" onclick="rt.name=$('rtName').value;openPicker('routine')">+ 종목 추가</button>
+  ${rtVolHTML()}
   <div class="tiny" style="margin:0 4px 12px">목표 kg를 비우면 시작할 때 지난 기록이나 1RM 기준으로 자동 채워집니다.</div>
   <div class="row-btns">${rtIdx>=0?`<button class="btn danger" onclick="confirmSheet('이 루틴을 삭제할까요?',()=>{S.routines.splice(${rtIdx},1);save();openRoutineSheet();toast('삭제됨');},'삭제')">삭제</button>`:''}<button class="btn" onclick="saveRt()">저장</button></div>`);
   if(keep)$('sheet').scrollTop=sc;
@@ -2282,7 +2320,21 @@ function sanitizeData(d){
   const walk=(v,depth)=>{if(depth>8)return null;if(typeof v==='string')return v.length>500?v.slice(0,500):v;
     if(Array.isArray(v))return v.slice(0,50000).map(x=>walk(x,depth+1));
     if(v&&typeof v==='object'){fixId(v);for(const k of Object.keys(v)){if(k==='__proto__'||k==='constructor'||k==='prototype'){delete v[k];continue;}v[k]=walk(v[k],depth+1);}}return v;};
-  walk(d,0);if(d.prog&&!progById(d.prog.id))d.prog=null;return d;
+  walk(d,0);if(d.prog&&!progById(d.prog.id))d.prog=null;
+  /* v7.8 구조 검증: 화면에서 함수 인자로 쓰이는 값(날짜·종류)은 정해진 형식만 허용, 숫자는 숫자로 */
+  const DT=/^\d{4}-\d\d-\d\d$/,arr=k=>Array.isArray(d[k])?d[k]:(d[k]=undefined,[]),N=v=>{const x=Number(v);return isFinite(x)?x:0;},Sx=v=>typeof v==='string'?v:v==null?'':String(v).slice(0,200);
+  const numF=(o,ks)=>ks.forEach(k=>{if(k in o&&o[k]!==''&&o[k]!=null)o[k]=N(o[k]);});
+  if(d.logs)d.logs=arr('logs').filter(l=>l&&DT.test(l.date)).map(l=>{l.memo=Sx(l.memo);l.exs=(Array.isArray(l.exs)?l.exs:[]).filter(e=>e&&typeof e==='object').map(e=>{e.name=Sx(e.name);e.sets=(Array.isArray(e.sets)?e.sets:[]).filter(x=>x&&typeof x==='object').map(x=>{numF(x,['w','r','rir','t']);return x;});return e;});return l;});
+  if(d.bw)d.bw=arr('bw').filter(e=>e&&DT.test(e.date)).map(e=>{Object.keys(e).forEach(k=>{if(k!=='date'&&k!=='memo'&&k!=='src')e[k]=N(e[k]);});if('memo'in e)e.memo=Sx(e.memo);return e;});
+  if(d.runs)d.runs=arr('runs').filter(r=>r&&DT.test(r.date)).map(r=>{if(!(r.type in RT_L))r.type='easy';numF(r,['km','min','hr','cad','elev']);r.memo=Sx(r.memo);return r;});
+  if(d.food)d.food=arr('food').filter(f=>f&&DT.test(f.date)).map(f=>{if(!MEALS.some(m=>m[0]===f.meal))f.meal='s';f.name=Sx(f.name);numF(f,['kcal','p','c','f','g','qty']);return f;});
+  if(d.wods)d.wods=arr('wods').filter(r=>r&&DT.test(r.date)&&SAFE_ID.test(String(r.wid||''))).map(r=>{if(r.type&&!(r.type in WOD_T))r.type='time';numF(r,['time','rounds','reps']);r.name=Sx(r.name);r.memo=Sx(r.memo);return r;});
+  if(d.myWods)d.myWods=arr('myWods').filter(w=>w&&typeof w==='object').map(w=>{if(!(w.type in WOD_T))w.type='time';numF(w,['dur','cap','int','work','rest','tr','rounds','inc']);w.name=Sx(w.name);w.desc=Sx(w.desc);w.grp='mine';
+    w.mv=(Array.isArray(w.mv)?w.mv:[]).filter(Array.isArray).map(m=>[Sx(m[0]),(Array.isArray(m[1])?m[1]:[m[1]]).map(N),(Array.isArray(m[2])?m[2]:[0,0]).slice(0,2).map(N),['','m','cal','s'].includes(m[3])?m[3]:'']);return w;});
+  if(d.routines)d.routines=arr('routines').filter(r=>r&&typeof r==='object').map(r=>{r.name=Sx(r.name);if(Array.isArray(r.items))r.items=r.items.filter(x=>x&&typeof x==='object').map(x=>{x.name=Sx(x.name);numF(x,['sets','reps']);return x;});if(Array.isArray(r.exs))r.exs=r.exs.map(Sx);return r;});
+  if(d.customEx)d.customEx=arr('customEx').filter(x=>x&&typeof x.name==='string').map(x=>{if(!PART6.some(p=>p[0]===x.part))x.part='chest';return x;});
+  if(d.profile&&typeof d.profile==='object'){const pf=d.profile;numF(pf,['height','weight','age','freq']);if(pf.rm&&typeof pf.rm==='object')numF(pf.rm,Object.keys(pf.rm));pf.name=Sx(pf.name);}
+  return d;
 }
 function mergeIn(d){
   sanitizeData(d);
@@ -2328,7 +2380,7 @@ async function fbInit(){
     fb.ready=true;return true;
   }catch(e){fb.err='Firebase에 연결하지 못했습니다. 인터넷을 확인하세요.';acctRefresh();return false;}
 }
-function authMsg(e){const c=e&&e.code||'';return({'auth/popup-closed-by-user':'로그인 창이 닫혔습니다.','auth/popup-blocked':'팝업이 차단되었습니다.','auth/invalid-credential':'이메일 또는 비밀번호가 맞지 않습니다.','auth/wrong-password':'비밀번호가 맞지 않습니다.','auth/user-not-found':'가입된 이메일이 아닙니다. 가입하기를 누르세요.','auth/email-already-in-use':'이미 가입된 이메일입니다. 로그인하세요.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/invalid-email':'이메일 형식이 맞지 않습니다.','auth/unauthorized-domain':'이 주소가 Firebase 승인 도메인에 없습니다. 콘솔에서 추가하세요.','auth/network-request-failed':'네트워크 오류입니다.'}[c])||(e&&e.message)||'오류가 발생했습니다.';}
+function authMsg(e){const c=e&&e.code||'';return({'auth/popup-closed-by-user':'로그인 창이 닫혔습니다.','auth/popup-blocked':'팝업이 차단되었습니다.','auth/invalid-credential':'이메일 또는 비밀번호가 맞지 않습니다.','auth/wrong-password':'비밀번호가 맞지 않습니다.','auth/user-not-found':'가입된 이메일이 아닙니다. 가입하기를 누르세요.','auth/email-already-in-use':'이미 가입된 이메일입니다. 로그인하세요.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/invalid-email':'이메일 형식이 맞지 않습니다.','auth/unauthorized-domain':'이 주소가 Firebase 승인 도메인에 없습니다. 콘솔에서 추가하세요.','auth/network-request-failed':'네트워크 오류입니다.','auth/operation-not-allowed':'이메일 로그인이 꺼져 있어요. Google 계정으로 로그인해 주세요.','auth/admin-restricted-operation':'새 가입은 Google 계정으로만 할 수 있어요.'}[c])||(e&&e.message)||'오류가 발생했습니다.';}
 async function loginGoogle(){
   if(!(await fbInit()))return;fb.err='';const p=new firebase.auth.GoogleAuthProvider();
   try{if(isStandalone()&&isIOS())await fb.auth.signInWithRedirect(p);else await fb.auth.signInWithPopup(p);}
@@ -2461,7 +2513,7 @@ function acctBody(){
   <div class="card"><div class="card-t" style="margin-bottom:10px">이메일로 로그인</div>
     <div class="field"><input class="inp" id="acEm" type="email" placeholder="이메일" autocomplete="username"></div>
     <div class="field"><input class="inp" id="acPw" type="password" placeholder="비밀번호 (8자 이상)" autocomplete="current-password"></div>
-    <div class="row-btns"><button class="btn sub" onclick="loginEmail(false)">로그인</button><button class="btn ghost" onclick="loginEmail(true)">가입하기</button></div>
+    <button class="btn sub" onclick="loginEmail(false)">이메일로 로그인</button><div class="tiny" style="margin-top:6px">이메일 로그인은 기존 가입자용이에요. 새로 시작한다면 Google 계정을 이용해 주세요.</div>
     <div class="tiny" style="margin-top:8px">홈 화면에 설치한 아이폰 앱에서는 이메일 로그인이 더 안정적입니다.</div></div>`;
 }
 function openAccount(){openSheet(`<div class="sheet-h"><h2>계정 · 클라우드</h2><button class="link" onclick="closeSheet()">닫기</button></div><div id="acBody">${acctBody()}</div>`);fbInit();}
@@ -2710,7 +2762,7 @@ function openProgram(id,tab,w){
   h+=`<div class="seg"><button class="${pv.tab==='day'?'on':''}" onclick="openProgram('${id}','day',${pv.w})">요일별</button><button class="${pv.tab==='week'?'on':''}" onclick="openProgram('${id}','week',${pv.w})">주차별</button><button class="${pv.tab==='how'?'on':''}" onclick="openProgram('${id}','how',${pv.w})">방법</button></div>`;
   if(pv.tab==='day'){
     h+=`<div class="chips scroll" style="flex-wrap:nowrap;overflow-x:auto;margin:0 0 8px;padding-bottom:4px">${Array.from({length:p.weeks},(_,i)=>`<button class="chip ${pv.w===i+1?'on':''}" onclick="openProgram('${id}','day',${i+1})">${i+1}주${act&&progWeek()===i+1?' ·지금':''}</button>`).join('')}</div>
-    <div class="tiny" style="margin:0 4px 6px">${esc(p.weekNote?p.weekNote(pv.w):'')}</div><div class="tiny" style="margin:0 4px 10px">오늘 요일부터 순서대로 표시합니다.</div>`;
+    <div class="tiny" style="margin:0 4px 6px">${esc(p.weekNote?p.weekNote(pv.w):'')}</div><div class="tiny" style="margin:0 4px 10px">오늘 요일부터 순서대로 표시합니다. <button class="link" style="font-size:12px" onclick="openProgVol('${id}',${pv.w})">이 주차 볼륨 분석</button></div>`;
     const td=new Date().getDay(),isNow=!act||progWeek()===pv.w;
     p.days.map((d,di)=>di).sort((a,b)=>(p.sched[a]-td+7)%7-(p.sched[b]-td+7)%7).forEach(di=>{const d=p.days[di],its=progItems(p,d,pv.w),done=progDone(id,pv.w,di),tod=isNow&&p.sched[di]===td;
       h+=`<div class="card" style="margin-bottom:8px;${tod?'box-shadow:0 0 0 2px var(--pri) inset':''}"><div class="card-h"><div class="card-t">${esc(dayT(d,pv.w))} ${tod?'<span class="badge b-pri">오늘</span>':''}${done?' <span class="badge b-good">완료</span>':''}</div>${its.length?`<button class="btn sm ${tod?'':'ghost'}" onclick="startProgDay('${id}',${di},${pv.w})">시작</button>`:''}</div>
@@ -3164,9 +3216,10 @@ function exLine(e){
   return[e.name,same?`${ss.length}세트 × ${rr(ss[0])}${num(ss[0].w)?' · '+num(ss[0].w)+'kg':''}`:`${ss.length}세트 · 최고 ${num(top.w)?num(top.w)+'kg × ':''}${rr(top)}`];
 }
 async function makeShareCard(log,scale=1,mode){
+  try{if(document.fonts)await Promise.race([Promise.all(['500','700','800','900'].map(w=>document.fonts.load(`${w} 40px "Pretendard Variable"`,'오운완 스쿼트 0123456789kg×회세트분'))),new Promise(r=>setTimeout(r,1500))]);}catch(e){}
   const o=cardOpt(),[W0,H0]=CARD_SIZES[o.size]||CARD_SIZES.story,W=Math.round(W0*scale),H=Math.round(H0*scale),k=scale;
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
-  const FF='-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
+  const FF='"Pretendard Variable",Pretendard,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif';
   const ph=window._cardPhotoFor===log.id?window._cardPhoto:null;
   if(mode!=='overlay'){
   if(ph){const r=phRect(ph.width,ph.height,W,H,o);g.drawImage(ph,r.x,r.y,r.w,r.h);
@@ -3597,7 +3650,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='7.7';
+const APP_VER='7.10';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
