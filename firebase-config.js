@@ -9,5 +9,6 @@ window.OHUN_FIREBASE = {
   projectId: "ohun-55a6a",
   storageBucket: "ohun-55a6a.firebasestorage.app",
   messagingSenderId: "934289966436",
-  appId: "1:934289966436:web:74a708384702d9d72ca671"
+  appId: "1:934289966436:web:74a708384702d9d72ca671",
+  googleClientId: "934289966436-m03du5eoc3lklaao4nhj38gt22pl9gk6.apps.googleusercontent.com"
 };
