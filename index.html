@@ -237,12 +237,21 @@ body.wmode .rest,body.wmode .tabbar{display:none!important;}
 .ib-v b{font-size:15px;color:var(--text);margin-right:1px;}
 .ib-v span{display:block;font-size:10.5px;font-weight:700;}
 
-.splash{position:fixed;inset:0;z-index:100;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .4s;}
-.splash b{display:block;font-size:44px;font-weight:900;letter-spacing:-1px;}
-.splash-logo{width:96px;height:96px;display:block;margin:0 auto 14px;}
+.splash{position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#3ee4fd 0%,#0c90fe 42%,#0262fd 100%);color:#fff;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .4s;}
+.sp-mark{position:relative;width:min(58vw,250px);aspect-ratio:600/454;margin:0 auto 26px;}
+.sp-mark img{position:absolute;inset:0;width:100%;height:100%;}
+.sp-t{animation:spT .5s cubic-bezier(.2,.9,.3,1.25) both;}
+.sp-d{animation:spD .75s .12s cubic-bezier(.3,1.4,.5,1) both;}
+.sp-s{animation:spS .4s .62s cubic-bezier(.2,.9,.3,1.4) both;transform-origin:72% 45%;}
+.splash span{animation:spF .5s .5s ease both;}
+@keyframes spT{from{opacity:0;transform:scale(.86)}to{opacity:1;transform:none}}
+@keyframes spD{0%{opacity:0;transform:translateY(-28%) rotate(-6deg)}60%{opacity:1;transform:translateY(3%) rotate(1deg)}100%{opacity:1;transform:none}}
+@keyframes spS{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:none}}
+@keyframes spF{from{opacity:0;transform:translateY(6px)}to{opacity:.9;transform:none}}
+@media (prefers-reduced-motion:reduce){.sp-mark img,.splash span{animation:none}}
 .brand{display:inline-flex;align-items:center;gap:9px;}
-.brand i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#3b8cec,#1d5fc0);display:inline-flex;flex:none;}
-.brand i svg{width:100%;height:100%;}
+.brand i{width:30px;height:30px;border-radius:8px;display:inline-flex;flex:none;overflow:hidden;box-shadow:0 1px 3px rgba(10,80,200,.25);}
+.brand i img{width:100%;height:100%;display:block;}
 .splash span{font-size:15px;opacity:.85;}
 .splash.off{opacity:0;pointer-events:none;}
 .top h1#title{letter-spacing:-.5px;}
@@ -407,7 +416,7 @@ details.wod-grp[open]>summary{margin-bottom:6px}
 <nav class="tabbar" id="tabbar"></nav>
 <div class="dim" id="dim" onclick="closeSheet()"></div>
 <div class="sheet" id="sheet"></div>
-<div class="splash" id="splash"><div><svg class="splash-logo" viewBox="88 88 336 336" aria-hidden="true"><path d="M344.9,181.4 A116,116 0 1 1 260.0,140.1" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round"/><circle cx="310.5" cy="153.6" r="19" fill="#ffd34d"/><path d="M200,260 L242,300 L318,216" fill="none" stroke="#fff" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/></svg><b>OH_UN!</b><span>오늘 운동, 완료!</span></div></div>
+<div class="splash" id="splash"><div><div class="sp-mark" role="img" aria-label="오운!"><img class="sp-t" src="icons/sp-text.png" alt=""><img class="sp-d" src="icons/sp-dumb.png" alt=""><img class="sp-s" src="icons/sp-spark.png" alt=""></div><span>오늘 운동, 완료!</span></div></div>
 <div class="toast" id="toast"></div>
 <div class="rest" id="rest"></div>
 <div class="insbar" id="insBar"></div>
@@ -577,7 +586,7 @@ function go(k,fromPop){if(typeof renderInstallBar==='function')setTimeout(render
   if(!fromPop&&k!=='home'&&curTab==='home'){try{history.pushState({tab:1},'');}catch(e){}}
   curTab=k;document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+k));renderTabbar();
   const titles={home:'오운!',log:'운동 기록',hist:'기록',diet:'식단',more:'더보기'};
-  if(k==='home')$('title').innerHTML='<span class="brand"><i><svg viewBox="40 40 432 432">'+LOGO_MARK+'</svg></i>오운!</span>';else $('title').textContent=titles[k];
+  if(k==='home')$('title').innerHTML='<span class="brand"><i><img src="icons/logo-r.png" alt=""></i>오운!</span>';else $('title').textContent=titles[k];
   const d=new Date();$('subtitle').textContent=k==='home'?d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})+' · 오늘 운동, 완료!':'';
   const ta=$('topAction');ta.textContent='';ta.onclick=null;
   if(k==='home'){renderHome();if(!S.profile.weight){ta.textContent='설정';ta.onclick=openOnboarding;}}
@@ -955,6 +964,111 @@ function weekVolHTML(only){
     <i style="position:absolute;top:0;bottom:0;left:${z.t[0]/z.t[2]*100}%;width:2px;background:var(--card)"></i><i style="position:absolute;top:0;bottom:0;left:${z.t[1]/z.t[2]*100}%;width:2px;background:var(--card)"></i></div></div>`;}).join('');
 }
 
+
+/* ══════════════════════ 주간 볼륨 분석 (이론 기반) ══════════════════════
+   근육별 분할 세트: 주동근 1세트, 보조근 0.5세트 (Pelland 외 2024 메타분석의 분할 집계 방식)
+   볼륨 랜드마크: Israetel·Hoffmann (RP, 2019) 주간 세트 MEV·MAV·MRV, 경력에 따라 보정
+   빈도: 근육당 주 2회 이상 권장 (Schoenfeld 외 2016)
+   세션당 한 근육 약 10세트 초과 시 효율 감소 (Schoenfeld·Krieger 계열 연구 해석)
+   반복 범위: 6~30회 근비대 효과 비슷, 근력은 1~5회 비중 필요 (Schoenfeld 외 2017, 2021) */
+const VL={chest:[8,12,20,22],lat:[10,14,22,25],trap:[0,12,20,26],fdelt:[0,6,8,12],sdelt:[8,16,22,26],rdelt:[8,12,18,22],
+  bi:[8,14,20,26],tri:[6,10,14,18],quad:[8,12,18,20],ham:[6,10,16,20],glute:[0,8,20,26],calf:[8,12,16,20],abs:[0,16,20,25]};
+const VL_ORDER=['chest','lat','trap','fdelt','sdelt','rdelt','bi','tri','quad','ham','glute','calf','abs'];
+const VL_K={beginner:0.7,intermediate:1,advanced:1.15};
+const PAT_G={hpush:['bench','incline','dips','pushup','fly'],hpull:['row','seatrow'],vpush:['ohp'],vpull:['vpull','pulldown'],
+  knee:['squat','fsquat','legpress','lunge','legext'],hip:['hinge','rdl','hipthrust','legcurl','swing'],rear:['revfly','facepull']};
+const MUS_EX_HINT={chest:'벤치프레스 · 인클라인 덤벨프레스',lat:'풀업 · 랫풀다운 · 시티드 로우',sdelt:'사이드 레터럴 레이즈',rdelt:'리버스 플라이 · 페이스풀',
+  bi:'바벨컬 · 해머컬',tri:'케이블 푸시다운 · 오버헤드 익스텐션',quad:'스쿼트 · 레그프레스 · 레그 익스텐션',ham:'루마니안 데드리프트 · 레그컬',calf:'스탠딩 카프레이즈',
+  glute:'힙 쓰러스트',abs:'행잉 레그레이즈 · 케이블 크런치',trap:'슈러그',fdelt:'오버헤드 프레스'};
+function vlOf(m){const k=VL_K[S.profile.exp]||1,v=VL[m];return v.map((x,i)=>i===0&&x===0?0:Math.round(x*k));}
+function vlZone(m,n){const [mev,lo,hi,mrv]=vlOf(m);
+  if(n>mrv)return{cls:'bad',l:'과다'};if(n>hi)return{cls:'warn',l:'높음'};if(n>=lo)return{cls:'good',l:'최적'};
+  if(n>=mev&&mev>0)return{cls:'good',l:'유효'};if(mev===0)return{cls:'',l:n?'보조':'-'};return{cls:'pri',l:n?'부족':'없음'};}
+function volWindow(off){const a=daysAgo(7*(off+1)),b=daysAgo(7*off);return S.logs.filter(l=>l.date>a&&l.date<=b);}
+function volData(off=0){
+  const logs=volWindow(off),mus={},days={},sess=[],pat={},reps=[0,0,0,0];let total=0;
+  Object.keys(PAT_G).forEach(k=>pat[k]=0);
+  logs.forEach(l=>{const sm={};l.exs.forEach(e=>{const inf=exInfo(e.name);if(inf.part==='cond'||inf.t)return;
+    const n=e.sets.filter(x=>num(x.r)>0&&x.done!==false).length;if(!n)return;total+=n;
+    inf.prim.forEach(m=>{mus[m]=(mus[m]||0)+n;sm[m]=(sm[m]||0)+n;(days[m]=days[m]||new Set()).add(l.date);});
+    inf.sec.forEach(m=>{mus[m]=(mus[m]||0)+n*0.5;});
+    for(const [g,L] of Object.entries(PAT_G))if(L.includes(inf.pat))pat[g]+=n;
+    e.sets.forEach(x=>{const r=num(x.r);if(!r||x.done===false)return;reps[r<=5?0:r<=12?1:r<=20?2:3]++;});});
+    sess.push({date:l.date,sm});});
+  Object.keys(mus).forEach(k=>mus[k]=Math.round(mus[k]*2)/2);
+  return{logs,mus,days,sess,pat,reps,total};
+}
+function volDiag(off=0){
+  const d=volData(off),pv=volData(off+1),out=[];
+  if(!d.total)return{d,out,pv};
+  const goal=S.profile.goal||'hypertrophy',enough=d.total>=12;
+  VL_ORDER.forEach(m=>{const n=d.mus[m]||0,[mev,lo,hi,mrv]=vlOf(m);
+    if(n>mrv)out.push({p:1,cls:'bad',t:'과다',m:`${MUS_L[m]} ${n}세트`,d:`회복 한계 추정치(MRV ${mrv}세트)를 넘었어요. 다음 주는 ${Math.ceil(n-hi)}세트 정도 줄이거나, 피로가 쌓였다면 디로드를 고려하세요.`});
+    else if(n>hi)out.push({p:4,cls:'warn',t:'높음',m:`${MUS_L[m]} ${n}세트`,d:`최적 범위(${lo}~${hi}) 위쪽이에요. 회복이 잘 되고 기록이 오르면 유지, 관절 통증·정체가 있으면 줄이세요.`});});
+  const ratio=(a,b,la,lb,lo,hi,why)=>{const x=d.pat[a],y=d.pat[b];if(x+y<6)return;
+    const r=y?x/y:99;if(r>hi)out.push({p:2,cls:'warn',t:'불균형',m:`${la} ${x} : ${lb} ${y}`,d:why[0]});else if(r<lo)out.push({p:3,cls:'warn',t:'불균형',m:`${la} ${x} : ${lb} ${y}`,d:why[1]});};
+  ratio('hpush','hpull','수평 밀기','수평 당기기',0.5,1.25,['밀기가 당기기보다 많아요. 어깨 안정성을 위해 당기기를 밀기와 같거나 조금 더 많게(1:1~1:1.5) 맞추는 걸 권장해요. 로우 2~3세트를 추가해 보세요.','당기기가 밀기의 2배 이상이에요. 가슴·삼두 자극이 부족하지 않은지 확인하세요.']);
+  ratio('vpush','vpull','수직 밀기','수직 당기기',0.5,1.25,['머리 위로 미는 양이 당기기보다 많아요. 풀업·랫풀다운을 늘려 균형을 맞추세요.','수직 당기기가 훨씬 많아요. 어깨 프레스가 너무 적지 않은지 보세요.']);
+  ratio('knee','hip','무릎 우세(스쿼트류)','고관절 우세(힌지·레그컬)',0.5,2,['스쿼트류에 비해 햄스트링·둔근 운동이 적어요. 대퇴사두:햄스트링 불균형은 햄스트링 부상 위험과 연관돼요. RDL·레그컬을 추가하세요.','힌지 위주로 쏠려 있어요. 스쿼트·레그프레스 같은 무릎 우세 운동도 챙기세요.']);
+  const push=d.pat.hpush+d.pat.vpush;
+  if(push>=8&&d.pat.rear<push/4)out.push({p:3,cls:'warn',t:'불균형',m:`밀기 ${push}세트 · 후면 어깨 ${d.pat.rear}세트`,d:'미는 운동이 많은데 후면 삼각근·회전근 운동이 적어요. 페이스풀·리버스 플라이를 주 4~6세트 넣으면 어깨 균형에 도움이 돼요.'});
+  if(enough)VL_ORDER.forEach(m=>{const n=d.mus[m]||0,[mev]=vlOf(m);
+    if(mev>0&&n<mev)out.push({p:5,cls:'pri',t:'부족',m:`${MUS_L[m]} ${n}세트`,d:`최소 유효 볼륨(MEV ${mev}세트)보다 적어 근성장 자극이 약해요. ${mev-n<=3?'1~2세트':'1~2종목'} 추가 추천: ${MUS_EX_HINT[m]||''}.`});});
+  VL_ORDER.forEach(m=>{const n=d.mus[m]||0,[mev]=vlOf(m),dd=d.days[m]?d.days[m].size:0;
+    if(mev>0&&n>=mev&&dd===1)out.push({p:6,cls:'pri',t:'빈도',m:`${MUS_L[m]} 주 1회`,d:`같은 ${Math.round(n)}세트라도 주 2회로 나누면 근성장에 더 유리하다는 연구가 많아요(주 2회 이상 권장).`});});
+  const over=[];d.sess.forEach(x=>Object.entries(x.sm).forEach(([m,n])=>{if(n>10&&VL[m])over.push(`${md(x.date)} ${MUS_L[m]} ${n}세트`);}));
+  if(over.length)out.push({p:4,cls:'warn',t:'세션 과부하',m:over.slice(0,2).join(' · '),d:'한 번에 한 근육을 10세트 넘게 하면 뒤쪽 세트는 효과가 크게 줄어요. 남는 세트는 다른 날로 옮기세요.'});
+  const R=d.reps,rt=R.reduce((a,b)=>a+b,0);
+  if(rt>=12){const lo=R[0]/rt,mid=(R[1]+R[2])/rt;
+    if(goal==='strength'&&lo<0.25)out.push({p:5,cls:'pri',t:'반복 범위',m:`1~5회 세트 ${Math.round(lo*100)}%`,d:'근력 목표인데 저반복(1~5회) 세트가 적어요. 근력은 무거운 무게 연습량이 중요해요. 메인 종목 2~3세트를 3~5회로 바꿔 보세요.'});
+    if((goal==='hypertrophy'||goal==='maintenance')&&R[3]/rt>0.4)out.push({p:6,cls:'pri',t:'반복 범위',m:`21회 이상 세트 ${Math.round(R[3]/rt*100)}%`,d:'고반복 세트도 실패 근처까지 하면 근성장 효과는 비슷하지만, 피로가 크고 실패 지점 판단이 어려워요. 6~15회 위주가 효율적이에요.'});}
+  if(pv.total>=10){const ch=(d.total-pv.total)/pv.total;
+    if(ch>0.3)out.push({p:3,cls:'warn',t:'급증',m:`총 ${d.total}세트 (지난주 ${pv.total} · +${Math.round(ch*100)}%)`,d:'한 주에 볼륨을 30% 넘게 늘리면 회복이 따라가지 못하기 쉬워요. 주당 10~20% 이내, 근육당 1~2세트씩 늘리는 게 안전해요.'});}
+  out.sort((a,b)=>a.p-b.p);return{d,out,pv};
+}
+function volBarsHTML(d){
+  return VL_ORDER.map(m=>{const n=d.mus[m]||0,[mev,lo,hi,mrv]=vlOf(m),z=vlZone(m,n),mx=Math.max(mrv,n)*1.05,P=x=>Math.min(100,x/mx*100),dd=d.days[m]?d.days[m].size:0;
+    return`<div class="pb"><div class="pb-l"><span>${MUS_L[m]} ${z.cls?`<span class="badge b-${z.cls}" style="padding:1px 7px;font-size:11px">${z.l}</span>`:`<span class="tiny">${z.l}</span>`}</span><span>${n}세트 <span class="tiny">${dd?`주 ${dd}회 · `:''}최적 ${lo}~${hi}</span></span></div>
+    <div class="pb-bar" style="position:relative"><span style="position:absolute;top:0;bottom:0;left:${P(lo)}%;width:${P(hi)-P(lo)}%;background:var(--good);opacity:.16"></span><div class="pb-fill" style="width:${P(n)}%;background:var(--${z.cls==='pri'||!z.cls?'text3':z.cls})"></div>
+    ${mev?`<i style="position:absolute;top:0;bottom:0;left:${P(mev)}%;width:2px;background:var(--card)"></i>`:''}<i style="position:absolute;top:-2px;bottom:-2px;left:${P(mrv)}%;width:2px;background:var(--bad);opacity:.6"></i></div></div>`;}).join('');
+}
+function volCardHTML(){
+  const {d,out,pv}=volDiag(0);
+  if(!d.total)return`<div class="card"><div class="card-t">주간 볼륨 분석</div><div class="muted" style="margin-top:6px">최근 7일 근력 운동 기록이 쌓이면 부위별 부족·과다를 분석해 드려요.</div></div>`;
+  const ch=pv.total?Math.round((d.total-pv.total)/pv.total*100):null,top=out.slice(0,3);
+  return`<div class="card"><div class="card-h"><div class="card-t">주간 볼륨 분석</div><button class="link" onclick="openVolAnalysis(0)">자세히</button></div>
+  <div class="tiny" style="margin:-4px 0 10px">최근 7일 · 근력 ${d.total}세트${ch!=null?` · 지난주 대비 ${ch>0?'+':''}${ch}%`:''}</div>
+  ${top.length?top.map(x=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0"><span class="badge b-${x.cls}" style="flex:none">${x.t}</span><div style="min-width:0"><div style="font-size:13.5px;font-weight:700">${x.m}</div><div class="tiny" style="line-height:1.5">${x.d}</div></div></div>`).join('')+(out.length>3?`<button class="link" style="font-size:12.5px;margin-top:4px" onclick="openVolAnalysis(0)">진단 ${out.length-3}개 더 보기</button>`:''):`<div class="note n-good" style="margin:0"><b>균형이 잘 잡혀 있어요</b>부족하거나 과한 근육 없이 권장 범위 안이에요.</div>`}
+  <details class="fold" style="margin-top:8px"><summary>근육별 세트</summary>${volBarsHTML(d)}<div class="tiny" style="margin-top:4px">초록 띠: 최적(MAV) · 흰 선: 최소 유효(MEV) · 빨간 선: 회복 한계(MRV)</div></details></div>`;
+}
+function openVolAnalysis(off=0){
+  const {d,out,pv}=volDiag(off),a=daysAgo(7*(off+1)+-1+1),b=daysAgo(7*off);
+  const from=md(daysAgo(7*(off+1)-1)),to=md(b);
+  const pr=(k,l)=>`<tr><td>${l}</td><td style="text-align:right">${d.pat[k]}세트</td></tr>`;
+  const R=d.reps,rt=R.reduce((x,y)=>x+y,0)||1;
+  openSheet(`<div class="sheet-h"><h2>주간 볼륨 분석</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="card-h" style="margin:-4px 0 12px"><button class="btn ghost sm" onclick="openVolAnalysis(${off+1})">‹ 이전</button><div style="text-align:center"><b>${from} ~ ${to}</b><div class="tiny">근력 ${d.total}세트 · 운동 ${d.logs.length}회${pv.total?` · 그 전 7일 ${pv.total}세트`:''}</div></div><button class="btn ghost sm" ${off?'':'disabled'} onclick="openVolAnalysis(${Math.max(0,off-1)})">다음 ›</button></div>
+  ${!d.total?`<div class="muted" style="padding:20px 0;text-align:center">이 기간에 근력 운동 기록이 없어요.</div>`:`
+  <div class="sec">진단</div>
+  ${out.length?`<div class="card">${out.map(x=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0"><span class="badge b-${x.cls}" style="flex:none">${x.t}</span><div style="min-width:0"><div style="font-size:13.5px;font-weight:700">${x.m}</div><div class="tiny" style="line-height:1.5">${x.d}</div></div></div>`).join('')}</div>`:`<div class="note n-good"><b>균형이 잘 잡혀 있어요</b>권장 범위를 벗어난 근육이나 불균형이 없어요.</div>`}
+  <div class="sec">근육별 세트 <span class="tiny">주동근 1 · 보조근 0.5</span></div>
+  <div class="card">${volBarsHTML(d)}<div class="tiny" style="margin-top:4px">초록 띠: 최적(MAV) · 흰 선: 최소 유효(MEV) · 빨간 선: 회복 한계(MRV) · 경력 ${EXP_L[S.profile.exp]||''} 기준</div></div>
+  <div class="sec">움직임 균형</div>
+  <div class="card"><table class="tbl" style="width:100%">${pr('hpush','수평 밀기 (벤치·딥스·플라이)')}${pr('hpull','수평 당기기 (로우)')}${pr('vpush','수직 밀기 (오버헤드 프레스)')}${pr('vpull','수직 당기기 (풀업·랫풀다운)')}${pr('knee','무릎 우세 (스쿼트·레그프레스·런지)')}${pr('hip','고관절 우세 (힌지·힙쓰러스트·레그컬)')}${pr('rear','후면 어깨 (페이스풀·리버스 플라이)')}</table>
+  <div class="tiny" style="margin-top:6px">권장: 밀기 : 당기기 = 1 : 1~1.5 · 무릎 : 고관절 = 0.5~2 : 1</div></div>
+  <div class="sec">반복 범위</div>
+  <div class="card">${[['1~5회',0],['6~12회',1],['13~20회',2],['21회 이상',3]].map(([l,i])=>`<div class="pb"><div class="pb-l"><span>${l}</span><span>${R[i]}세트 <span class="tiny">${Math.round(R[i]/rt*100)}%</span></span></div><div class="pb-bar"><div class="pb-fill" style="width:${R[i]/rt*100}%"></div></div></div>`).join('')}
+  <div class="tiny">목표: ${GOAL_L[S.profile.goal]||'-'} · 근비대는 6~30회 모두 효과가 비슷(실패 근처일 때), 근력은 1~5회 비중이 중요</div></div>`}
+  <details class="fold" style="margin-top:12px"><summary>분석 기준 · 근거</summary><div class="tiny" style="line-height:1.7">
+  · 세트 집계: 종목의 주동근 1세트, 보조근 0.5세트로 계산 (분할 집계, Pelland 외 2024)<br>
+  · 볼륨 범위: MEV(최소 유효)·MAV(최적)·MRV(회복 한계) 주간 세트 추정치 (Israetel·Hoffmann, RP 2019). 경력별로 초보 ×0.7, 고급 ×1.15 보정<br>
+  · 빈도: 근육별 주 2회 이상이 1회보다 유리 (Schoenfeld 외 2016)<br>
+  · 세션당 한 근육 10세트 초과 시 추가 효과 감소 (세션 볼륨 연구 해석)<br>
+  · 반복 범위: 근비대는 저·고반복 비슷, 근력은 고중량 비중 필요 (Schoenfeld 외 2017, 2021)<br>
+  · 주간 증가: 한 번에 10~20% 이내 권장<br>
+  모두 평균적인 추정치라 개인차가 커요. 회복 상태·통증·기록 변화와 함께 판단하세요.</div></details>`);
+}
+
 /* ══════════════════════ 운동 기록 (진행 중 세션) ══════════════════════ */
 const DKEY='rts_app_v4_draft';
 let draft;
@@ -1236,7 +1350,7 @@ function showResult(log){
   <button class="btn" style="margin-bottom:12px" onclick="openShareCard('${log.id}')">오운완 공유 카드 만들기</button>
   ${adj.length?`<div class="card"><div class="card-t" style="margin-bottom:6px">다음 주 자동 조정</div>${adj.map(([n,t,c])=>`<div style="padding:5px 0;display:flex;gap:8px;align-items:flex-start"><span class="badge b-${c}" style="flex:none">${esc(n)}</span><span class="tiny" style="color:var(--text)">${esc(t)}</span></div>`).join('')}</div>`:''}
   <div class="card"><div class="stats"><div class="stat"><b>${fmt(log.vol)}</b><span>총 볼륨 kg</span></div><div class="stat"><b>${log.sets}</b><span>세트</span></div><div class="stat"><b>${log.dur||log.exs.length}</b><span>${log.dur?'운동 시간(분)':'종목'}</span></div></div></div>
-  ${log.parts.length?`<div class="card"><div class="card-h"><div class="card-t">이번 주 누적 세트</div><span class="card-s">최근 7일 · 오늘 포함</span></div>${weekVolHTML(log.parts)}<div class="tiny">세로선: 최소 유효(MEV) · 최적 상한(MAV) / 막대 끝: 회복 한계(MRV)</div></div>`:''}
+  ${log.parts.length?`<div class="card"><div class="card-h"><div class="card-t">이번 주 누적 세트</div><span class="card-s">최근 7일 · 오늘 포함</span></div>${weekVolHTML(log.parts)}<div class="tiny">세로선: 최소 유효(MEV) · 최적 상한(MAV) / 막대 끝: 회복 한계(MRV)</div><button class="btn sub" style="margin-top:10px" onclick="openVolAnalysis(0)">근육별 부족 · 과다 자세히 분석</button></div>`:''}
   <div class="card"><div class="card-t" style="margin-bottom:10px">종목별 볼륨</div>${log.exs.map(e=>{const v=e.sets.reduce((s,x)=>s+x.w*x.r,0);return`<div class="pb"><div class="pb-l"><span>${esc(e.name)} <span class="tiny">${e.sets.length}세트</span></span><span>${fmt(v)} kg</span></div><div class="pb-bar"><div class="pb-fill" style="width:${v/max*100}%"></div></div></div>`;}).join('')}</div>
   ${prs.length?`<div class="card"><div class="card-t" style="margin-bottom:6px">추정 1RM</div>${prs.map(r=>`<div class="li" style="padding:10px 0"><div class="li-main"><div class="li-t">${r.n}</div><div class="li-s">현재 프로필 ${r.cur||'미등록'} kg</div></div><div class="li-v">${r.est} kg ${r.est>r.cur?'<span class="badge b-good">PR</span>':''}</div></div>`).join('')}
   ${prs.some(r=>r.est>r.cur)?`<button class="btn sub" style="margin-top:10px" onclick="applyPRs()">프로필 1RM 업데이트</button>`:''}</div>`:''}
@@ -1442,8 +1556,8 @@ function hwSum(){
   $('hwBody').innerHTML=`
   <div class="card"><div class="card-h"><div class="card-t">이번 주</div><button class="link" onclick="openWeekReport(-1)">지난 주 리포트</button></div>
     <div class="stats"><div class="stat"><b>${wk.length}</b><span>운동</span></div><div class="stat"><b>${fmt(wv)}</b><span>볼륨 kg</span></div><div class="stat"><b>${wsets}</b><span>세트</span></div></div>
-    <details class="fold"><summary>부위별 세트 <span class="tiny">적정 ${cnt('good')} · 부족 ${cnt('pri')} · 많음 ${cnt('warn')+cnt('bad')}</span></summary>${weekVolHTML()}<div class="tiny">경력(${EXP_L[S.profile.exp]}) 기준 주간 권장 범위 · Israetel 2019</div></details>
   </div>
+  ${volCardHTML()}
   ${dl&&dl.cls!=='good'?`<div class="note n-${dl.cls}" style="margin:0 0 12px"><b>디로드 체크 · ${dl.l}</b>피로 지수 ${dl.score} · 연속 ${dl.weeks}주. ${dl.d}</div>`:''}
   ${pl.length?`<div class="note n-warn" style="margin:0 0 12px"><b>정체 감지</b>${pl.map(x=>`${esc(x.name)} ${x.weeks}주째 ${x.best}kg 근처`).join(' · ')}. 반복 범위를 바꾸거나(예: 5회→8회) 한 주 디로드 후 다시 올려 보세요.</div>`:''}
   <div class="card"><div class="card-h"><div class="card-t">세션별 볼륨</div><span class="card-s">최근 ${rec.length}회 · kg</span></div><div id="chVol"></div></div>
@@ -2914,7 +3028,7 @@ function openCSV(){
 
 /* ── 공개판: 처음 안내 · 개인정보 안내 · 클라우드 삭제 ── */
 function openWelcome(){
-  openSheet(`<div style="text-align:center;padding:10px 4px 4px"><div class="brand" style="justify-content:center;font-size:26px;font-weight:900"><i style="width:44px;height:44px;border-radius:12px"><svg viewBox="40 40 432 432">${LOGO_MARK}</svg></i>오운!</div><div class="muted" style="margin-top:6px">오늘 운동, 완료!</div></div>
+  openSheet(`<div style="text-align:center;padding:10px 4px 4px"><div class="brand" style="justify-content:center;font-size:26px;font-weight:900"><i style="width:52px;height:52px;border-radius:14px"><img src="icons/logo-r.png" alt=""></i>오운!</div><div class="muted" style="margin-top:6px">오늘 운동, 완료!</div></div>
   <div class="card">${[['프로그램이 오늘 할 운동을 알려 줘요','5×5·5/3/1·하이록스 등 검증된 플랜을 고르면 요일별 운동과 무게가 자동으로 나옵니다.'],['운동 모드로 세트·휴식을 한 화면에서','동작 그림, 휴식 타이머, 원판 계산, 자동 증량 제안까지.'],['러닝·인바디·식단도 함께','식약처 DB 29만 개 음식 검색, 인바디 분석, 러닝 부하 관리.'],['기록은 내 기기에','로그인 없이 바로 쓸 수 있고, 원하면 계정으로 백업·동기화합니다.']].map(([t,d],i)=>`<div style="display:flex;gap:12px;padding:8px 0"><b style="width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px">${i+1}</b><div><div class="li-t">${t}</div><div class="tiny" style="margin-top:2px">${d}</div></div></div>`).join('')}</div>
   <label style="display:flex;gap:10px;align-items:center;margin:0 4px 12px;font-size:14px;cursor:pointer"><input type="checkbox" id="wcAge" style="width:20px;height:20px;accent-color:var(--pri)"><span>만 14세 이상이며 <button class="link" style="font-size:14px" onclick="event.preventDefault();openPrivacy()">개인정보·이용 안내</button>를 확인했습니다</span></label>
   <button class="btn" onclick="if(!$('wcAge').checked){toast('만 14세 이상 확인에 체크해 주세요');return;}S.welcomed=new Date().toISOString();saveLocal();closeSheet();setTimeout(openOnboarding,300)">시작하기</button>
@@ -3065,8 +3179,7 @@ async function makeShareCard(log,scale=1,mode){
   let gb=g.createLinearGradient(0,gy,0,H);gb.addColorStop(0,'rgba(18,60,130,0)');gb.addColorStop(.55,'rgba(18,60,130,.30)');gb.addColorStop(1,'rgba(14,45,105,.52)');g.fillStyle=gb;g.fillRect(0,gy,W,H-gy);
   g.textBaseline='alphabetic';g.shadowColor='rgba(0,0,0,.35)';g.shadowBlur=12*k;g.fillStyle='#fff';
   // 왼쪽 위: 로고 + 날짜
-  try{const im=await loadImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="88 88 336 336">${LOGO_MARK}</svg>`));g.drawImage(im,64*k,62*k,56*k,56*k);}catch(e){}
-  g.font=`800 ${36*k}px ${FF}`;g.fillText('오운!',132*k,103*k);
+  try{const im=await loadImg('icons/mark-white.png');g.drawImage(im,64*k,58*k,80*k,80*454/600*k);}catch(e){g.font=`800 ${36*k}px ${FF}`;g.fillText('오운!',64*k,103*k);}
   const dt=new Date(log.date+'T00:00');g.font=`500 ${28*k}px ${FF}`;g.globalAlpha=.9;g.textAlign='right';g.fillText(`${dt.getFullYear()}.${dt.getMonth()+1}.${dt.getDate()} ${DAYS[dt.getDay()]}`,W-64*k,100*k);g.textAlign='left';g.globalAlpha=1;
   // 왼쪽 아래: 오운완 + 종목-세트-반복-무게
   const x=64*k;let y=H-90*k-nl*54*k-(lines.length>nl?44*k:0)-36*k;
@@ -3484,7 +3597,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='7.5';
+const APP_VER='7.7';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
@@ -3499,7 +3612,7 @@ $('runDate').value=today();
 loadDraft();syncLogForm();
 bindSeg('logSeg',k=>{$('logWeight').style.display=k==='weight'?'':'none';$('logRun').style.display=k==='run'?'':'none';$('logWod').style.display=k==='wod'?'':'none';if(k==='wod')renderWodTab();});
 bindSeg('histSeg',k=>{histK=k;renderHist();});
-setTimeout(()=>{$('splash').classList.add('off');setTimeout(()=>$('splash').remove(),450);},700);
+setTimeout(()=>{$('splash').classList.add('off');setTimeout(()=>$('splash').remove(),450);},1050);
 go('home');
 initPWA();setTimeout(renderInstallBar,800);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&curTab==='home')renderHome();});

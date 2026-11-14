@@ -3,10 +3,10 @@
 // - 운동 애니메이션·아이콘: 처음 설치 때 저장해 오프라인에서도 표시
 // - ANIM_VER는 ek.pack.gz·data 내용이 바뀔 때만 올리면 됨
 const ANIM_VER='media-v4';
-const SHELL='shell-v9';
+const SHELL='shell-v11';
 const ANIM=['./ek.pack.gz'];
 // 파일 하나가 빠져도 설치가 멈추지 않도록 하나씩 저장
-const SHELL_FILES=['./','./index.html','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png','./icons/favicon-64.png'];
+const SHELL_FILES=['./','./index.html','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png','./icons/favicon-64.png','./icons/logo-r.png','./icons/mark-white.png','./icons/sp-text.png','./icons/sp-dumb.png','./icons/sp-spark.png'];
 const addEach=(name,list)=>caches.open(name).then(c=>Promise.all(list.map(u=>c.add(u).catch(()=>{}))));
 self.addEventListener('install',e=>{e.waitUntil(addEach(SHELL,SHELL_FILES).then(()=>{addEach(ANIM_VER,ANIM);return self.skipWaiting();}));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==SHELL&&k!==ANIM_VER).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
