@@ -3,7 +3,7 @@
 // - 운동 애니메이션·아이콘: 처음 설치 때 저장해 오프라인에서도 표시
 // - ANIM_VER는 ek.pack.gz·data 내용이 바뀔 때만 올리면 됨
 const ANIM_VER='media-v4';
-const SHELL='shell-v3';
+const SHELL='shell-v4';
 const ANIM=['./ek.pack.gz'];
 // 파일 하나가 빠져도 설치가 멈추지 않도록 하나씩 저장
 const SHELL_FILES=['./','./index.html','./firebase-config.js','./manifest.json','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png','./icons/favicon-64.png'];

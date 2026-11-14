@@ -627,7 +627,8 @@ function renderHome(){
   const wkVol=wk.reduce((s,l)=>s+l.vol,0),wkRun=S.runs.filter(r=>r.date>=daysAgo(6)).reduce((s,r)=>s+r.km,0);
   const ft=foodTotals(today()),tg=dietTarget();
   let h='';
-  if(!p.weight&&!firstGuideHTML())h+=`<div class="note n-pri" style="margin:0 0 12px"><b>시작하기</b>운동 목적과 인바디를 알려주시면 식단 목표와 추천 루틴을 맞춰 드려요.<div style="margin-top:10px"><button class="btn sm" onclick="openOnboarding()">1분 설정</button></div></div>`;
+  h+=restoreCardHTML();h+=cloudNagHTML();
+  if(!p.weight&&!firstGuideHTML()&&!isFresh())h+=`<div class="note n-pri" style="margin:0 0 12px"><b>시작하기</b>운동 목적과 인바디를 알려주시면 식단 목표와 추천 루틴을 맞춰 드려요.<div style="margin-top:10px"><button class="btn sm" onclick="openOnboarding()">1분 설정</button></div></div>`;
   {const dw=new Date().getDay(),lw=weekStats(-1);if([0,1,2].includes(dw)&&lw.n&&S.repSeen!==lw.a)h+=`<div class="note n-pri" style="margin:0 0 12px"><b>지난 주 리포트</b>${lw.days}일 운동 · 볼륨 ${fmt(lw.vol)}kg${lw.km?` · 러닝 ${lw.km}km`:''}<div style="margin-top:10px;display:flex;gap:8px"><button class="btn sm" onclick="S.repSeen='${lw.a}';save();openWeekReport(-1);renderHome()">리포트 보기</button><button class="btn ghost sm" onclick="S.repSeen='${lw.a}';save();renderHome()">닫기</button></div></div>`;}
   if(S.remind&&S.remind.on){const [hh,mm]=(S.remind.time||'21:00').split(':').map(Number),nw=new Date();if(nw.getHours()*60+nw.getMinutes()>=hh*60+mm){const m=remindMissing();if(m.length)h+=`<button class="card row-card" style="background:var(--warn-soft)" onclick="go('${m[0]==='식단'?'diet':'log'}')"><div class="li-main"><div class="li-t">오늘 ${m.join('·')} 기록이 비어 있어요</div><div class="li-s">눌러서 바로 기록하기</div></div><span class="chev">›</span></button>`;}}
   h+=firstGuideHTML();
@@ -653,7 +654,7 @@ function renderHome(){
    ${tr>=0&&!draft.exs.length?`<button class="btn" style="margin-bottom:10px" onclick="startRoutine('mine',${tr})">${DAYS[new Date().getDay()]}요일 · ${esc(S.routines[tr].name)} 시작</button>`:(!draft.exs.length&&S.routines.some(r=>(r.days||[]).length)?(()=>{for(let k=1;k<=7;k++){const wd=(new Date().getDay()+k)%7,i=S.routines.findIndex(r=>(r.days||[]).includes(wd));if(i>=0)return`<div class="muted" style="margin-bottom:10px">오늘은 지정된 루틴이 없는 날입니다 · 다음: ${DAYS[wd]}요일 ${esc(S.routines[i].name)}</div>`;}return'';})():'')}
    ${draft.exs.length?`<div class="muted" style="margin-bottom:10px">${esc(draft.routine||'진행 중인 운동')} · ${draft.exs.length}종목 · ${td}/${tt}세트 완료</div><button class="btn" onclick="openWM()">${td?'운동 모드 이어하기':'운동 모드로 시작'}</button>`
    :S.prog?`<div class="tiny">프로그램 진행 중 · 위 카드에서 오늘 운동을 시작하세요. 다른 운동은 루틴 관리에서 고를 수 있어요.</div>`:`<div class="tiny" style="margin-bottom:8px">${S.routines.length?'내 루틴':'맞춤 추천 루틴'} · 누르면 바로 운동 모드로 시작합니다</div><div class="list" style="background:var(--card2);margin:0">${rs.map(([src,i,r])=>`<button class="li" style="border-color:var(--line)" onclick="startRoutine('${src}',${i})"><div class="li-main"><div class="li-t">${esc(r.name)}</div><div class="li-s">${r.items.length}종목 · ${rtSummary(r).n}세트${(r.days||[]).length?' · '+r.days.slice().sort((a,b)=>((a+6)%7)-((b+6)%7)).map(d=>DAYS[d]).join(''):''}</div></div><span class="badge b-pri">시작</span></button>`).join('')}</div>`}</div>`;}
-  if(S.logs.length+S.runs.length>=10&&(!S.lastBackup||S.lastBackup<daysAgo(14)))h+=`<div class="note n-warn" style="margin:0 0 12px"><b>백업한 지 오래됐어요</b>데이터는 이 기기에만 있습니다. 2주에 한 번 백업 파일을 저장해 두세요.<div style="margin-top:10px"><button class="btn sm" onclick="exportData().then(()=>renderHome())">지금 백업</button></div></div>`;
+  if(!S.cloud&&!cloudNagHTML()&&S.logs.length+S.runs.length>=10&&(!S.lastBackup||S.lastBackup<daysAgo(14)))h+=`<div class="note n-warn" style="margin:0 0 12px"><b>백업한 지 오래됐어요</b>데이터는 이 기기에만 있습니다. 2주에 한 번 백업 파일을 저장해 두세요.<div style="margin-top:10px"><button class="btn sm" onclick="exportData().then(()=>renderHome())">지금 백업</button></div></div>`;
   // 최근 7일 (오운완 줄 + 숫자)
   {const done=new Set([...S.logs.map(l=>l.date),...S.runs.map(r=>r.date)]);
    let st=0;for(let i=0;i<400;i++){const d=daysAgo(i);if(done.has(d))st++;else if(i>0)break;}
@@ -2182,19 +2183,18 @@ async function fbInit(){
     fb.auth=firebase.auth();fb.db=firebase.database();
     await fb.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     fb.auth.getRedirectResult().catch(e=>{fb.err=authMsg(e);});
-    fb.auth.onAuthStateChanged(u=>{fb.user=u;if(u){S.cloud=1;saveLocal();syncNow();}acctRefresh();});
+    fb.auth.onAuthStateChanged(u=>{fb.user=u;if(u){S.cloud=1;saveLocal();syncNow();}acctRefresh();if(curTab==='home')renderHome();});
     fb.ready=true;return true;
   }catch(e){fb.err='Firebase에 연결하지 못했습니다. 인터넷을 확인하세요.';acctRefresh();return false;}
 }
 function authMsg(e){const c=e&&e.code||'';return({'auth/popup-closed-by-user':'로그인 창이 닫혔습니다.','auth/popup-blocked':'팝업이 차단되었습니다.','auth/invalid-credential':'이메일 또는 비밀번호가 맞지 않습니다.','auth/wrong-password':'비밀번호가 맞지 않습니다.','auth/user-not-found':'가입된 이메일이 아닙니다. 가입하기를 누르세요.','auth/email-already-in-use':'이미 가입된 이메일입니다. 로그인하세요.','auth/weak-password':'비밀번호는 6자 이상이어야 합니다.','auth/invalid-email':'이메일 형식이 맞지 않습니다.','auth/unauthorized-domain':'이 주소가 Firebase 승인 도메인에 없습니다. 콘솔에서 추가하세요.','auth/network-request-failed':'네트워크 오류입니다.'}[c])||(e&&e.message)||'오류가 발생했습니다.';}
 async function loginGoogle(){
-  if(!S.cloudConsent){toast('클라우드 저장 동의에 먼저 체크해 주세요');return;}
   if(!(await fbInit()))return;fb.err='';const p=new firebase.auth.GoogleAuthProvider();
   try{if(isStandalone()&&isIOS())await fb.auth.signInWithRedirect(p);else await fb.auth.signInWithPopup(p);}
   catch(e){if(['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/cancelled-popup-request'].includes(e.code)){try{await fb.auth.signInWithRedirect(p);return;}catch(e2){fb.err=authMsg(e2);}}else fb.err=authMsg(e);acctRefresh();}
 }
 async function loginEmail(signup){
-  if(!S.cloudConsent){toast('클라우드 저장 동의에 먼저 체크해 주세요');return;}
+  if(signup&&!S.cloudConsent){toast('클라우드 저장 동의에 먼저 체크해 주세요');return;}
   const em=$('acEm').value.trim(),pw=$('acPw').value;if(!em||!pw){toast('이메일과 비밀번호를 입력하세요');return;}if(signup&&pw.length<8){toast('비밀번호는 8자 이상으로 정하세요');return;}
   if(!(await fbInit()))return;fb.err='';
   try{signup?await fb.auth.createUserWithEmailAndPassword(em,pw):await fb.auth.signInWithEmailAndPassword(em,pw);}catch(e){fb.err=authMsg(e);acctRefresh();}
@@ -2213,6 +2213,59 @@ async function unpackJSON(raw){
 }
 function cloudQueue(){if(!fb.user)return;clearTimeout(fb.t);fb.state='대기';fb.t=setTimeout(()=>syncNow(),4000);}
 const arrOf=x=>x?(Array.isArray(x)?x:Object.values(x)):[];
+/* ═══ v7.3 기록 보존: 빈 기기 자동 복원 · Google 원탭 · 클라우드 스냅샷 · 덮어쓰기 방지 ═══ */
+const dataN=(d=S)=>(d.logs||[]).length+(d.runs||[]).length+(d.bw||[]).length+(d.food||[]).length+(d.wods||[]).length;
+const isFresh=()=>!S.cloud&&dataN()===0;
+function restoreCardHTML(){if(!isFresh()||S.rcHide===today())return'';
+  return`<div class="card rc-card"><div class="card-t">예전에 쓰던 기록이 있나요?</div><div class="muted" style="margin:6px 0 12px;line-height:1.55">방문 기록이나 사이트 데이터를 지우면 이 기기의 기록도 지워져요. 전에 로그인했던 계정으로 들어오면 클라우드에서 그대로 복원됩니다.</div>
+  <button class="btn" onclick="restoreGoogle()">Google 계정으로 복원</button>
+  <div class="row-btns" style="margin-top:8px"><button class="btn ghost sm" onclick="openAccount()">이메일 계정으로 복원</button><button class="btn ghost sm" onclick="S.rcHide=today();saveLocal();renderHome()">처음 써요</button></div></div>`;}
+function cloudNagHTML(){
+  if(S.cloud||dataN()<5||(S.cloudNag&&S.cloudNag>=daysAgo(10)))return'';
+  return`<div class="note n-warn" style="margin:0 0 12px"><b>기록이 이 폰에만 있어요</b>방문 기록·사이트 데이터를 지우거나 폰을 바꾸면 사라질 수 있어요. 로그인해 두면 저장할 때마다 자동으로 클라우드에 보관되고, 지워져도 다시 로그인하면 돌아옵니다.<div class="row-btns" style="margin-top:10px"><button class="btn sm" onclick="openAccount()">로그인하고 자동 보관</button><button class="btn ghost sm" onclick="S.cloudNag=today();saveLocal();renderHome()">나중에</button></div></div>`;}
+function restoreGoogle(){window._restoring=1;if(window._otInit){try{google.accounts.id.prompt(n=>{if(n&&(n.isNotDisplayed&&n.isNotDisplayed()||n.isSkippedMoment&&n.isSkippedMoment()))loginGoogle();});return;}catch(e){}}loginGoogle();}
+async function oneTap(){
+  const cid=FB_CFG&&FB_CFG.googleClientId;if(!cid||!navigator.onLine||window._ot||!isFresh())return;window._ot=1;
+  try{await loadJS('https://accounts.google.com/gsi/client');
+    google.accounts.id.initialize({client_id:cid,callback:otCb,auto_select:true,cancel_on_tap_outside:true,use_fedcm_for_prompt:true,itp_support:true,context:'signin'});
+    window._otInit=1;google.accounts.id.prompt();}catch(e){}
+}
+async function otCb(r){
+  if(!r||!r.credential)return;window._restoring=1;if(!(await fbInit()))return;
+  try{await fb.auth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(r.credential));toast('로그인했어요 · 기록을 불러오는 중');}
+  catch(e){fb.err=authMsg(e);toast(fb.err);}
+}
+const snapKey=()=>ymdL(new Date()).replace(/-/g,'');
+const snapLbl=k=>{const d=k.slice(0,8),r=k.slice(9);return`${+d.slice(4,6)}월 ${+d.slice(6,8)}일${r?` ${r.slice(0,2)}:${r.slice(2,4)}`:''}`;};
+async function snapPut(key,raw,t,note){
+  const base=fb.db.ref(`users/${fb.user.uid}`);
+  await base.child('snaps/'+key).set({json:raw,updatedAt:t});
+  let d={};try{d=JSON.parse(await unpackJSON(raw))||{};}catch(e){}const L=x=>(d[x]||[]).length;
+  await base.child('snapIdx/'+key).set({t,n:dataN(d),w:L('logs'),r:L('runs'),b:L('bw'),f:L('food'),note:note||''});
+  const idx=(await base.child('snapIdx').get()).val()||{},ks=Object.keys(idx).sort();
+  for(const k of ks.slice(0,Math.max(0,ks.length-14))){await base.child('snaps/'+k).remove();await base.child('snapIdx/'+k).remove();}
+}
+async function openSnaps(){
+  if(!fb.user)return;
+  openSheet(`<div class="sheet-h"><h2>백업 시점 되돌리기</h2><button class="link" onclick="closeSheet()">닫기</button></div>
+  <div class="muted" style="margin:-4px 2px 12px;line-height:1.6">하루 한 번, 그날 처음 클라우드에 올리기 직전 상태가 자동으로 보관돼요. 최근 14개까지 남고 오래된 것부터 지워집니다.</div><div id="snL" class="muted">불러오는 중...</div>`);
+  try{const idx=(await fb.db.ref(`users/${fb.user.uid}/snapIdx`).get()).val()||{},ks=Object.keys(idx).sort().reverse();
+    $('snL').innerHTML=ks.length?`<div class="list">${ks.map(k=>{const x=idx[k];return`<div class="li"><div class="li-main"><div class="li-t">${snapLbl(k)}${x.note?` · ${esc(x.note)}`:''}</div><div class="li-s">운동 ${x.w||0} · 러닝 ${x.r||0} · 인바디 ${x.b||0} · 식단 ${x.f||0}</div></div><button class="btn ghost sm" onclick="snapRestore('${k}')">되돌리기</button></div>`;}).join('')}</div>`:'아직 보관된 시점이 없어요. 내일부터 하루 한 개씩 쌓입니다.';}
+  catch(e){$('snL').textContent='불러오지 못했습니다: '+(e.message||e);}
+}
+function snapRestore(k){
+  confirmSheet(`${snapLbl(k)} 상태로 되돌릴까요? 지금 클라우드 기록은 "되돌리기 직전" 시점으로 따로 보관됩니다.`,async()=>{
+    try{const base=fb.db.ref(`users/${fb.user.uid}`),raw=(await base.child('snaps/'+k+'/json').get()).val();if(!raw){toast('백업을 찾지 못했습니다');return;}
+      const cur=(await base.child('ohun').get()).val();const nw=new Date();
+      if(cur&&cur.json)await snapPut(snapKey()+'-'+String(nw.getHours()).padStart(2,'0')+String(nw.getMinutes()).padStart(2,'0'),cur.json,cur.updatedAt||Date.now(),'되돌리기 직전');
+      const remote=sanitizeData(JSON.parse(await unpackJSON(raw)));
+      const keep={theme:S.theme,hideInstall:S.hideInstall,cloud:1,cloudConsent:S.cloudConsent||remote.cloudConsent,snapDay:S.snapDay,syncedRemote:S.syncedRemote};
+      S={...structuredClone(DEF),...remote,...keep};S.routines=(S.routines||[]).map(normRoutine);window._shrinkOK=1;save();applyTheme();
+      await syncNow('silent');closeSheet();go(curTab);toast(`${snapLbl(k)} 상태로 되돌렸어요`);}
+    catch(e){toast('되돌리기 실패: '+(e.message||e));}
+  },'되돌리기');
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&fb.user&&S.dirty&&!fb.busy){clearTimeout(fb.t);syncNow('silent');}});
 async function syncNow(manual){
   if(!fb.user||fb.busy)return;fb.busy=true;fb.state='동기화 중';acctRefresh();
   try{
@@ -2220,25 +2273,36 @@ async function syncNow(manual){
     // 1) 업데이트 시각(숫자 하나)만 먼저 확인 → 바뀌었을 때만 본문을 받는다
     const rU=(await ref.child('updatedAt').get()).val()||0;
     let push=false;
-    const changed=rU&&rU!==(S.syncedRemote||0),dirty=!!S.dirty;
+    const changed=rU&&rU!==(S.syncedRemote||0),dirty=!!S.dirty,fresh=dataN()===0;let rawR=null;
     if(rU&&!changed){push=dirty;}
     else if(rU){
-      const raw=(await ref.child('json').get()).val();
+      const raw=rawR=(await ref.child('json').get()).val();
       const remote=sanitizeData(JSON.parse(await unpackJSON(raw)));
       if(changed&&dirty){mergeIn(remote);push=true;if(manual!=='silent')toast('다른 기기 기록과 합쳤습니다');}
-      else if(changed){const keep={theme:S.theme,hideInstall:S.hideInstall,cloud:1};S={...structuredClone(DEF),...remote,...keep};S.routines=(S.routines||[]).map(normRoutine);S.dirty=0;S.syncedRemote=rU;applyTheme();if(manual!=='silent')toast('클라우드 기록을 불러왔습니다');}
+      else if(changed){const keep={theme:S.theme,hideInstall:S.hideInstall,cloud:1,cloudConsent:S.cloudConsent||remote.cloudConsent||('restored '+new Date().toISOString())};S={...structuredClone(DEF),...remote,...keep};S.routines=(S.routines||[]).map(normRoutine);S.dirty=0;S.syncedRemote=rU;S.remoteN=dataN();applyTheme();
+        if(fresh&&dataN()){closeSheet();toast(`기록 ${dataN()}건을 복원했어요`);}else if(manual!=='silent')toast('클라우드 기록을 불러왔습니다');}
       else push=dirty;
     }else{
+      if(!S.cloudConsent){const e=new Error('noconsent');e.code='ohun/noconsent';throw e;}
       push=true;
       const old=(await fb.db.ref(`users/${fb.user.uid}`).get()).val();
       if(old&&(old.logs||old.profiles)&&!S.oldCloudAsked){S.oldCloudAsked=1;
         const d={profiles:arrOf(old.profiles),logs:arrOf(old.logs),runLogs:arrOf(old.runLogs),bwLog:arrOf(old.bwLog),foodLog:arrOf(old.foodLog)};
         setTimeout(()=>confirmSheet(`이전 Road to Strongman 클라우드에서 운동 ${d.logs.length}건을 찾았습니다. 가져올까요?`,()=>{mergeIn(convertV3(d));save();go(curTab);toast('이전 기록을 가져왔습니다');},'가져오기',false),300);}
     }
-    if(push){const t=Date.now();S.dirty=0;S.updatedAt=t;S.syncedRemote=t;await ref.set({json:await packJSON(JSON.stringify(cloudView())),updatedAt:t,device:navigator.userAgent.slice(0,80)});}
+    if(push&&(S.remoteN||0)>=10&&dataN()<S.remoteN*0.5&&!window._shrinkOK){
+      push=false;const ln=dataN(),rn=S.remoteN;fb.busy=false;fb.state='확인 필요';
+      setTimeout(()=>confirmSheet(`이 기기 기록(${ln}건)이 클라우드(${rn}건)보다 훨씬 적어요. 이대로 올리면 클라우드 기록도 줄어듭니다. 실수로 지운 거라면 취소하고 "백업 시점 되돌리기"를 쓰세요.`,()=>{window._shrinkOK=1;syncNow();},'그래도 올리기'),200);
+      acctRefresh();return;}
+    if(push){const t=Date.now(),day=snapKey();
+      if(rU&&S.snapDay!==day){try{const prev=rawR||(await ref.child('json').get()).val();if(prev)await snapPut(day,prev,rU);S.snapDay=day;}catch(e){}}
+      S.dirty=0;S.updatedAt=t;S.syncedRemote=t;S.remoteN=dataN();window._shrinkOK=0;await ref.set({json:await packJSON(JSON.stringify(cloudView())),updatedAt:t,device:navigator.userAgent.slice(0,80)});}
+    else if(!changed&&rU&&S.remoteN==null)S.remoteN=dataN();
     saveLocal();fb.state='완료 '+new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});fb.err='';
     if(changed&&!push||changed&&dirty)go(curTab);
-  }catch(e){fb.state='실패';fb.err=e.code==='PERMISSION_DENIED'||/permission/i.test(e.message)?'데이터베이스 권한이 없습니다. 보안 규칙을 확인하세요.':'동기화 실패: '+(e.message||'');}
+  }catch(e){
+    if(e.code==='ohun/noconsent'){fb.busy=false;fb.state='';try{await fb.auth.signOut();}catch(_){}S.cloud=0;saveLocal();fb.err='이 계정에는 저장된 기록이 없어요. 새로 클라우드에 저장하려면 아래 동의에 체크한 뒤 다시 로그인해 주세요.';window._restoring=0;openAccount();return;}
+    fb.state='실패';fb.err=e.code==='PERMISSION_DENIED'||/permission/i.test(e.message)?'데이터베이스 권한이 없습니다. 보안 규칙을 확인하세요.':'동기화 실패: '+(e.message||'');}
   fb.busy=false;acctRefresh();
 }
 function acctRefresh(){if($('acBody'))$('acBody').innerHTML=acctBody();if(curTab==='more')renderMore();}
@@ -2247,6 +2311,7 @@ function acctBody(){
     ${fb.err?`<div class="note n-bad">${esc(fb.err)}</div>`:''}
     <div class="muted" style="margin-top:10px">기록을 저장할 때마다 몇 초 뒤 자동으로 클라우드에 올라갑니다. 다른 기기에서 같은 계정으로 로그인하면 같은 기록이 보입니다.</div></div>
     <div class="row-btns"><button class="btn sub" onclick="syncNow()">지금 동기화</button><button class="btn ghost" onclick="logout()">로그아웃</button></div>
+    <button class="btn ghost" style="margin-top:10px" onclick="openSnaps()">백업 시점 되돌리기 (최근 14일)</button>
     <button class="btn danger" style="margin-top:10px" onclick="deleteCloud()">클라우드 데이터와 계정 삭제</button>`;}
   return`<div class="card"><div class="muted" style="margin-bottom:12px">로그인하면 기록이 클라우드에 자동 저장되어, 폰을 바꾸거나 여러 기기에서 써도 그대로 이어집니다. 로그인하지 않아도 앱은 그대로 쓸 수 있습니다.</div>
     ${fb.err?`<div class="note n-bad" style="margin:0 0 10px">${esc(fb.err)}</div>`:''}
@@ -2887,7 +2952,8 @@ function openWelcome(){
   openSheet(`<div style="text-align:center;padding:10px 4px 4px"><div class="brand" style="justify-content:center;font-size:26px;font-weight:900"><i style="width:44px;height:44px;border-radius:12px"><svg viewBox="40 40 432 432">${LOGO_MARK}</svg></i>OH_UN!</div><div class="muted" style="margin-top:6px">오늘 운동, 완료!</div></div>
   <div class="card">${[['프로그램이 오늘 할 운동을 알려 줘요','5×5·5/3/1·하이록스 등 검증된 플랜을 고르면 요일별 운동과 무게가 자동으로 나옵니다.'],['운동 모드로 세트·휴식을 한 화면에서','동작 그림, 휴식 타이머, 원판 계산, 자동 증량 제안까지.'],['러닝·인바디·식단도 함께','식약처 DB 29만 개 음식 검색, 인바디 분석, 러닝 부하 관리.'],['기록은 내 기기에','로그인 없이 바로 쓸 수 있고, 원하면 계정으로 백업·동기화합니다.']].map(([t,d],i)=>`<div style="display:flex;gap:12px;padding:8px 0"><b style="width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px">${i+1}</b><div><div class="li-t">${t}</div><div class="tiny" style="margin-top:2px">${d}</div></div></div>`).join('')}</div>
   <label style="display:flex;gap:10px;align-items:center;margin:0 4px 12px;font-size:14px;cursor:pointer"><input type="checkbox" id="wcAge" style="width:20px;height:20px;accent-color:var(--pri)"><span>만 14세 이상이며 <button class="link" style="font-size:14px" onclick="event.preventDefault();openPrivacy()">개인정보·이용 안내</button>를 확인했습니다</span></label>
-  <button class="btn" onclick="if(!$('wcAge').checked){toast('만 14세 이상 확인에 체크해 주세요');return;}S.welcomed=new Date().toISOString();saveLocal();closeSheet();setTimeout(openOnboarding,300)">시작하기</button>`);
+  <button class="btn" onclick="if(!$('wcAge').checked){toast('만 14세 이상 확인에 체크해 주세요');return;}S.welcomed=new Date().toISOString();saveLocal();closeSheet();setTimeout(openOnboarding,300)">시작하기</button>
+  <button class="link" style="display:block;margin:14px auto 2px;font-size:13px" onclick="closeSheet();restoreGoogle()">예전에 쓰던 기록이 있어요 · 복원하기</button>`);
 }
 function openPrivacy(){
   const sec=(t,b)=>`<div class="card"><div class="card-t" style="margin-bottom:6px">${t}</div><div class="muted" style="line-height:1.65;font-size:14px">${b}</div></div>`;
@@ -2901,7 +2967,7 @@ function openPrivacy(){
   ${sec('카메라 · 사진','오운완 공유 카드에 사진을 넣을 때와 인바디 결과지를 사진으로 입력할 때만 사용합니다. 사진은 기기 안에서 카드 합성·글자 인식에만 쓰이고 서버에 올라가지 않습니다. 기록 › 인바디의 바디 사진은 이 기기 안(IndexedDB)에만 보관되며 클라우드 동기화와 백업 파일에 포함되지 않습니다. 인식 엔진(Tesseract.js)은 이 앱 서버에서 처음 한 번 내려받습니다.')}
   ${sec('복용 약물 (민감정보)','더보기 › 복용 약물에 등록한 약은 동의한 경우에만, 이 기기에만 저장됩니다. 클라우드 동기화는 같은 화면에서 따로 켤 때만 포함되며 기본은 꺼짐입니다. 같은 화면의 \'약물 정보 모두 지우기\'로 언제든 삭제할 수 있습니다. 약물·영양제 안내는 정보 목적이며 의사·약사의 지시가 우선합니다.')}
   ${sec('백업 파일 주의','JSON·CSV 백업 파일에는 건강 기록이 그대로 들어 있습니다. 다른 사람에게 보내거나 공용 PC에 남기지 마세요.')}
-  ${sec('보유 기간 · 파기','기기 기록은 직접 지우거나 브라우저 데이터를 삭제할 때까지 보관됩니다. 클라우드 기록은 계정을 삭제하면 바로 지워지며 따로 백업해 두지 않습니다. 1년 넘게 로그인하지 않은 계정은 정리될 수 있습니다.')}
+  ${sec('보유 기간 · 파기','기기 기록은 직접 지우거나 브라우저 데이터를 삭제할 때까지 보관됩니다. 클라우드 기록은 계정을 삭제하면 바로 지워집니다. 실수 복구를 위해 하루 1개씩 최근 14개의 사본을 같은 서버에 보관하며, 15번째부터 오래된 것이 자동으로 삭제되고 계정을 삭제하면 함께 지워집니다. 1년 넘게 로그인하지 않은 계정은 정리될 수 있습니다.')}
   ${sec('안전하게 지키는 방법','클라우드 기록은 본인 계정으로만 읽고 쓸 수 있도록 보안 규칙을 적용하고, 전송은 모두 암호화(HTTPS)됩니다. 운영자도 앱 안에서 다른 사람의 기록을 볼 수 있는 화면을 두지 않습니다.')}
   ${sec('삭제','더보기 › 데이터 백업 · 복원 › 모든 데이터 삭제로 기기 기록을 지웁니다. 클라우드 기록과 계정은 더보기 › 계정 · 클라우드 › 클라우드 데이터와 계정 삭제로 지웁니다.')}
   ${sec('건강 관련 안내','운동·식단 제안은 일반적인 정보이며 의학적 진단이나 전문 트레이닝을 대신하지 않습니다. 통증이나 지병이 있으면 전문가와 상의하세요.')}
@@ -3419,7 +3485,7 @@ function renderInstallBar(){const el=$('insBar');if(!el)return;
     else if(installEvt){msg='OH_UN! 앱으로 설치하기';btn=`<button class="btn sm" onclick="installApp()">설치</button>`;}
     else if(ios){msg='홈 화면에 추가하면 앱으로 설치돼요';btn=`<button class="btn sm" onclick="openIosGuide()">방법 보기</button>`;}}
   const on=!hide&&!!msg;el.classList.toggle('on',on);document.body.classList.toggle('insbar-on',on);
-  el.innerHTML=on?`<img src="icons/icon-192.png" alt="" class="ins-ic"><div class="ins-m"><b>${msg}</b><span>${installEvt&&!ib?'전체 화면 · 오프라인 · 기록 보관이 더 안전해요':ios&&!ib?'사파리에만 두면 7일 안 쓰면 기록이 지워질 수 있어요':'메뉴에서 외부 브라우저로 열어 주세요'}</span></div>${btn}<button class="ins-x" onclick="S.insHide=today();saveLocal();renderInstallBar()" aria-label="7일 동안 숨기기">×</button>`:'';}
+  el.innerHTML=on?`<img src="icons/icon-192.png" alt="" class="ins-ic"><div class="ins-m"><b>${msg}</b><span>${installEvt&&!ib?'전체 화면 · 오프라인 · 기록 보관이 더 안전해요':ios&&!ib?'Safari 방문 기록을 지우면 기록도 지워져요. 홈 화면 앱은 안전해요':'메뉴에서 외부 브라우저로 열어 주세요'}</span></div>${btn}<button class="ins-x" onclick="S.insHide=today();saveLocal();renderInstallBar()" aria-label="7일 동안 숨기기">×</button>`:'';}
 function openIosGuide(){const ib=inAppBrowser();
   openSheet(`<div class="sheet-h"><h2>홈 화면에 추가</h2><button class="link" onclick="closeSheet()">닫기</button></div>
   <div class="muted" style="margin:-4px 2px 12px;line-height:1.6">아이폰은 보안 정책상 설치 팝업을 띄울 수 없어서, 사파리 메뉴에서 직접 추가해야 해요. 한 번만 하면 홈 화면 아이콘으로 앱처럼 열려요.</div>
@@ -3444,7 +3510,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='7.2';
+const APP_VER='7.3';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
@@ -3464,6 +3530,7 @@ go('home');
 initPWA();scheduleRemind();setTimeout(renderInstallBar,800);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&curTab==='home')renderHome();});
 if(S.cloud)fbInit();
+else if(isFresh())setTimeout(oneTap,1500);
 if(!S.profile.weight&&!S.onb)setTimeout(()=>(!S.welcomed&&!S.logs.length)?openWelcome():openOnboarding(),400);
 renderRunType();
 </script>
