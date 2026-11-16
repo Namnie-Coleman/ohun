@@ -343,43 +343,69 @@ details.wod-grp{margin:10px 0 0}details.wod-grp>summary{font-size:13px;font-weig
 details.wod-grp[open]>summary{margin-bottom:6px}
 .more-btn{display:block;width:100%;margin-top:8px}
 
-/* ── 설치 안내 페이지 (브라우저로 처음 들어왔을 때) ── */
-#landing{position:fixed;inset:0;z-index:90;overflow-y:auto;background:var(--bg);-webkit-overflow-scrolling:touch;user-select:text;-webkit-user-select:text}
-.ld-hero{background:linear-gradient(135deg,#3ee4fd 0%,#0c90fe 45%,#0262fd 100%);color:#fff;padding:calc(env(safe-area-inset-top) + 34px) 24px 30px;text-align:center}
-.ld-hero img.ic{width:92px;height:92px;border-radius:22px;box-shadow:0 10px 30px rgba(0,40,120,.35)}
-.ld-hero h1{font-size:34px;font-weight:900;margin:16px 0 4px;letter-spacing:-.5px}
-.ld-hero p{margin:0;opacity:.92;font-size:15.5px;line-height:1.55}
-.ld-cta{display:block;width:100%;max-width:360px;margin:20px auto 0;height:54px;border:0;border-radius:16px;background:#fff;color:#0a6cf5;font:inherit;font-size:17px;font-weight:800;box-shadow:0 6px 18px rgba(0,30,90,.25)}
-.ld-sub{font-size:12.5px;opacity:.85;margin-top:10px}
-.ld-tags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:14px}.ld-tags span{background:rgba(255,255,255,.18);border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:700}
-.ld-nav{position:sticky;top:0;z-index:2;display:flex;gap:2px;justify-content:center;background:var(--bg);padding:10px 8px;border-bottom:1px solid var(--line)}
-.ld-nav a{color:var(--text2);text-decoration:none;font-size:13.5px;font-weight:700;padding:6px 11px;border-radius:999px;white-space:nowrap}.ld-nav a:active{background:var(--card2)}
-.ld-wrap{max-width:560px;margin:0 auto;padding:6px 16px 120px}
-.ld-sec{padding-top:24px}.ld-sec>h2{font-size:21px;font-weight:900;margin:0 4px 4px}.ld-sec>.muted{margin:0 4px 14px}
-.ld-shots{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:4px 20px 12px;margin:0 -16px}
-.ld-shots figure{flex:none;width:58%;max-width:240px;margin:0;scroll-snap-align:center}
-.ld-shots img{width:100%;border-radius:18px;border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.08);display:block}
-.ld-shots figcaption{font-size:12.5px;color:var(--text2);text-align:center;margin-top:6px;font-weight:700}
-.ld-feat{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ld-feat div{background:var(--card);border-radius:16px;padding:14px;border:1px solid var(--line)}
-.ld-feat b{display:block;font-size:14.5px;margin-bottom:4px}.ld-feat span{font-size:12.5px;color:var(--text2);line-height:1.5;display:block}
-.ld-steps{counter-reset:st;list-style:none;padding:0;margin:0}
-.ld-steps li{counter-increment:st;position:relative;background:var(--card);border-radius:16px;padding:14px 14px 14px 52px;margin-bottom:8px;border:1px solid var(--line);font-size:13.5px;line-height:1.6;color:var(--text2)}
-.ld-steps li:before{content:counter(st);position:absolute;left:14px;top:14px;width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
-.ld-steps li b{display:block;font-size:14.5px;color:var(--text);margin-bottom:2px}
-.ld-tabs{width:100%;border-collapse:collapse;font-size:13.5px}.ld-tabs td{padding:9px 6px;border-top:1px solid var(--line);vertical-align:top;line-height:1.5;color:var(--text2)}.ld-tabs td:first-child{font-weight:800;white-space:nowrap;width:64px;color:var(--text)}
-.ld-faq details{background:var(--card);border-radius:14px;margin-bottom:8px;border:1px solid var(--line)}
-.ld-faq summary{padding:14px;font-weight:700;font-size:14.5px;list-style:none;cursor:pointer}.ld-faq summary::-webkit-details-marker{display:none}
-.ld-faq summary:after{content:'+';float:right;color:var(--text3);font-weight:400}.ld-faq details[open] summary:after{content:'−'}
-.ld-faq details>div{padding:0 14px 14px;color:var(--text2);font-size:13.5px;line-height:1.65}
-.ld-note{background:var(--pri-soft);border-radius:14px;padding:14px;font-size:13.5px;line-height:1.6;margin:16px 0 0}
-.ld-note b:first-child{display:block;margin-bottom:4px}
-.ld-foot{text-align:center;color:var(--text3);font-size:12.5px;line-height:1.7;padding:26px 0 10px}
-.ld-foot a{color:var(--text2)}
-.ld-bar{position:fixed;left:0;right:0;bottom:0;z-index:91;padding:14px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 72%,transparent);transform:translateY(110%);transition:transform .25s}
-.ld-bar.on{transform:none}.ld-bar button{display:block;width:100%;max-width:420px;margin:0 auto;height:52px;border:0;border-radius:16px;background:var(--pri);color:#fff;font:inherit;font-size:16.5px;font-weight:800}
+/* ── 설치 안내 페이지 (브라우저로 처음 들어왔을 때) · 깔끔한 카드형 ── */
+#landing{position:fixed;inset:0;z-index:90;overflow-y:auto;background:var(--ld-bg);-webkit-overflow-scrolling:touch;user-select:text;-webkit-user-select:text;
+  --ld-bg:#fff;--ld-gray:#f2f4f6;--ld-t1:#191f28;--ld-t2:#4e5968;--ld-t3:#8b95a1;--ld-line:#e5e8eb;--ld-blue:#0a7cfe}
+@media (prefers-color-scheme:dark){#landing{--ld-bg:#17171c;--ld-gray:#22222a;--ld-t1:#f2f2f5;--ld-t2:#b0b0b8;--ld-t3:#7d7d86;--ld-line:#2c2c35;--ld-blue:#3d9bff}}
+html[data-theme="dark"] #landing{--ld-bg:#17171c;--ld-gray:#22222a;--ld-t1:#f2f2f5;--ld-t2:#b0b0b8;--ld-t3:#7d7d86;--ld-line:#2c2c35;--ld-blue:#3d9bff}
+html[data-theme="light"] #landing{--ld-bg:#fff;--ld-gray:#f2f4f6;--ld-t1:#191f28;--ld-t2:#4e5968;--ld-t3:#8b95a1;--ld-line:#e5e8eb;--ld-blue:#0a7cfe}
+#landing *{box-sizing:border-box}
+.ld-in{max-width:520px;margin:0 auto;padding:0 24px}
+.ld-top{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 16px) 0 0;font-weight:800;font-size:17px;color:var(--ld-t1)}
+.ld-top img{width:28px;height:28px;border-radius:8px}
+.ld-hero{padding:44px 0 8px}
+.ld-kick{color:var(--ld-blue);font-weight:700;font-size:15px;margin-bottom:12px}
+.ld-h1{font-size:34px;line-height:1.3;font-weight:800;letter-spacing:-.6px;color:var(--ld-t1);margin:0}
+.ld-p{font-size:17px;line-height:1.6;color:var(--ld-t2);margin:14px 0 0;letter-spacing:-.2px}
+.ld-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:18px}.ld-chips span{background:var(--ld-gray);color:var(--ld-t2);font-size:13px;font-weight:600;padding:6px 11px;border-radius:999px}
+.ld-phone{position:relative;margin:36px auto 0;max-width:300px}
+.ld-phone:before{content:'';position:absolute;inset:8% -12% 4%;background:linear-gradient(135deg,#3ee4fd,#0c90fe 45%,#0262fd);filter:blur(42px);opacity:.38;border-radius:50%}
+.ld-phone .sc{position:relative;border-radius:30px;overflow:hidden;border:6px solid #1b1d22;box-shadow:0 24px 50px rgba(0,30,80,.18);max-height:520px}
+.ld-phone .sc img{display:block;width:100%}
+.ld-phone .sc:after{content:'';position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(to top,rgba(0,0,0,.08),transparent)}
+.ld-sec{padding:72px 0 0}
+.ld-h2{font-size:26px;line-height:1.38;font-weight:800;letter-spacing:-.5px;color:var(--ld-t1);margin:0}
+.ld-sec .ld-p{font-size:16px}
+.ld-card{background:var(--ld-gray);border-radius:28px;margin-top:26px;padding:30px 24px 0;overflow:hidden}
+.ld-card .ld-phone{margin-top:0;max-width:250px}.ld-card .ld-phone:before{display:none}
+.ld-card .ld-phone .sc{max-height:380px;border-radius:26px 26px 0 0;border-bottom:0;box-shadow:0 10px 30px rgba(0,30,80,.12)}
+.ld-rows{margin-top:22px}
+.ld-row{display:flex;gap:14px;align-items:flex-start;padding:16px 0}
+.ld-row+.ld-row{border-top:1px solid var(--ld-line)}
+.ld-dot{flex:none;width:40px;height:40px;border-radius:12px;background:var(--ld-gray);display:flex;align-items:center;justify-content:center;color:var(--ld-blue);font-weight:800;font-size:15px}
+.ld-row b{display:block;font-size:16px;color:var(--ld-t1);font-weight:700;margin-bottom:3px}
+.ld-row span{font-size:14px;color:var(--ld-t2);line-height:1.55}
+.ld-faq{margin-top:18px}
+.ld-faq details{border-bottom:1px solid var(--ld-line)}
+.ld-faq summary{list-style:none;cursor:pointer;padding:20px 28px 20px 0;font-size:16px;font-weight:600;color:var(--ld-t1);position:relative;line-height:1.45}
+.ld-faq summary::-webkit-details-marker{display:none}
+.ld-faq summary:after{content:'';position:absolute;right:4px;top:50%;width:8px;height:8px;border-right:2px solid var(--ld-t3);border-bottom:2px solid var(--ld-t3);transform:translateY(-70%) rotate(45deg);transition:transform .2s}
+.ld-faq details[open] summary:after{transform:translateY(-30%) rotate(-135deg)}
+.ld-faq details>div{padding:0 0 20px;color:var(--ld-t2);font-size:15px;line-height:1.7}
+.ld-note{background:var(--ld-gray);border-radius:20px;padding:18px 20px;margin-top:28px;font-size:14.5px;line-height:1.65;color:var(--ld-t2)}
+.ld-note b{color:var(--ld-t1)}
+.ld-note button{margin-top:12px;width:100%;height:46px;border:0;border-radius:14px;background:var(--ld-bg);color:var(--ld-blue);font:inherit;font-weight:700;font-size:15px}
+.ld-info{margin-top:18px}
+.ld-info details{border-bottom:1px solid var(--ld-line)}
+.ld-info summary{list-style:none;cursor:pointer;padding:18px 0;font-size:15px;font-weight:600;color:var(--ld-t2)}.ld-info summary::-webkit-details-marker{display:none}
+.ld-info .card{background:transparent;padding:0 0 14px;margin:0;box-shadow:none;border:0}
+.ld-info .card .card-t{font-size:14px;color:var(--ld-t1)}
+.ld-info .muted{color:var(--ld-t2)!important}
+.ld-src{font-size:13px;line-height:1.75;color:var(--ld-t3);padding:16px 0 0}
+.ld-foot{padding:48px 0 150px;color:var(--ld-t3);font-size:13px;line-height:1.8}
+.ld-foot a{color:var(--ld-t2)}
+.ld-skip{display:block;margin:14px 0 0;padding:0;background:none;border:0;color:var(--ld-t3);font:inherit;font-size:13px;text-decoration:underline}
+.ld-bar{position:fixed;left:0;right:0;bottom:0;z-index:91;padding:16px 20px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--ld-bg,#fff) 75%,transparent)}
+#landing~.ld-bar{--ld-bg:#fff}
+@media (prefers-color-scheme:dark){#landing~.ld-bar{--ld-bg:#17171c}}
+html[data-theme="dark"] #landing~.ld-bar{--ld-bg:#17171c}html[data-theme="light"] #landing~.ld-bar{--ld-bg:#fff}
+.ld-bar button{display:block;width:100%;max-width:472px;margin:0 auto;height:56px;border:0;border-radius:16px;background:#0a7cfe;color:#fff;font:inherit;font-size:17px;font-weight:700;letter-spacing:-.2px}
+.ld-bar button:active{transform:scale(.98);filter:brightness(.95)}
+.ld-bar small{display:block;text-align:center;font-size:12.5px;color:#8b95a1;margin-top:8px}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
 body.ld-on .dim{z-index:94}body.ld-on .sheet{z-index:95}body.ld-on .toast{z-index:96}
-.ld-skip{display:block;margin:10px auto 0;background:none;border:0;color:var(--text3);font:inherit;font-size:13px;text-decoration:underline}
 </style>
 </head>
 <body>
@@ -3689,7 +3715,7 @@ async function runInstallCheck(){
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='7.11';
+const APP_VER='7.12';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
@@ -3707,8 +3733,11 @@ function landingOn(){
   try{if(new URLSearchParams(location.search).has('app'))return false;}catch(e){}
   return true;}
 function ldInstallLabel(){
-  if(inAppBrowser())return'외부 브라우저로 열어서 설치';if(isIOS())return'홈 화면에 추가하는 방법';
-  if(window._appInst)return'이미 설치됨 · 앱 여는 방법';if(installEvt)return'앱 설치하기 · 무료';return'설치 방법 보기';}
+  if(inAppBrowser())return'외부 브라우저로 열기';if(isIOS())return'홈 화면에 추가하기';
+  if(window._appInst)return'설치된 앱 여는 방법';if(installEvt)return'무료로 설치하기';return'설치 방법 보기';}
+function ldInstallSub(){
+  if(inAppBrowser())return'카카오톡·인스타그램 안에서는 설치할 수 없어요';if(isIOS())return'Safari에서 공유 버튼 › 홈 화면에 추가';
+  if(window._appInst)return'홈 화면이나 앱스 화면의 오운! 아이콘으로 열어 주세요';return'앱스토어 없이 1분이면 설치돼요';}
 async function ldInstall(){
   if(inAppBrowser()){openExternal();return;}
   if(isIOS()){openIosGuide();return;}
@@ -3721,64 +3750,63 @@ async function ldInstall(){
    <li><span>2</span><div>홈 화면(갤럭시는 앱스 화면일 수 있어요)에 생긴 <b>오운!</b> 아이콘으로 실행하세요.</div></li></ol></div>
   <div class="muted" style="margin:4px 4px 12px;line-height:1.6">메뉴에 설치 항목이 없다면 Chrome이나 삼성 인터넷으로 이 주소를 열어 주세요.</div>
   <button class="btn" onclick="closeSheet()">확인</button>`);}
-function ldRefresh(){document.querySelectorAll('.ld-cta-t').forEach(b=>b.textContent=ldInstallLabel());}
+function ldRefresh(){document.querySelectorAll('.ld-cta-t').forEach(b=>b.textContent=ldInstallLabel());document.querySelectorAll('.ld-cta-s').forEach(b=>b.textContent=ldInstallSub());}
 function ldUseWeb(){S.webOK=1;saveLocal();document.body.classList.remove('ld-on');const l=$('landing');if(l)l.remove();const bar=$('ldBar');if(bar)bar.remove();document.title='오운!';go('home');renderInstallBar();
   if(!S.profile.weight&&!S.onb)setTimeout(()=>(!S.welcomed&&!S.logs.length)?openWelcome():openOnboarding(),300);}
-function ldGo(e,id){e.preventDefault();const el=$(id),L=$('landing');if(el&&L)L.scrollTo({top:el.offsetTop-54,behavior:'smooth'});}
 function landingHTML(){
   const n=dataN(),pc=!isMobileUA(),ios=isIOS();
-  const shots=[['home','오늘 할 운동과 최근 7일'],['wm','동작 그림 · 세트 · 휴식'],['timer','크로스핏 타이머'],['vol','주간 볼륨 분석'],['card','오운완 카드'],['body','인바디 기록']];
-  const feat=[['운동 모드','동작 그림, 세트 체크, 휴식 타이머. 꾹 눌러 순서 변경'],['루틴 · 프로그램','남니콜먼 근비대·스트렝스, 5/3/1 등 주차별 자동 무게'],['WOD · 타이머','For Time · AMRAP · EMOM · 인터벌, 내 WOD 직접 짜기'],['HYROX','레이스 시뮬레이션, Open · Pro 무게'],
-    ['러닝','거리 · 페이스 · 훈련 부하 분석'],['인바디','결과지 사진 한 장으로 자동 입력'],['식단','끼니별 기록, 식약처 DB, 단백질 목표'],['주간 볼륨 분석','근육별 부족·과다, 밀기·당기기 균형'],['오운완 카드','사진 위에 오늘 기록을 얹어 공유'],['백업 · 복원','로그인하면 자동 보관, 폰을 바꿔도 그대로']];
+  const phone=(f,alt)=>`<div class="ld-phone rv"><div class="sc"><img src="landing/${f}.jpg" alt="${alt}" loading="lazy"></div></div>`;
+  const sec=(h,p,f,alt)=>`<section class="ld-sec"><h2 class="ld-h2 rv">${h}</h2><p class="ld-p rv">${p}</p><div class="ld-card rv">${phone(f,alt)}</div></section>`;
+  const rows=(L)=>`<div class="ld-rows">${L.map(([i,t,d])=>`<div class="ld-row rv"><div class="ld-dot">${i}</div><div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div>`;
   const faq=[['정말 무료인가요?','네. 개인이 만든 비상업 프로젝트라 광고, 결제, 유료 기능이 없어요.'],
-    ['왜 설치해야 쓸 수 있나요?','오운!은 앱스토어 없이 설치하는 웹앱이에요. 설치하면 전체 화면으로 열리고 인터넷이 없어도 동작해요. 아이폰은 브라우저 방문 기록을 지울 때 기록이 같이 지워지는 걸 막아 주기도 해요.'],
-    ['아이폰은 어떻게 설치하나요?','Safari로 이 주소를 연 뒤 아래쪽 공유 버튼(네모에 위 화살표, iOS 26은 ··· 메뉴 안) › "홈 화면에 추가"를 누르세요. 카카오톡·인스타그램 안에서 열었다면 먼저 Safari로 열어야 해요.'],
-    ['갤럭시에서 설치했는데 아이콘이 안 보여요','갤럭시는 새 앱이 홈 화면이 아니라 앱스 화면(위로 쓸어 올리기)에 생길 수 있어요. 검색창에 "오운"을 입력해 보세요. 아이콘을 길게 눌러 "홈 화면에 추가"하면 돼요. 설치에 10초~1분 걸릴 수 있어요.'],
+    ['왜 설치해야 쓸 수 있나요?','오운!은 앱스토어 없이 설치하는 웹앱이에요. 설치하면 전체 화면으로 열리고 인터넷이 없어도 동작해요. 아이폰은 브라우저 방문 기록을 지울 때 기록이 같이 지워지는 것도 막아 줘요.'],
+    ['아이폰은 어떻게 설치하나요?','Safari로 이 주소를 연 뒤 아래쪽 공유 버튼(네모에 위 화살표, iOS 26은 ··· 메뉴 안) › "홈 화면에 추가"를 누르세요. 카카오톡·인스타그램 안에서 열었다면 먼저 Safari로 열어 주세요.'],
+    ['갤럭시에서 설치했는데 아이콘이 안 보여요','새 앱이 홈 화면이 아니라 앱스 화면(위로 쓸어 올리기)에 생길 수 있어요. 검색창에 "오운"을 입력해 보세요. 아이콘을 길게 눌러 "홈 화면에 추가"하면 돼요. 설치에 10초~1분 걸릴 수 있어요.'],
     ['기록은 어디에 저장되나요?','기본은 이 기기 안에만 저장돼요. 로그인하면 Google Firebase(싱가포르)에 내 계정으로만 볼 수 있게 자동 보관되고, 하루 한 번 백업 시점도 남아 최근 14개까지 되돌릴 수 있어요.'],
     ['폰을 바꾸거나 기록이 지워지면요?','같은 계정으로 로그인하면 클라우드 기록이 그대로 돌아와요. 로그인 없이 쓴다면 더보기 › 데이터 백업 · 복원에서 파일을 받아 두세요.'],
     ['인터넷 없이도 되나요?','네. 한 번 설치하면 운동 기록, 타이머, 식단 검색, 인바디 사진 인식까지 오프라인에서 동작해요. 로그인 동기화만 인터넷이 필요해요.'],
     ['다른 운동 앱 기록을 옮길 수 있나요?','Strong, Hevy에서 내보낸 CSV 파일을 더보기 › 데이터 백업 · 복원에서 가져올 수 있어요.'],
     ['의견이나 오류는 어디로 보내나요?','앱의 더보기 › 의견 보내기를 쓰거나 인스타그램 @proteinvillain DM으로 보내 주세요.']];
-  const L=(t,b)=>`<div class="card"><div class="card-t" style="margin-bottom:6px">${t}</div><div class="muted" style="line-height:1.65;font-size:13.5px">${b}</div></div>`;
-  return`<div class="ld-hero"><img class="ic" src="icons/icon-192.png" alt="오운! 아이콘"><h1>오운!</h1><p>오늘 운동, 완료.<br>헬스 · 크로스핏 · 러닝 · 인바디 · 식단을 한 앱에서</p>
-  <div class="ld-tags"><span>무료</span><span>광고 없음</span><span>앱스토어 없이 설치</span><span>오프라인</span></div>
-  <button class="ld-cta" onclick="ldInstall()"><span class="ld-cta-t">${ldInstallLabel()}</span></button>
-  <div class="ld-sub">${ios?'아이폰은 Safari에서 설치할 수 있어요':'설치한 뒤 홈 화면의 오운! 아이콘으로 열어 주세요'}</div></div>
-  <nav class="ld-nav"><a href="#ld-feat" onclick="ldGo(event,'ld-feat')">기능</a><a href="#ld-how" onclick="ldGo(event,'ld-how')">사용법</a><a href="#ld-faq" onclick="ldGo(event,'ld-faq')">자주 묻는 질문</a><a href="#ld-info" onclick="ldGo(event,'ld-info')">안내</a></nav>
-  <div class="ld-wrap">
-  ${n?`<div class="ld-note"><b>이 브라우저에 기록이 ${n}건 있어요</b>${ios?'아이폰은 홈 화면 앱이 Safari와 따로 저장돼요. 설치 전에 아래 <b>브라우저에서 계속 쓰기</b>로 들어가 더보기 › 계정에서 로그인(자동 보관)하거나 백업 파일을 받아 두세요. 설치한 앱에서 같은 계정으로 로그인하면 그대로 이어져요.':'설치하면 같은 기록이 앱에서 그대로 보여요. 로그인해 두면 더 안전해요.'}
-    <button class="btn sub" style="margin-top:10px" onclick="ldUseWeb()">브라우저에서 계속 쓰기</button></div>`:''}
-  <section class="ld-sec" id="ld-feat"><h2>이런 걸 할 수 있어요</h2><div class="muted">운동 하나에 앱 여러 개를 쓰지 않아도 돼요.</div>
-   <div class="ld-shots">${shots.map(([f,c])=>`<figure><img src="landing/${f}.jpg" alt="${c} 화면" loading="lazy"><figcaption>${c}</figcaption></figure>`).join('')}</div>
-   <div class="ld-feat">${feat.map(([t,d])=>`<div><b>${t}</b><span>${d}</span></div>`).join('')}</div></section>
-  <section class="ld-sec" id="ld-how"><h2>사용법</h2><div class="muted">설치부터 첫 운동 기록까지 5분이면 충분해요.</div>
-   <ol class="ld-steps">
-    <li><b>설치하기</b>${ios?'Safari 공유 버튼 › 홈 화면에 추가':'위의 설치 버튼, 또는 브라우저 메뉴 › 앱 설치'} 후 홈 화면의 오운! 아이콘으로 열어요.</li>
-    <li><b>처음 설정</b>주로 하는 운동(헬스 · 크로스핏·하이록스 · 러닝)과 체중, 경력, 주 운동 횟수를 고르면 목표와 추천 무게가 맞춰져요.</li>
-    <li><b>루틴 고르기</b>운동 탭 › 루틴 관리에서 추천 루틴이나 프로그램을 고르거나 직접 만들어요. 루틴을 짤 때 주간 볼륨이 미리 보여요.</li>
-    <li><b>운동 모드로 기록</b>시작을 누르면 한 세트씩 안내해요. 무게·횟수를 확인하고 "세트 완료"를 누르면 휴식 타이머가 돌아요. 종목을 길게 누르면 순서를 바꿀 수 있어요.</li>
-    <li><b>기록 확인 · 공유</b>운동이 끝나면 오운완 카드를 만들고, 기록 탭에서 1RM 추이와 주간 볼륨 분석을 확인해요.</li>
-    <li><b>로그인해서 보관</b>더보기 › 계정에서 Google로 로그인하면 저장할 때마다 자동으로 클라우드에 보관돼요.</li></ol>
-   <div class="card" style="margin-top:12px"><div class="card-t" style="margin-bottom:6px">화면 구성</div><table class="ld-tabs">
-    <tr><td>오늘</td><td>오늘 할 운동, 진행 중인 프로그램, 최근 7일 요약</td></tr>
-    <tr><td>운동</td><td>근력 운동 기록 · WOD와 타이머 · 러닝 기록</td></tr>
-    <tr><td>기록</td><td>운동 달력 · 종목별 1RM · 주간 볼륨 분석 · 인바디 · 러닝 분석</td></tr>
-    <tr><td>식단</td><td>끼니별 음식 기록 · 칼로리와 단백질 목표 · 영양제</td></tr>
-    <tr><td>더보기</td><td>타이머 · 목표 · 계정과 백업 · 의견 보내기 · 개인정보 안내</td></tr></table></div></section>
-  <section class="ld-sec ld-faq" id="ld-faq"><h2>자주 묻는 질문</h2><div class="muted"></div>
-   ${faq.map(([q,a])=>`<details><summary>${q}</summary><div>${a}</div></details>`).join('')}</section>
-  <section class="ld-sec" id="ld-info"><h2>개인정보 · 이용 안내</h2><div class="muted">앱 안 더보기 › 개인정보 · 이용 안내와 같은 내용이에요.</div>
-   <details class="fold"><summary>전체 보기</summary>${privacyBody(L)}</details>
-   <div class="card" style="margin-top:10px"><div class="card-t" style="margin-bottom:6px">출처 · 라이선스</div><div class="muted" style="line-height:1.65;font-size:13.5px">운동 그림 Everkinetic (CC BY-SA 4.0) · 근육 지도 react-native-body-highlighter (MIT) · 음식 영양 정보 식품의약품안전처 식품영양성분 DB (공공누리) · 글자 인식 Tesseract.js (Apache 2.0) · 로그인·저장 Firebase JS SDK (Apache 2.0) · 글꼴 Pretendard (SIL OFL 1.1).<br>볼륨 분석 기준: Israetel·Hoffmann (2019), Schoenfeld 외 (2016·2017·2021), Pelland 외 (2024).<br>HYROX, CrossFit은 각 소유자의 상표이며 이 앱과 관련이 없어요.</div></div></section>
-  <div class="ld-foot">만든 사람 <a href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener">@proteinvillain</a> · Instagram<br>비상업 개인 프로젝트 · 광고·결제 없음 · v${APP_VER}
+  const L=(t,b)=>`<div class="card"><div class="card-t" style="margin-bottom:6px">${t}</div><div class="muted" style="line-height:1.7;font-size:14px">${b}</div></div>`;
+  return`<div class="ld-in">
+  <div class="ld-top"><img src="icons/logo-r.png" alt="">오운!</div>
+  <section class="ld-hero"><div class="ld-kick rv">무료 운동 기록 앱</div>
+   <h1 class="ld-h1 rv">오늘 운동,<br>기록까지 완료.</h1>
+   <p class="ld-p rv">헬스, 크로스핏, 러닝, 인바디, 식단까지<br>앱 하나로 끝내세요.</p>
+   <div class="ld-chips rv"><span>무료</span><span>광고 없음</span><span>앱스토어 없이 설치</span><span>오프라인</span></div>
+   ${n?`<div class="ld-note"><b>이 브라우저에 기록이 ${n}건 있어요.</b><br>${ios?'아이폰은 홈 화면 앱이 Safari와 따로 저장돼요. 설치 전에 브라우저에서 로그인(자동 보관)하거나 백업 파일을 받아 두세요. 설치한 앱에서 같은 계정으로 로그인하면 그대로 이어져요.':'설치하면 같은 기록이 앱에서 그대로 보여요. 로그인해 두면 더 안전해요.'}
+    <button onclick="ldUseWeb()">브라우저에서 계속 쓰기</button></div>`:''}
+   ${phone('home','오운! 홈 화면')}</section>
+  ${sec('세트만 누르면<br>휴식 타이머까지 알아서','동작 그림을 보면서 무게와 횟수만 확인하세요.<br>운동 순서는 꾹 눌러서 바꿀 수 있어요.','wm','운동 모드 화면')}
+  ${sec('부족한 근육,<br>과한 근육을 알려드려요','운동 이론을 바탕으로 근육별 주간 세트와<br>밀기·당기기 균형을 분석해요. 루틴을 짤 때 미리 볼 수도 있어요.','vol','주간 볼륨 분석 화면')}
+  ${sec('WOD도 하이록스도<br>타이머 하나로','For Time, AMRAP, EMOM, 인터벌.<br>내 WOD를 직접 짜고 기록까지 남겨요.','timer','크로스핏 타이머 화면')}
+  ${sec('인바디 결과지는<br>사진 한 장이면 충분해요','찍기만 하면 25개 항목을 자동으로 채워요.<br>사진은 폰 밖으로 나가지 않아요.','body','인바디 기록 화면')}
+  ${sec('오늘의 오운완,<br>카드로 자랑하세요','사진 위에 오늘 기록을 얹어 바로 공유해요.','card','오운완 카드 화면')}
+  <section class="ld-sec"><h2 class="ld-h2 rv">그 밖에도<br>필요한 건 다 있어요</h2>
+   ${rows([['루','루틴 · 프로그램','남니콜먼 근비대·스트렝스, 5/3/1 등 주차별 무게 자동 계산'],['러','러닝 분석','거리, 페이스, 훈련 부하까지 한눈에'],['식','식단','식약처 DB로 끼니별 기록, 단백질 목표 자동'],['백','백업 · 복원','로그인하면 자동 보관, 폰을 바꿔도 그대로'],['옮','기록 가져오기','Strong, Hevy 기록을 CSV로 옮겨 와요']])}</section>
+  <section class="ld-sec"><h2 class="ld-h2 rv">광고도, 결제도<br>없어요</h2>
+   ${rows([['1','완전 무료','개인이 만든 비상업 프로젝트예요'],['2','내 기록은 내 것','기록은 내 폰과 내 계정에만 저장돼요'],['3','1분이면 설치','앱스토어 없이 바로 홈 화면에 추가해요']])}</section>
+  <section class="ld-sec"><h2 class="ld-h2 rv">이렇게 시작해요</h2>
+   ${rows([['1','설치하기',ios?'Safari 공유 버튼 › 홈 화면에 추가':'아래 버튼을 누르거나 브라우저 메뉴 › 앱 설치'],['2','처음 설정','주로 하는 운동과 체중, 경력을 고르면 추천 무게가 맞춰져요'],['3','루틴 고르기','운동 탭 › 루틴 관리에서 추천 루틴을 고르거나 직접 만들어요'],['4','운동 시작','세트 완료를 누르면 휴식 타이머가 돌고, 끝나면 오운완 카드가 나와요']])}</section>
+  <section class="ld-sec"><h2 class="ld-h2 rv">자주 묻는 질문</h2>
+   <div class="ld-faq">${faq.map(([q,a])=>`<details><summary>${q}</summary><div>${a}</div></details>`).join('')}</div></section>
+  <section class="ld-sec" style="padding-top:56px"><div class="ld-info">
+   <details><summary>개인정보 · 이용 안내</summary>${privacyBody(L)}</details>
+   <details><summary>출처 · 라이선스</summary><div class="ld-src" style="padding-top:0;padding-bottom:16px">운동 그림 Everkinetic (CC BY-SA 4.0) · 근육 지도 react-native-body-highlighter (MIT) · 음식 영양 정보 식품의약품안전처 식품영양성분 DB (공공누리) · 글자 인식 Tesseract.js (Apache 2.0) · 로그인·저장 Firebase JS SDK (Apache 2.0) · 글꼴 Pretendard (SIL OFL 1.1)<br>볼륨 분석 기준: Israetel·Hoffmann (2019), Schoenfeld 외 (2016·2017·2021), Pelland 외 (2024)<br>HYROX, CrossFit은 각 소유자의 상표이며 이 앱과 관련이 없어요.</div></details></div></section>
+  <div class="ld-foot">오운! · 비상업 개인 프로젝트 · v${APP_VER}<br>만든 사람 <a href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener">@proteinvillain</a>
    ${pc&&!n?`<button class="ld-skip" onclick="ldUseWeb()">PC에서는 설치 없이 브라우저에서 쓰기</button>`:''}</div>
   </div>`;}
 function renderLanding(){
   if(!landingOn())return false;
   let L=$('landing');if(!L){L=document.createElement('div');L.id='landing';document.body.appendChild(L);}
   L.innerHTML=landingHTML();
-  let bar=$('ldBar');if(!bar){bar=document.createElement('div');bar.id='ldBar';bar.className='ld-bar';bar.innerHTML=`<button onclick="ldInstall()"><span class="ld-cta-t">${ldInstallLabel()}</span></button>`;document.body.appendChild(bar);}
-  L.addEventListener('scroll',()=>bar.classList.toggle('on',L.scrollTop>380),{passive:true});
+  let bar=$('ldBar');if(!bar){bar=document.createElement('div');bar.id='ldBar';bar.className='ld-bar';document.body.appendChild(bar);}
+  bar.innerHTML=`<button onclick="ldInstall()"><span class="ld-cta-t">${ldInstallLabel()}</span></button><small class="ld-cta-s">${ldInstallSub()}</small>`;
+  const els=L.querySelectorAll('.rv');
+  if('IntersectionObserver' in window&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),{root:L,rootMargin:'0px 0px -8% 0px',threshold:0.08});
+    els.forEach(el=>io.observe(el));
+  }else els.forEach(el=>el.classList.add('in'));
   document.title='오운! · 무료 운동 기록 앱';document.body.classList.add('ld-on');
   return true;}
 
