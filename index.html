@@ -852,29 +852,7 @@ function suggestSets(name,n,reps,w){
 
 let animRaf=0;
 
-/* 동작 그림: Everkinetic (https://github.com/everkinetic/data) · CC BY-SA 4.0
-   준비 자세(relaxation)와 수축 자세(tension) 두 장을 번갈아 보여 줌. ek.pack.gz 한 파일(약 1.8MB, 오프라인 캐시) */
-const EKV={"벤치프레스":"0042","인클라인 벤치프레스":"0043","디클라인 벤치프레스":"0051","스미스 벤치프레스":"0078","덤벨 벤치프레스":"0055","인클라인 덤벨프레스":"0061","덤벨 플라이":"0056","케이블 플라이":"0057","케이블 크로스오버":"0048","체스트 프레스 머신":"0066","인클라인 체스트 프레스 머신":"0081","딥스":"0054","푸시업":"0077","디클라인 푸시업":"0075","데드리프트":"0099","랙풀":"0100","바벨로우":"0026","펜들레이 로우":"0026","T바 로우":"0029","덤벨 로우":"0024","인버티드 로우":"0086","풀업":"0087","친업":"0090","랫풀다운":"0093","클로즈그립 랫풀다운":"0096","시티드 로우":"0025","원암 케이블 로우":"0025","머신 로우":"0025","해머 DY 로우":"0025","스트레이트암 풀다운":"0092","케이블 풀오버":"0092","백 익스텐션":"0103","바벨 슈러그":"0030","덤벨 슈러그":"0005","스쿼트":"0122","프론트 스쿼트":"0138","박스 스쿼트":"0133","스미스 스쿼트":"0124","고블릿 스쿼트":"0130","핵 스쿼트":"0123","레그프레스":"0127","RDL":"0118","덤벨 RDL":"0107","굿모닝":"0101","힙 쓰러스트":"0109","글루트 브릿지":"0109","불가리안 스플릿 스쿼트":"0132","런지":"0115","워킹 런지":"0121","샌드백 런지":"0114","스텝업":"0137","레그컬":"0117","레그 익스텐션":"0142","힙 어브덕션":"0156","힙 어덕션":"0157","카프레이즈":"0282","시티드 카프레이즈":"0279","오버헤드프레스":"0004","머신 숄더프레스":"0004","덤벨 숄더프레스":"0038","아놀드 프레스":"0038","사이드 레터럴 레이즈":"0018","프론트 레이즈":"0033","리어 델트 플라이":"0032","업라이트 로우":"0014","바벨컬":"0211","EZ바 컬":"0226","덤벨 컬":"0224","해머컬":"0227","인클라인 덤벨 컬":"0214","컨센트레이션 컬":"0220","프리처 컬":"0239","케이블컬":"0212","케이블 해머컬":"0216","리버스 컬":"0257","트라이셉스 푸시다운":"0205","로프 푸시다운":"0206","리버스 그립 푸시다운":"0189","오버헤드 트라이셉스 익스텐션":"0192","케이블 오버헤드 익스텐션":"0176","라잉 트라이셉스 익스텐션":"0183","덤벨 킥백":"0204","클로즈그립 벤치프레스":"0049","트라이셉스 딥스":"0171","벤치 딥스":"0162","사이드 플랭크":"0113","크런치":"0291","바이시클 크런치":"0284","케이블 크런치":"0288","라잉 레그레이즈":"0021","앱 롤아웃":"0286","디클라인 덤벨프레스":"0052","월볼":"0130","케이블 레터럴 레이즈":"0018","머신 레터럴 레이즈":"0018","리버스 펙덱":"0032","케이블 하이로우":"0025","시티드 레그컬":"0119","라잉 레그컬":"0117","내로우 핵 스쿼트":"0145","싱글 레그프레스":"0143","시시 스쿼트":"0158","스미스 런지":"0115","힙 쓰러스트 머신":"0109","케이블 글루트 킥백":"0112","케이블 힙 어덕션":"0135","레그프레스 카프레이즈":"0273","동키 카프레이즈":"0275","스미스 카프레이즈":"0282","디클라인 체스트 프레스 머신":"0066","와이드 체스트 프레스 머신":"0066","인클라인 덤벨 플라이":"0062","인클라인 케이블 플라이":"0060","로우 투 하이 케이블 플라이":"0048","어시스트 딥스":"0054","어시스트 풀업":"0087","언더그립 랫풀다운":"0096","원암 랫풀다운":"0093","머신 랫풀다운":"0093","머신 로우로우":"0025","머신 하이로우":"0025","T바 로우 머신":"0029","스미스 로우":"0026","머신 풀오버":"0079","덤벨 풀오버":"0079","백 익스텐션 머신":"0103","스미스 슈러그":"0041","케이블 슈러그":"0009","스미스 밀리터리 프레스":"0004","스미스 업라이트 로우":"0013","케이블 프론트 레이즈":"0008","케이블 리어 델트 플라이":"0035","케이블 Y 레이즈":"0018","원암 케이블 푸시다운":"0166","V바 푸시다운":"0207","트라이셉스 익스텐션 머신":"0210","케이블 트라이셉스 킥백":"0204","스미스 클로즈그립 벤치프레스":"0195","스파이더 컬":"0245","프리처 컬 머신":"0236","머신 컬":"0253","케이블 프리처 컬":"0217","원암 케이블 컬":"0247","오버헤드 케이블 컬":"0238","원암 덤벨 프리처 컬":"0237","복근 크런치 머신":"0288","디클라인 크런치":"0292","원암 덤벨 오버헤드 익스텐션":"0186","와이드그립 랫풀다운":"0093","스미스 인클라인 벤치프레스":"0081"};
-Object.assign(EKV,{'링 딥':'0054','싯업':'0291','체스트 투 바 풀업':'0087'});
-const EK_CREDIT='그림 © Everkinetic · CC BY-SA 4.0';
-let ekP=null;const ekURL={};
-function loadEk(){
-  if(ekP)return ekP;
-  ekP=(async()=>{const buf=(await gzFetch(['ek.pack.gz','ohun/ek.pack.gz'])).buffer;
-    const dv=new DataView(buf);if(String.fromCharCode(...new Uint8Array(buf,0,4))!=='OHEK')throw new Error('bad pack');
-    const hl=dv.getUint32(4,true),idx=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,8,hl))),base=8+hl;
-    for(const[k,[o,l]]of Object.entries(idx))ekURL[k]=URL.createObjectURL(new Blob([new Uint8Array(buf,base+o,l)],{type:'image/svg+xml'}));return true;})().catch(e=>{ekP=null;return false;});
-  return ekP;
-}
-function showAnim(idp,name){
-  const ph=$(idp+'Ph'),lab=$(idp+'FigL');if(!ph)return;const id=EKV[name];
-  const none=()=>{ph.innerHTML='<div class="tiny" style="padding:40px 0;text-align:center">그림을 불러오지 못했어요 · 근육 탭을 확인하세요</div>';if(lab)lab.textContent='';};
-  if(!id){none();return;}
-  ph.classList.add('ek');if(lab)lab.textContent=EK_CREDIT;
-  const tok=ph.dataset.tok=String(Math.random());ph.innerHTML='';
-  loadEk().then(ok=>{if(ph.dataset.tok!==tok)return;if(!ok||!ekURL[id+'r']){none();return;}
-    ph.innerHTML=`<img class="r" src="${ekURL[id+'r']}" alt="준비 자세"><img class="t" src="${ekURL[id+'t']}" alt="수축 자세">`;});
-}
+/* 동작 그림 기능은 v7.13에서 제거 (오운_동작그림_백업.zip에 보관) */
 
 /* ══════════════════════ 근육 지도 ══════════════════════ */
 /* 근육 지도 SVG 경로: react-native-body-highlighter v3.2.0
@@ -912,18 +890,13 @@ function exHistHTML(name){
   <table class="t" style="margin-top:6px">${[...H].reverse().slice(0,6).map(h=>`<tr><td style="color:var(--text3)">${md(h.date)}</td><td>${t?h.top.r+'초':h.top.w+'kg × '+h.top.r}</td><td style="text-align:right;color:var(--text2)">${h.sets}세트</td></tr>`).join('')}</table>`;
 }
 function guideHTML(name,idp){
-  const ek=!!EKV[name];
-  return`<div class="seg" id="${idp}Seg" style="margin-bottom:10px">${ek?'<button class="on" data-k="anim">동작</button>':''}<button class="${ek?'':'on'}" data-k="mus">근육</button><button data-k="his">내 기록</button></div>
-  <div class="gbox"><div id="${idp}Anim" style="${ek?'':'display:none'}"><div class="ph" id="${idp}Ph"></div>
-  <div style="min-height:22px;padding:0 4px"><span class="tiny" id="${idp}FigL"></span></div></div>
-  <div id="${idp}Mus" style="${ek?'display:none':''}">${muscleSVG(name)}${musLegend(name)}</div>
+  return`<div class="seg" id="${idp}Seg" style="margin-bottom:10px"><button class="on" data-k="mus">근육</button><button data-k="his">내 기록</button></div>
+  <div class="gbox"><div id="${idp}Mus">${muscleSVG(name)}${musLegend(name)}</div>
   <div id="${idp}His" style="display:none"></div></div>`;
 }
 function bindGuide(idp,name){
-  bindSeg(idp+'Seg',k=>{$(idp+'Anim').style.display=k==='anim'?'':'none';$(idp+'Mus').style.display=k==='mus'?'':'none';$(idp+'His').style.display=k==='his'?'':'none';
-    if(k==='anim')showAnim(idp,name);else cancelAnimationFrame(animRaf);
-    if(k==='his'){$(idp+'His').innerHTML=exHistHTML(name);const H=exHistory(name).slice(-20),t=isTimed(name);if($('ehChart'))chart($('ehChart'),H.map(h=>md(h.date)),[{name:t?'초':'추정 1RM',data:H.map(h=>t?h.top.r:h.est||null),color:'var(--s1)'}],{h:140,fmt:v=>v+(t?'초':' kg')});}});
-  if(EKV[name])showAnim(idp,name);else cancelAnimationFrame(animRaf);
+  bindSeg(idp+'Seg',k=>{$(idp+'Mus').style.display=k==='mus'?'':'none';$(idp+'His').style.display=k==='his'?'':'none';
+    if(k==='his'){$(idp+'His').innerHTML=exHistHTML(name);const H=exHistory(name).slice(-20),t=isTimed(name);if($('ehChart'))chart($('ehChart'),H.map(h=>md(h.date)),[{name:t?'초':'추정 1RM',data:H.map(h=>t?h.top.r:h.est||null),color:'var(--s1)'}],{h:140,fmt:v=>t?v+'초':v+'kg'});}});
 }
 function openGuide(name){
   const i=exInfo(name);
@@ -2295,7 +2268,7 @@ function renderMore(){
   <div class="list">${row('운동 타이머','카운트다운 · 스톱워치 · 인터벌 · EMOM · WOD','openTimerTool()')}${row('주로 하는 운동',FOCUS_L[S.focus||'all'],'openFocus()')}${row('목표',(()=>{const G=goalsOf();const n=(G.weight&&G.weight.t?1:0)+G.lifts.length;return n?`${n}개 진행 중`:'체중 · 종목 목표와 필요 속도';})(),'openGoals()')}${row('영양제 · 복용 약물',S.meds&&S.meds.length?`약물 ${S.meds.length}개 등록`:'운동할 때 주의할 점 안내','openMeds()')}${row('휴식 타이머','','openRestSet()',`<span class="tiny">${S.rest?S.rest+'초':'끔'}</span>`)}${row('음성 안내','타이머 3·2·1 카운트다운','S.voice=S.voice?0:1;saveLocal();renderMore()',`<span class="badge ${S.voice?'b-good':''}">${S.voice?'켜짐':'꺼짐'}</span>`)}</div>
   <div class="sec">앱</div>
   <div class="list">${row('계정 · 클라우드',fb.user?`${esc(fb.user.email||'로그인됨')} · ${fb.state||'연결됨'}`:'로그인하면 여러 기기에서 같은 기록','openAccount()')}${isStandalone()?'':row('홈 화면에 설치','앱처럼 전체 화면 · 오프라인 실행','installApp()')}${row('데이터 백업 · 복원','JSON · CSV 내보내기','openData()')}${row('화면 테마','',"S.theme=S.theme==='auto'?'light':S.theme==='light'?'dark':'auto';applyTheme();saveLocal();renderMore()",`<span class="tiny">${{auto:'시스템',light:'라이트',dark:'다크'}[S.theme||'auto']}</span>`)}${row('의견 보내기','버그 · 불편한 점 · 원하는 기능','openFeedback()')}${row('개인정보 · 이용 안내','','openPrivacy()')}</div>
-  <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">오운! v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>운동 그림: Everkinetic (CC BY-SA 4.0)<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>
+  <div class="tiny" style="text-align:center;margin-top:18px;line-height:1.7">오운! v${APP_VER} · <button class="link" style="font-size:11px" onclick="checkUpdate()">업데이트 확인</button><br>MEV/MAV/MRV: Israetel 2019 · BMR: Mifflin-St Jeor · FFMI: Kouri 1995<br>근육 지도: react-native-body-highlighter (MIT, ELABBASSI Hicham)<br>의학적·전문 트레이닝 조언을 대체하지 않습니다.</div>
   <a class="credit" href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener">만든 사람 <b>@proteinvillain</b> · Instagram</a><div class="tiny" style="text-align:center;color:var(--text3)">비상업 개인 프로젝트 · 광고·결제 없음</div>`;
 }
 function openProfile(){
@@ -3145,7 +3118,7 @@ function openCSV(){
 /* ── 공개판: 처음 안내 · 개인정보 안내 · 클라우드 삭제 ── */
 function openWelcome(){
   openSheet(`<div style="text-align:center;padding:10px 4px 4px"><div class="brand" style="justify-content:center;font-size:26px;font-weight:900"><i style="width:52px;height:52px;border-radius:14px"><img src="icons/logo-r.png" alt=""></i>오운!</div><div class="muted" style="margin-top:6px">오늘 운동, 완료!</div></div>
-  <div class="card">${[['프로그램이 오늘 할 운동을 알려 줘요','5×5·5/3/1·하이록스 등 검증된 플랜을 고르면 요일별 운동과 무게가 자동으로 나옵니다.'],['운동 모드로 세트·휴식을 한 화면에서','동작 그림, 휴식 타이머, 원판 계산, 자동 증량 제안까지.'],['러닝·인바디·식단도 함께','식약처 DB 29만 개 음식 검색, 인바디 분석, 러닝 부하 관리.'],['기록은 내 기기에','로그인 없이 바로 쓸 수 있고, 원하면 계정으로 백업·동기화합니다.']].map(([t,d],i)=>`<div style="display:flex;gap:12px;padding:8px 0"><b style="width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px">${i+1}</b><div><div class="li-t">${t}</div><div class="tiny" style="margin-top:2px">${d}</div></div></div>`).join('')}</div>
+  <div class="card">${[['프로그램이 오늘 할 운동을 알려 줘요','5×5·5/3/1·하이록스 등 검증된 플랜을 고르면 요일별 운동과 무게가 자동으로 나옵니다.'],['운동 모드로 세트·휴식을 한 화면에서','근육 지도, 휴식 타이머, 원판 계산, 자동 증량 제안까지.'],['러닝·인바디·식단도 함께','식약처 DB 29만 개 음식 검색, 인바디 분석, 러닝 부하 관리.'],['기록은 내 기기에','로그인 없이 바로 쓸 수 있고, 원하면 계정으로 백업·동기화합니다.']].map(([t,d],i)=>`<div style="display:flex;gap:12px;padding:8px 0"><b style="width:26px;height:26px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-size:13px">${i+1}</b><div><div class="li-t">${t}</div><div class="tiny" style="margin-top:2px">${d}</div></div></div>`).join('')}</div>
   <label style="display:flex;gap:10px;align-items:center;margin:0 4px 12px;font-size:14px;cursor:pointer"><input type="checkbox" id="wcAge" style="width:20px;height:20px;accent-color:var(--pri)"><span>만 14세 이상이며 <button class="link" style="font-size:14px" onclick="event.preventDefault();openPrivacy()">개인정보·이용 안내</button>를 확인했습니다</span></label>
   <button class="btn" onclick="if(!$('wcAge').checked){toast('만 14세 이상 확인에 체크해 주세요');return;}S.welcomed=new Date().toISOString();saveLocal();closeSheet();setTimeout(openOnboarding,300)">시작하기</button>
   <button class="link" style="display:block;margin:14px auto 2px;font-size:13px" onclick="closeSheet();restoreGoogle()">예전에 쓰던 기록이 있어요 · 복원하기</button>`);
@@ -3166,7 +3139,7 @@ function privacyBody(sec){
   ${sec('삭제','더보기 › 데이터 백업 · 복원 › 모든 데이터 삭제로 기기 기록을 지웁니다. 클라우드 기록과 계정은 더보기 › 계정 · 클라우드 › 클라우드 데이터와 계정 삭제로 지웁니다.')}
   ${sec('건강 관련 안내','운동·식단 제안은 일반적인 정보이며 의학적 진단이나 전문 트레이닝을 대신하지 않습니다. 통증이나 지병이 있으면 전문가와 상의하세요.')}
   ${sec('문의 · 운영자','만든 사람: <a href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener" style="color:var(--pri);font-weight:700">@proteinvillain</a> (Instagram)<br>개인정보 보호 담당도 만든 사람이 직접 맡습니다. 개인정보 열람·정정·삭제 요청이나 오류 제보는 인스타그램 DM으로 보내 주세요. 앱 안에서 직접 삭제하는 방법은 위 \'삭제\' 항목을 참고하세요.')}
-  ${sec('출처','운동 그림: Everkinetic (CC BY-SA 4.0) · 근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털) · 글자 인식: Tesseract.js·tessdata (Apache 2.0) · 로그인·저장: Firebase (Google)<br>5/3/1, Madcow, HYROX 등은 각 권리자의 프로그램·상표 이름으로, 설명 목적으로만 쓰며 공식 제휴 앱이 아닙니다.')}`;
+  ${sec('출처','근육 지도: react-native-body-highlighter (MIT) · 음식: 식품의약품안전처 식품영양성분 DB(공공데이터포털) · 글자 인식: Tesseract.js·tessdata (Apache 2.0) · 로그인·저장: Firebase (Google)<br>5/3/1, Madcow, HYROX 등은 각 권리자의 프로그램·상표 이름으로, 설명 목적으로만 쓰며 공식 제휴 앱이 아닙니다.')}`;
 }
 function openPrivacy(){openSheet(`<div class="sheet-h"><h2>개인정보 · 이용 안내</h2><button class="link" onclick="closeSheet()">닫기</button></div>${privacyBody()}`);
 }
@@ -3709,13 +3682,12 @@ async function runInstallCheck(){
   const icons=(man&&man.icons)||[{src:'icons/icon-192.png'},{src:'icons/icon-512.png'}];
   for(const ic of icons){try{const r=await fetch(ic.src,{cache:'no-store'});ok('아이콘 '+ic.src,r.ok&&/image/.test(r.headers.get('content-type')||''),'icons 폴더째로 저장소에 올리세요.');}catch(e){ok('아이콘 '+ic.src,false,'icons 폴더째로 저장소에 올리세요.');}}
   for(const f of['data/food-kr-1.tsv.gz','data/food-kr-2.tsv.gz']){try{const r=await fetch(f,{method:'HEAD',cache:'no-store'});ok('식약처 음식 DB '+f,r.ok,'data 폴더째로 저장소 맨 위에 올리세요. (폴더 없이 파일만 올렸어도 앱은 찾아 씁니다)');}catch(e){ok(f,false);}}
-  try{const r=await fetch('ek.pack.gz',{method:'HEAD',cache:'no-store'});ok('운동 그림(ek.pack.gz)',r.ok,'ek.pack.gz 파일을 저장소 맨 위에 올리세요.');}catch(e){ok('ek.pack.gz',false);}
   try{const r=await fetch('sw.js',{cache:'no-store'});ok('sw.js',r.ok,'sw.js를 저장소 맨 위에 올리세요.');}catch(e){ok('sw.js',false);}
   try{const reg=await navigator.serviceWorker?.getRegistration();ok('오프라인 작동(서비스 워커)',!!(reg&&reg.active),'새로고침 후 다시 검사하세요.');}catch(e){ok('서비스 워커',false);}
   if(!isIOS())ok('크롬 설치 준비',!!installEvt||isStandalone(),'위 항목이 모두 정상인데 여기만 문제면 메뉴 › "홈 화면에 추가"로 설치하세요. 이미 설치되어 있어도 이렇게 표시됩니다.');
   out.innerHTML=rows.join('');
 }
-const APP_VER='7.12';
+const APP_VER='7.13';
 async function checkUpdate(){toast('최신 버전 확인 중...');try{const r=await navigator.serviceWorker?.getRegistration();if(r)await r.update();}catch(e){}setTimeout(()=>location.reload(),600);}
 async function initPWA(){
   if('serviceWorker' in navigator){let reloaded=false;const had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!reloaded&&navigator.serviceWorker.controller){reloaded=true;toast('새 버전이 적용되었습니다');}});}
@@ -3777,7 +3749,7 @@ function landingHTML(){
    ${n?`<div class="ld-note"><b>이 브라우저에 기록이 ${n}건 있어요.</b><br>${ios?'아이폰은 홈 화면 앱이 Safari와 따로 저장돼요. 설치 전에 브라우저에서 로그인(자동 보관)하거나 백업 파일을 받아 두세요. 설치한 앱에서 같은 계정으로 로그인하면 그대로 이어져요.':'설치하면 같은 기록이 앱에서 그대로 보여요. 로그인해 두면 더 안전해요.'}
     <button onclick="ldUseWeb()">브라우저에서 계속 쓰기</button></div>`:''}
    ${phone('home','오운! 홈 화면')}</section>
-  ${sec('세트만 누르면<br>휴식 타이머까지 알아서','동작 그림을 보면서 무게와 횟수만 확인하세요.<br>운동 순서는 꾹 눌러서 바꿀 수 있어요.','wm','운동 모드 화면')}
+  ${sec('세트만 누르면<br>휴식 타이머까지 알아서','무게와 횟수만 확인하고 완료를 누르세요.<br>쓰이는 근육도 바로 보이고, 순서는 꾹 눌러서 바꿀 수 있어요.','wm','운동 모드 화면')}
   ${sec('부족한 근육,<br>과한 근육을 알려드려요','운동 이론을 바탕으로 근육별 주간 세트와<br>밀기·당기기 균형을 분석해요. 루틴을 짤 때 미리 볼 수도 있어요.','vol','주간 볼륨 분석 화면')}
   ${sec('WOD도 하이록스도<br>타이머 하나로','For Time, AMRAP, EMOM, 인터벌.<br>내 WOD를 직접 짜고 기록까지 남겨요.','timer','크로스핏 타이머 화면')}
   ${sec('인바디 결과지는<br>사진 한 장이면 충분해요','찍기만 하면 25개 항목을 자동으로 채워요.<br>사진은 폰 밖으로 나가지 않아요.','body','인바디 기록 화면')}
@@ -3792,7 +3764,7 @@ function landingHTML(){
    <div class="ld-faq">${faq.map(([q,a])=>`<details><summary>${q}</summary><div>${a}</div></details>`).join('')}</div></section>
   <section class="ld-sec" style="padding-top:56px"><div class="ld-info">
    <details><summary>개인정보 · 이용 안내</summary>${privacyBody(L)}</details>
-   <details><summary>출처 · 라이선스</summary><div class="ld-src" style="padding-top:0;padding-bottom:16px">운동 그림 Everkinetic (CC BY-SA 4.0) · 근육 지도 react-native-body-highlighter (MIT) · 음식 영양 정보 식품의약품안전처 식품영양성분 DB (공공누리) · 글자 인식 Tesseract.js (Apache 2.0) · 로그인·저장 Firebase JS SDK (Apache 2.0) · 글꼴 Pretendard (SIL OFL 1.1)<br>볼륨 분석 기준: Israetel·Hoffmann (2019), Schoenfeld 외 (2016·2017·2021), Pelland 외 (2024)<br>HYROX, CrossFit은 각 소유자의 상표이며 이 앱과 관련이 없어요.</div></details></div></section>
+   <details><summary>출처 · 라이선스</summary><div class="ld-src" style="padding-top:0;padding-bottom:16px">근육 지도 react-native-body-highlighter (MIT) · 음식 영양 정보 식품의약품안전처 식품영양성분 DB (공공누리) · 글자 인식 Tesseract.js (Apache 2.0) · 로그인·저장 Firebase JS SDK (Apache 2.0) · 글꼴 Pretendard (SIL OFL 1.1)<br>볼륨 분석 기준: Israetel·Hoffmann (2019), Schoenfeld 외 (2016·2017·2021), Pelland 외 (2024)<br>HYROX, CrossFit은 각 소유자의 상표이며 이 앱과 관련이 없어요.</div></details></div></section>
   <div class="ld-foot">오운! · 비상업 개인 프로젝트 · v${APP_VER}<br>만든 사람 <a href="https://www.instagram.com/proteinvillain/" target="_blank" rel="noopener">@proteinvillain</a>
    ${pc&&!n?`<button class="ld-skip" onclick="ldUseWeb()">PC에서는 설치 없이 브라우저에서 쓰기</button>`:''}</div>
   </div>`;}

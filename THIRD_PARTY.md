@@ -2,7 +2,6 @@
 
 | 자료 | 출처 | 라이선스 | 앱에서 쓰는 방식 |
 |---|---|---|---|
-| 운동 동작 그림 (`ek.pack.gz`) | Everkinetic — https://github.com/everkinetic/data (원작 Greg Priday, everkinetic.com) | CC BY-SA 4.0 — https://creativecommons.org/licenses/by-sa/4.0/ | 그림마다 "그림 © Everkinetic · CC BY-SA 4.0" 표시. 변경: SVG 공백 제거·좌표 소수 둘째 자리 반올림·한 파일로 묶음. 이 그림 묶음은 같은 CC BY-SA 4.0으로 배포 |
 | 근육 지도 경로 | react-native-body-highlighter — ELABBASSI Hicham | MIT (전문 아래) | 앱 코드 안에 포함 |
 | 식품영양성분 (`data/`) | 식품의약품안전처·농촌진흥청·해양수산부, 공공데이터포털 「전국통합식품영양성분정보 표준데이터」 | 공공데이터, 이용허락범위 제한 없음 | 필요한 항목만 골라 압축, 출처 표시 |
 | 인바디 사진 글자 인식 (`ocr/`) | Tesseract.js 7.0.0, tesseract.js-core 7.0.0 (Jerome Wu 외), 한국어 학습 데이터 tessdata 4.0.0_best_int (Google/Tesseract OCR) | Apache 2.0 | 앱 서버에 원본 그대로 두고 사용자가 사진 입력을 처음 누를 때만 내려받음. 사진은 기기 안에서만 처리 |
